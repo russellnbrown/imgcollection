@@ -115,7 +115,7 @@ public class ImgCollectionBuilder extends SimpleFileVisitor<Path>
     {
         // create the processing threads. See how many processors we have
         Runtime rt = Runtime.getRuntime();
-        numThreads = rt.availableProcessors() - 1; // don't hog all threads
+        numThreads = rt.availableProcessors();// - 1; // don't hog all threads
         // unless we only have the one processor, in which case we will have to hog it...
         if (numThreads < 1)
             numThreads = 1;
@@ -286,6 +286,8 @@ public class ImgCollectionBuilder extends SimpleFileVisitor<Path>
         ImgCollectionImageItem sii = new ImgCollectionImageItem();
         // call image helper to get the bits we want
         Image.SSCRC cby = Image.GetFilesImageComponents(fpath);
+        if ( cby == null )
+            return null;
         // sad save to the imageitem
         sii.setCrc(cby.crc);
         sii.setThumb(cby.thumb);

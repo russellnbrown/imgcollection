@@ -110,7 +110,7 @@ void ImgCollectionBuilder::Load(fs::path set)
 			ImgCollectionImageItem *sii = new ImgCollectionImageItem(icrc, thumb);
 			ic->images[icrc]=sii;
 			st.incImages();
-			printf("CRC: %lld RGB: %2.2x %2.2x %2.2x\n", icrc, thumb[0]&0xFF, thumb[1] & 0xFF, thumb[2] & 0xFF);
+			//printf("CRC: %lld RGB: %2.2x %2.2x %2.2x\n", icrc, thumb[0]&0xFF, thumb[1] & 0xFF, thumb[2] & 0xFF);
 		}
 		else
 			break;
@@ -140,7 +140,7 @@ void ImgCollectionBuilder::Find(fs::path search)
 	ii->de = search;
 	ImgUtils::GetImageInfo(ii);
 
-	ofstream odir("debug.c.csv");
+	//ofstream odir("debug.c.csv");
 	
 	std::list<SearchResult*> results;
 
@@ -153,15 +153,15 @@ void ImgCollectionBuilder::Find(fs::path search)
 		ImgCollectionImageItem *f = it->second;
 		SearchResult *sr = new SearchResult();
 		// create a searchresult for this image and add to the list
-		stringstream ss;
-		ss << "img," << f->crc;
+		//stringstream ss;
+		//ss << "img," << f->crc;
 		sr->i = f;
 		if (ii->crc == f->crc)
 			sr->closeness = 0; // identical images
 		else
 		{
 			sr->closeness = ImgUtils::GetCloseness(ii->thumb, f->thumb);// , &ss);
-			odir << ss.str() << endl;
+			//odir << ss.str() << endl;
 		}
 		results.push_back(sr);
 

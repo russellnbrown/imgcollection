@@ -183,6 +183,11 @@ public class ImgCollection
             //List<SearchResult> pq = new LinkedList<>();
             PriorityQueue<SearchResult> pq = new PriorityQueue<>(new SearchResultComparator());
             ImgCollectionImageItem sfor = ImgCollectionBuilder.getFileThumbAndCrc(spath);
+            if ( sfor == null )
+            {
+                Logger.Severe("Can't find search file " + spath);
+                return null;
+            }
             //Path pdir =  Paths.get("debug.j.csv");
             //dbg = Files.newBufferedWriter(pdir, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             // calculate the closeness. Only add to the search results if it is

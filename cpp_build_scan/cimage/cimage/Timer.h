@@ -29,7 +29,7 @@ private:
 	struct timeritem
 	{
 		string name;
-		chrono::duration<double> took;
+		chrono::duration<float> took;
 	};
 	static list<timeritem> items;
 	static chrono::system_clock::time_point started;
@@ -54,7 +54,7 @@ public:
 		ss << "Timings:-\n";
 		for (auto i : items)
 		{
-			ss << i.name << " = " << to_string(i.took.count()) << endl;
+			ss << i.name << " = " << to_string(chrono::duration_cast<chrono::milliseconds>(i.took).count()) << endl;
 		}
 		return ss.str();
 	}
