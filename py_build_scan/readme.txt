@@ -1,0 +1,2 @@
+-s  C:\Sources\img\test\set.cimage  C:\Sources\img\test\search.jpg
+-c  C:\Sources\img\test\set.python  C:\Sources\img\test C:\Sources\img\test\mono
