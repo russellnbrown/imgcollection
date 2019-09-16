@@ -11,3 +11,5 @@ The last file is written in different ways for search testing:
 2. An exact copy
 3. With additional text added 
 
+You will need to install the Pillow module using pip
+
