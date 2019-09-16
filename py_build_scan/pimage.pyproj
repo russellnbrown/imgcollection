@@ -12,7 +12,7 @@
     <Name>pimage</Name>
     <RootNamespace>pimage</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>-c  setp.db testfiles</CommandLineArguments>
+    <CommandLineArguments>-s  setp.db testfiles/5/file_5.jpg_withtext.jpg</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <PublishUrl>C:\Sources\img\test\</PublishUrl>
     <IsWindowsApplication>False</IsWindowsApplication>

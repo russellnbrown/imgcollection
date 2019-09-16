@@ -81,15 +81,32 @@ def finfo(f:Path):
     ifile.close()
     return [ crc, iby ]
 
-def procsetfile(f:Path):
+def makeentries(f:Path):
     log.info("PFILE: %s", f)
     rpos = psplit(f)
     ipos = finfo(f)
     dhash = gethash(rpos[0])
     fe = set.filent(dhash,ipos[0],rpos[1])
     ie = set.imgent(ipos[0],ipos[1])
+    return [ rpos, ipos, dhash, fe, ie ]
+
+
+def procsetfile(f:Path):
+    log.info("PFILE: %s", f)
+    #rpos = psplit(f)
+    #ipos = finfo(f)
+    #dhash = gethash(rpos[0])
+    e = makeentries(f)
+    rpos = e[0]
+    ipos = e[1]
+    dhash = e[2]
+    fe = e[3]
+    ie = e[4]
+    #fe = set.filent(dhash,ipos[0],rpos[1])
+    #ie = set.imgent(ipos[0],ipos[1])
     set.flist.append(fe)
     set.imap[ipos[0]] = ie
+
 
 def file_walker(walk):
     log.info("Walk at: %s" , walk )
@@ -151,9 +168,23 @@ if ( len(sys.argv) < 3 ):
 if ( sys.argv[1] == "-s" and len(sys.argv) == 4 ):
     p = standardizePath(sys.argv[2])
     set.load(Path(sys.argv[2]))
-    set.search(standardizePath(sys.argv[3]))
-#    for ci in set.results :
-#        print(ci)
+
+    f = standardizePath(sys.argv[3])
+    e = makeentries(f)
+    rpos = e[0]
+    ipos = e[1]
+    dhash = e[2]
+    fe = e[3]
+    ie = e[4]
+
+    #set.search(standardizePath(sys.argv[3]))
+    set.search(ie)
+    for ci in set.results :
+        print(ci)
+    if ( len(set.results) == 0 ):
+        print("No images found")
+        exit(0)
+
     ffile = set.findfile(set.results[0].img.crc)
     if ( ffile != 0 ):
         print("File: " , set.printpath(ffile))

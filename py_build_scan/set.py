@@ -86,17 +86,7 @@ def compare(simg, ximg):
 
     return td
  
-
-def search(fileToSearch):
-    f = Path(fileToSearch)
-    ifile = f.open("rb") 
-    by = ifile.read()
-    image = Image.open(io.BytesIO(by))
-    tn = image.resize([16,16])
-    rgbtn = tn.convert('RGB')
-    #r, g, b = rgbtn.getpixel((1,1))
-    #print(r,g,b)
-    iby = rgbtn.tobytes()
+def printtn(iby):
     bp = 0
     for row in range(1,16):
         print("row=", row)
@@ -106,10 +96,22 @@ def search(fileToSearch):
             b = bp + 2
             bp = bp + 3
             print(" r=",iby[r]," g=",iby[g]," b=", iby[b])
-        
 
-    ifile.close()
-  
+def search(img):
+    #f = Path(fileToSearch)
+    #ifile = f.open("rb") 
+    #by = ifile.read()
+    #image = Image.open(io.BytesIO(by))
+    #tn = image.resize([16,16])
+    #rgbtn = tn.convert('RGB')
+    #iby = rgbtn.tobytes()
+    #printtn(iby)
+    #ifile.close()
+    for k,i in imap.items() :
+        cmp = compare(img, i.tmb)
+        ci = compareditem(i,cmp)
+        results.append(ci)
+    results.sort(key=getcloseness) 
 
 def search2(fileToFind):
     
