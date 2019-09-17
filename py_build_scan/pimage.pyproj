@@ -12,7 +12,7 @@
     <Name>pimage</Name>
     <RootNamespace>pimage</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>-s  setp.db testfiles/5/file_5.jpg_withtext.jpg</CommandLineArguments>
+    <CommandLineArguments>-s  setc.db testfiles/5/file_5.png_withtext.png</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <PublishUrl>C:\Sources\img\test\</PublishUrl>
     <IsWindowsApplication>False</IsWindowsApplication>
@@ -26,6 +26,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="cfg.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="pimage.py" />
     <Compile Include="set.py">
       <SubType>Code</SubType>
