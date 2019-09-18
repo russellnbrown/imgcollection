@@ -6,11 +6,13 @@ import struct
 import logging
 import zlib
 import set
+import datetime
 from PIL import Image,ImageDraw,ImageFont
 from pathlib import Path,PurePosixPath
 import cfg
 
-
+log:logging.Logger
+log = logging.getLogger("pimage")
 
 #
 # imgfileinfo - class used to hold useful information relating to an image file
@@ -33,6 +35,8 @@ class imgfileinfo(object):
         s = "imgfileinfo(ih=" + str(self.ihash) + ", dh=" + str(self.ihash) + ", tlen=" + str(bl) + ", na=" + self.name + ", relp=" + self.relpath + ")"
         return s
 
+
+
 #
 # standardizePath - makes all paths confirm to a standard format with forward slashes, no tailing 
 #
@@ -47,7 +51,6 @@ def standardizePath(p:str):
 # Set up logger
 #
 def setlogging():
-    log = logging.getLogger("pimage")
     handler = logging.StreamHandler()
     handler.formatter = logging.Formatter('%(asctime)s %(levelname)s : %(message)s')
     handler.level = logging.INFO
@@ -89,12 +92,26 @@ def procsetdir(d:str):
     dhash = gethash(rpos[0])
     de = cfg.dirent(dhash,rpos[0])
     cfg.dlist.append(de)
-    log.info("DIR: %s HASH: %d", rpos, dhash)
+    #log.debug("DIR: %s HASH: %d", rpos, dhash)
 
 #
 # getbhash - returns crc32 of a byte array ( the file content )
+#
 def getbhash(key):
     hash = zlib.crc32(key)
+    return hash
+
+#
+# gethash - returns crc32 of a string
+#
+def gethash(pstr):
+    b = pstr.encode('utf-8')
+    hash = zlib.crc32(b)
+    return hash
+    hash:long = 5381;
+    l = len(pstr)
+    for cx in pstr:
+        hash = ((hash << 5) + hash) + ord(cx)
     return hash
 
 #
@@ -117,27 +134,22 @@ def finfo(f:Path):
     ifile.close()
     return fi
 
-def makeentries(f:Path):
-    log.info("PFILE: %s", f)
-    rpos = psplit(f)
-    ipos = finfo(f)
-    dhash = gethash(rpos[0])
-    fe = set.filent(dhash,ipos[0],rpos[1])
-    ie = set.imgent(ipos[0],ipos[1])
-    return [ rpos, ipos, dhash, fe, ie ]
-
-
+#
+# procsetfile - called by file walker. creates a 'fileent' & 'imgent' and adds to the relevant list
+#
 def procsetfile(f:Path):
     fi = finfo(f)
-    log.info("Processing file %s", fi)
+    #log.debug("Processing file %s", fi)
     fe = cfg.filent(fi.dhash, fi.ihash, fi.name)
     ie = cfg.imgent(fi.ihash, fi.tmb)
     cfg.flist.append(fe)
     cfg.imap[ie.ihash] = ie
 
-
+#
+# file_walker - goes through all files in a directory calling procsetfile or procsetdir
+# depending on it it is a file or a directory. calls itself recursivly for 
+#
 def file_walker(walk):
-    log.info("Walk at: %s" , walk )
     procsetdir(walk)
     
     for item in walk.iterdir():
@@ -146,6 +158,9 @@ def file_walker(walk):
         else:
             procsetfile(item)
 
+#
+# create - creates & saves the image collection
+#
 def create(setl, files):
  
     setp = Path(setl) #standardizePath(setl)
@@ -164,65 +179,78 @@ def create(setl, files):
         log.fatal("files dir %s dosn't exist, exit" , filesp  )
         usage()
 
-    log.info("Create...\n")
+    etime = cfg.Timer()
+    etime.start()
     file_walker(filesp)
-    log.info("Created\n")
+    etime.stop()
+    scantime = etime.elapsed
 
-    set.printstate()
+    etime.reset()
+    etime.start()
     set.save(setp)
+    etime.stop()
+    savetime = etime.elapsed
+
+    log.info("Timers: scan=" +  str(scantime*1000000.0)  + ", save=" +  str(savetime*1000000.0)  )
 
 
-def gethash(pstr):
-    b = pstr.encode('utf-8')
-    hash = zlib.crc32(b)
-    return hash
-    hash:long = 5381;
-    l = len(pstr)
-    for cx in pstr:
-        hash = ((hash << 5) + hash) + ord(cx)
-    return hash
-    
+def search(set1, file):
+
+    etime = cfg.Timer()
+
+    #load set
+    etime.start();
+    set.load(Path(set1))
+    etime.stop()
+    loadtime = etime.elapsed
+
+    # get imgfileinfo for file to be searched
+    f = standardizePath(file)
+    fi = finfo(Path(f))
+
+    # search collection for matching files
+    etime.reset()
+    etime.start()
+    results = set.search(fi)
+    etime.stop()
+    searchtime = etime.elapsed
+
+
+    # print out results
+    if ( len(results) == 0 ):
+        print("No images found")
+        exit(0)
+    for ci in results :
+        fi = set.findfile(ci.img.ihash)
+        if ( fi != 0 ):
+            log.info("Img " + str(ci.img.ihash) + ", cls=" + str(ci.close) + ", file=" + set.findfile(ci.img.ihash).fname)
+        else:
+            log.info("Img " + str(ci.img.ihash) + ", cls=" + str(ci.close) + ", file=?")
+
+    log.info("Timinigs: load=" + str(loadtime*1000000.0) + ", search=" + str(searchtime*1000000.0) )
+
+# - pftt   
 def usage():
     log.info("Usage: pimage.py -c <set> <top> <files> | -s <set> <file>")
     exit(0)
 
-
+#
 # Start Here
+#
 
 setlogging()
 
 if ( len(sys.argv) < 3 ):
     usage()
 
+# check command args to see what to do...
+
+# search - load the specified iimg collection
 if ( sys.argv[1] == "-s" and len(sys.argv) == 4 ):
-    p = standardizePath(sys.argv[2])
-    set.load(Path(sys.argv[2]))
-    set.printstate()
-
-    f = standardizePath(sys.argv[3])
-    fi = finfo(Path(f))
-
-    results = set.search(fi)
-    if ( len(results) == 0 ):
-        print("No images found")
-        exit(0)
-
-    for ci in results :
-        print("res:" , ci.img)
-        fi = set.findfile(ci.img.ihash)
-        if ( fi != 0 ):
-            print("Img " + str(ci.img.ihash) + ", cls=" + str(ci.close) + ", file=" + set.findfile(ci.img.ihash).fname)
-        else:
-            print("Img " + str(ci.img.ihash) + ", cls=" + str(ci.close) + ", file=?")
-
+    search(sys.argv[2], sys.argv[3] )
+# create
 elif ( sys.argv[1] == "-c" and len(sys.argv) == 4 ):
     create(sys.argv[2], sys.argv[3] )
-    log.info("Final state:")
-    #set.printstate()
-    #set.clear()
-    #set.load(Path(sys.argv[2]))
-    #log.info("Readback state:")
-    #set.printstate()
 
 else:
     usage();

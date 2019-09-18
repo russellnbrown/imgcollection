@@ -89,7 +89,7 @@ def save(path:Path):
     ipath = path / "images.bin"
     imgfile = ipath.open(mode="wb+")
     for  i in cfg.imap.values() :
-        log.info("  Img: %s" , i)
+        #log.debug("  Img: %s" , i)
         imgfile.write(i.ihash.to_bytes(8,'little'))
         imgfile.write(i.tmb)
     imgfile.close()

@@ -12,7 +12,7 @@
     <Name>pimage</Name>
     <RootNamespace>pimage</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>-s  setc.db testfiles/5/file_5.png_withtext.png</CommandLineArguments>
+    <CommandLineArguments>-s setc.db testfiles\100\file_1000.jpg_exactcopy.jpg</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <PublishUrl>C:\Sources\img\test\</PublishUrl>
     <IsWindowsApplication>False</IsWindowsApplication>
