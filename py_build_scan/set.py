@@ -13,6 +13,7 @@ log:logging.Logger
 
 log = logging.getLogger("pimage")
 
+threshold=50.0
 
 def dbformat(p:Path):
     s:str = str(p)
@@ -49,7 +50,8 @@ def search(img):
     for k,i in cfg.imap.items() :
         cmp = compare(img.tmb, i.tmb)
         ci = cfg.compareditem(i,cmp)
-        results.append(ci)
+        if ( cmp < threshold ):
+            results.append(ci)
     results.sort(key=getcloseness) 
     return results
 

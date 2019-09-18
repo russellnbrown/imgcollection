@@ -1,7 +1,8 @@
 from typing import Dict, List
 from pathlib import Path
 import struct
-import time
+import math
+from time import perf_counter
 
 tns:int = 16
 tnm:int = tns*tns*3
@@ -61,31 +62,25 @@ imap:Dict[int,imgent] = {}
 # https://www.geeksforgeeks.org/python-how-to-time-the-program/
 class Timer: 
 	
-    def __init__(self, func = time.perf_counter): 
+    def __init__(self): 
         self.elapsed = 0.0
-        self._func = func 
-        self._start = None
+        self.started = 0.0
+        self.end = 0.0
 
     # starting the module 
     def start(self): 
-        if self._start is not None: 
-            raise RuntimeError('Already started') 
-        self._start = self._func() 
+        self.started = perf_counter() 
 
     # stopping the timmer 
     def stop(self): 
-        if self._start is None: 
-            raise RuntimeError('Not started') 
-        end = self._func() 
-        self.elapsed += end - self._start 
-        self._start = None
+        self.end = perf_counter() 
+        self.elapsed = self.end - self.started
 
-    def reset(self): 
-        self.elapsed = 0.0
+    def elapsed_ns(self):
+        return self.elapsed
 
-    def __enter__(self): 
-        self.start() 
-        return self
+    def elapsed_ms(self):
+        ms = self.elapsed*1000.0
+        return int(ms)
 
-    def __exit__(self, *args): 
-        self.stop() 
+

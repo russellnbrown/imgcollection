@@ -6,7 +6,7 @@ import struct
 import logging
 import zlib
 import set
-import datetime
+import time
 from PIL import Image,ImageDraw,ImageFont
 from pathlib import Path,PurePosixPath
 import cfg
@@ -183,15 +183,14 @@ def create(setl, files):
     etime.start()
     file_walker(filesp)
     etime.stop()
-    scantime = etime.elapsed
+    scantime = etime.elapsed_ms()
 
-    etime.reset()
     etime.start()
     set.save(setp)
     etime.stop()
-    savetime = etime.elapsed
+    savetime = etime.elapsed_ms()
 
-    log.info("Timers: scan=" +  str(scantime*1000000.0)  + ", save=" +  str(savetime*1000000.0)  )
+    log.info("Timers: scan=" +  str(scantime)  + ", save=" +  str(savetime)  )
 
 
 def search(set1, file):
@@ -199,21 +198,20 @@ def search(set1, file):
     etime = cfg.Timer()
 
     #load set
-    etime.start();
+    etime.start()
     set.load(Path(set1))
     etime.stop()
-    loadtime = etime.elapsed
+    loadtime = etime.elapsed_ms()
 
     # get imgfileinfo for file to be searched
     f = standardizePath(file)
     fi = finfo(Path(f))
 
     # search collection for matching files
-    etime.reset()
     etime.start()
     results = set.search(fi)
     etime.stop()
-    searchtime = etime.elapsed
+    searchtime = etime.elapsed_ms()
 
 
     # print out results
@@ -227,7 +225,7 @@ def search(set1, file):
         else:
             log.info("Img " + str(ci.img.ihash) + ", cls=" + str(ci.close) + ", file=?")
 
-    log.info("Timinigs: load=" + str(loadtime*1000000.0) + ", search=" + str(searchtime*1000000.0) )
+    log.info("Timinigs: load=" + str(loadtime) + ", search=" + str(searchtime) )
 
 # - pftt   
 def usage():
