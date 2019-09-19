@@ -27,6 +27,9 @@
     <ClCompile Include="c_build_search.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SetSearch.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h">
@@ -48,6 +51,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SetSearch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,8 +1,6 @@
 
 #include "common.h"
 
-Set *set = NULL;
-
 int scan(Set *s, SetItemDir *dir)
 {
 	WIN32_FIND_DATA ff;

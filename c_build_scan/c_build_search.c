@@ -23,19 +23,14 @@ int cleanupFreeImage()
 
 int main(int argc, char* argv[])
 {
-
 	logto("capp.log");
-
 	initFreeImage();
 
-
 	if (argc == 4 && strcmp(argv[1], "-c") == 0)
-	{
 		create(argv[2], argv[3]);
-	}
-
+	else if (argc == 4 && strcmp(argv[1], "-s") == 0)
+		search(argv[2], argv[3]);
 
 	cleanupFreeImage();
-
 	return 0;
 }
