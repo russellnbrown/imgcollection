@@ -4,7 +4,7 @@
 typedef struct _SetItemDir
 {
 	char *path;
-	struct _dinfo *next;
+	struct _SetItemDir *next;
 }SetItemDir;
 
 

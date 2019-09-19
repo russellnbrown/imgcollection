@@ -3,20 +3,6 @@
 
 Set *set = NULL;
 
-int LoadImageFile(char *path)
-{
-	FIBITMAP *bitmap = FreeImage_Load(FIF_JPEG, "nhk295m.jpg", JPEG_DEFAULT);
-	if (bitmap)
-	{
-		int x = FreeImage_GetHeight(bitmap);
-		int y = FreeImage_GetWidth(bitmap);
-		printf("Loaded %s OK %d x %d\n", path, x, y);
-
-		FreeImage_Unload(bitmap);
-	}	else		printf("Problem loading %s\n", path);
-
-}
-
 int scan(Set *s, SetItemDir *dir)
 {
 	WIN32_FIND_DATA ff;
@@ -62,13 +48,14 @@ int scan(Set *s, SetItemDir *dir)
 		next = FindNextFileA(fh, &ff);
 	} while (next != 0);
 	FindClose(fh);
+	return 0;
 
 }
-//LoadImageFile("nhk295m.jpg");
 
 
 void create(char *set, char *dir)
 {
+
 	Set *s = createSet();
 
 	logger(Info,"SetBuilder, set is %s, dirs are %s\n", set, dir);

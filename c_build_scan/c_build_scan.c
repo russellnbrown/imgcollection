@@ -6,7 +6,7 @@
 int initFreeImage()
 {
 	FreeImage_Initialise(FALSE);
-	char *v = FreeImage_GetVersion();
+	const char *v = FreeImage_GetVersion();
 	printf("FreeImage version is %s\n", v);
 	return 0;
 }
@@ -19,7 +19,7 @@ int cleanupFreeImage()
 
 
 
-int main(int argc, char *argv[])
+int __cdecl main(int argc, char *argv[])
 {
 
 	logto("capp.log");

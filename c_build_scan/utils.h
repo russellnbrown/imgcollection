@@ -2,6 +2,7 @@
 
 #include <stdarg.h>
 
+void logto(char* fname);
 enum LogLevel { Debug, Info, Warn, Error, Fatal };
 void oops(const char *message);
 void logger(enum LogLevel ll, char *fmt, ...);

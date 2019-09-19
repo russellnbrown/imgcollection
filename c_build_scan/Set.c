@@ -49,7 +49,7 @@ void relativeTo(Set *set, char *out, char *dir)
 	if (strcmp(set->top, dir) == 0) // make sure we can be made relative
 	{
 		char *bit = dir + strlen(set->top);
-		if (bit == '/')
+		if (*bit == '/')
 			strcpy(out, bit);
 		else
 		{
