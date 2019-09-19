@@ -1,5 +1,5 @@
 
-#include "c_build_scan.h"
+#include "common.h"
 
 Set *set = NULL;
 
