@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2026
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29306.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "pimage", "pimage.pyproj", "{E1E19F0F-C2B6-4DFB-8478-BEAB97F7F041}"
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "py_viewer", "..\py_viewer\py_viewer.pyproj", "{E1A1A9DA-6ABA-41E8-8CB2-E3DBCD082873}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +15,8 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{E1E19F0F-C2B6-4DFB-8478-BEAB97F7F041}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E1E19F0F-C2B6-4DFB-8478-BEAB97F7F041}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1A1A9DA-6ABA-41E8-8CB2-E3DBCD082873}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1A1A9DA-6ABA-41E8-8CB2-E3DBCD082873}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
