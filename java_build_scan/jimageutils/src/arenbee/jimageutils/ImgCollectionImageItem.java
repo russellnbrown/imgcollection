@@ -71,37 +71,16 @@ public class ImgCollectionImageItem
             // ** this is a 'simple' value difference. there are better ways which
             // are explored in the cimagex c++ code **
             double td = 0.0;
-            for (int tix = 0; tix < 16 * 16 * 3; tix+=3)
-            {
-		int sr = thumb[tix] & 0xFF;
-		int cr = ji.thumb[tix] & 0xFF;
-		int sg = thumb[tix+1] & 0xFF;
-		int cg = ji.thumb[tix+1] & 0xFF;
-		int sb = thumb[tix+2] & 0xFF;
-		int cb = ji.thumb[tix+2] & 0xFF;
-                  int d = (abs(sr - cr) + abs(sg - cg) + abs(sb - cb)); 
-                  td += d; 
-                  
-                 /* ss.append(",p,");
-                  ss.append(tix);
-                  ss.append(",s,");
-                  ss.append(sr);
-                  ss.append(",");
-                  ss.append(sg);
-                  ss.append(",");
-                  ss.append(sb);
-                  ss.append(",c,");
-                  ss.append(cr);
-                  ss.append(",");
-                  ss.append(cg);
-                  ss.append(",");
-                  ss.append(cb);
-                  ss.append(",d,");
-                  ss.append(d);
-                  ss.append(",td,");
-		ss.append(td);*/
+            for (int tix = 0; tix < 16 * 16 * 3; tix += 3) {
+                int sr = thumb[tix] & 0xFF;
+                int cr = ji.thumb[tix] & 0xFF;
+                int sg = thumb[tix + 1] & 0xFF;
+                int cg = ji.thumb[tix + 1] & 0xFF;
+                int sb = thumb[tix + 2] & 0xFF;
+                int cb = ji.thumb[tix + 2] & 0xFF;
+                int d = (abs(sr - cr) + abs(sg - cg) + abs(sb - cb));
+                td += d;
 
-                  
             }
             
    
