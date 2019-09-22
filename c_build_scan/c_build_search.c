@@ -19,18 +19,29 @@ int cleanupFreeImage()
 	return 0;
 }
 
-
+void usage()
+{
+	printf("usage: c_build_search [-c <img collection> <root dir>|-s <img collection> <file to find>\n");
+	return;
+}
 
 int main(int argc, char* argv[])
 {
-	logto("capp.log");
+	// start logging
+	logto("c_build_search.log");
+
+	// inti freeimage lib
 	initFreeImage();
 
+	// check args to see what to do -c create, -s srarch
 	if (argc == 4 && strcmp(argv[1], "-c") == 0)
 		create(argv[2], argv[3]);
 	else if (argc == 4 && strcmp(argv[1], "-s") == 0)
 		search(argv[2], argv[3]);
+	else
+		usage();
 
+	// clean up
 	cleanupFreeImage();
 	return 0;
 }

@@ -9,7 +9,7 @@ int scan(Set *s, SetItemDir *dir)
 
 	char topd[MAX_PATH];
 	topd[0] = 0;
-	fullPath(s, topd, dir->path);
+	set_fullPath(s, topd, dir->path);
 
 	logger(Info,"Scan(1a) \"%s\" ", topd);
 	strcat(topd, "*");
@@ -32,9 +32,9 @@ int scan(Set *s, SetItemDir *dir)
 		{
 			if (strcmp(ff.cFileName, ".") != 0 && strcmp(ff.cFileName, "..") != 0)
 			{
-				fullPath(s, topd, ff.cFileName);
+				set_fullPath(s, topd, ff.cFileName);
 				logger(Info, "Scan(5) isDir, move up %s\n", topd);
-				SetItemDir *d = addDir(s, (char*)topd,TRUE);
+				SetItemDir *d = set_addDir(s, (char*)topd,TRUE);
 				scan(s, d);
 			}
 		}
@@ -53,12 +53,21 @@ int scan(Set *s, SetItemDir *dir)
 
 void create(char *set, char *dir)
 {
+	char pwd[MAX_PATH];
+	char spwd[MAX_PATH];
 
-	Set *s = createSet();
+	_getcwd(pwd, MAX_PATH);
+	strcat_s(pwd, MAX_PATH, "/");
+	strcat_s(pwd, MAX_PATH, dir);
+	standardizePath(pwd, spwd, MAX_PATH);
+
+	Set* s = set_create();
+	set_setTop(s, spwd);
 
 	logger(Info,"SetBuilder, set is %s, dirs are %s\n", set, dir);
-	setTop(s, dir);
-	SetItemDir *d = addDir(s, "C:\\TestEnvironments\\scan\\files",TRUE);
+	
+	// add the top dir to the set & then scan recursivly from there
+	SetItemDir *d = set_addDir(s, dir,TRUE);
 	scan(s,d);
 }
 

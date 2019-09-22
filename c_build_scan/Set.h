@@ -9,10 +9,10 @@ typedef struct _Set
 	SetItemImage	*images;
 }Set;
 
-Set			*createSet();
-SetItemDir	*addDir(Set *s, char *path, BOOL rel);
-void		setTop(Set *s, char *_top);
-void		relativeTo(Set *set, char *out, char *dir);		// make path relevant to top with a leading /
-void		fullPath(Set *set, char *out, char *rel);	// make path full by prepending top
+Set			*set_create();
+SetItemDir	*set_addDir(Set *s, char *path, BOOL rel);
+void		set_setTop(Set *s, char *_top);
+void		set_relativeTo(Set *set, char *out, char *dir);		// make path relevant to top with a leading /
+void		set_fullPath(Set *set, char *out, char *rel);	// make path full by prepending top
 
 

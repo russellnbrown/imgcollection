@@ -2,7 +2,7 @@
 #include "common.h"
 
 
-Set *createSet()
+Set *set_create()
 {
 	Set *s = malloc(sizeof(Set));
 	s->dirs = NULL;
@@ -13,16 +13,16 @@ Set *createSet()
 
 
 
-SetItemDir *addDir(Set *s, char *cdir, BOOL rel)
+SetItemDir *set_addDir(Set *s, char *cdir, BOOL rel)
 {
 	SetItemDir *dir = malloc(sizeof(SetItemDir));
 	char std[MAX_PATH];
 	char stdt[MAX_PATH];
 
-	standardizePath(std, cdir);
+	standardizePath(std, cdir, MAX_PATH);
 	if (!rel)
 	{
-		relativeTo(s, stdt, std);
+		set_relativeTo(s, stdt, std);
 		dir->path = _strdup(stdt);
 	}
 	else
@@ -32,18 +32,15 @@ SetItemDir *addDir(Set *s, char *cdir, BOOL rel)
 	return dir;
 }
 
-void setTop(Set *s, char *_top) 
+void set_setTop(Set *s, char *_top) 
 { 
-	char std[MAX_PATH];
-	standardizePath(std,_top);
-	s->top = _strdup(std);
-	if (s->top[strlen(s->top) - 1] == '/') // make sure to trailing '/'
-		s->top[strlen(s->top) - 1] = 0;
+
+	s->top = _strdup(_top);
 
 }
 
 
-void relativeTo(Set *set, char *out, char *dir)
+void set_relativeTo(Set *set, char *out, char *dir)
 {
 	out[0] = 0;
 	if (strcmp(set->top, dir) == 0) // make sure we can be made relative
@@ -61,7 +58,7 @@ void relativeTo(Set *set, char *out, char *dir)
 		logger(Fatal, "Dir %s is not under top %s", dir, set->top);
 }
 
-void fullPath(Set *set, char *out, char *rel)
+void set_fullPath(Set *set, char *out, char *rel)
 {
 	if ( rel[0] == '/' )
 		sprintf(out, "%s%s", set->top, rel);

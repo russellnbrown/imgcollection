@@ -60,21 +60,35 @@ void oops(const char *message)
 }
 
 
-void standardizePath(char *nxt, char *dir)
+void standardizePath(char *dir, char *out, int maxLen)
 {
+	// check enough space for return, simple test as
+	// nothing we will do will increase its length
+	if (strlen(dir) > maxLen)
+		oops("Not enough space for standardizePath");
+
 	char *pstart = dir;
 	char *ppos = strstr(dir, "\\");
-	*nxt = 0;
+	*out = 0;
 	while (ppos)
 	{
-		strncat(nxt, pstart, ppos - pstart);
-		strncat(nxt, "/", 1);
+		strncat(out, pstart, ppos - pstart);
+		strncat(out, "/", 1);
 		pstart = ppos + 1;
 		ppos = strstr(pstart, "\\");
 	}
-	strcat(nxt, pstart);
+	strcat(out, pstart);
+	int last = strlen(out)-1;
+	if (out[last] == '/')
+		out[last] = 0;
 }
 
+char* getcwd()
+{
+	char pwd[MAX_PATH];
+	int ok = GetCurrentDirectory(MAX_PATH, pwd);
+	return _strdup(pwd);
+}
 
 //#include <Python.h>
 
