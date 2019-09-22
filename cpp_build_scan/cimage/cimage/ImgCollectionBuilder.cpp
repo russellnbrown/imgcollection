@@ -185,7 +185,7 @@ void ImgCollectionBuilder::Find(fs::path search)
 	for (list<SearchResult*>::iterator r = results.begin(); r != results.end() && findTop-- > 0; r++, rank++)
 	{
 		SearchResult *sr = *r;
-		logger::raw("   Img:" + to_string(sr->i->crc) + ", Closeness: " + to_string(sr->closeness) + ", Files:-");
+		logger::raw("   Img:" + to_string(sr->i->crc) + ", Closeness: " + to_string(sr->closeness/10.0) + ", Files:-");
 		for (list<ImgCollectionFileItem*>::iterator it = ic->files.begin(); it != ic->files.end(); ++it)
 		{
 			ImgCollectionFileItem *f = *it;

@@ -153,31 +153,112 @@ bool ImgUtils::GetImageInfo(ImageInfo *ii)
 }
 
 
-double ImgUtils::GetCloseness(int8_t *i1, int8_t *i2)// , stringstream *ss)
+
+double ImgUtils::GetCloseness(int8_t* i1, int8_t* i2, SearchType scanType)
 {
+	float rd = 0.0;
+	float gd = 0.0;
+	float bd = 0.0;
+	double td = 0.0;
 
-	int td = 0;
+	if (scanType == Assembler)
+		return GetAsmCloseness(i1, i2);
 
 
 
-	for (int x = 0; x < TNMEM; x+=3 )
+	for (int tix = 0; tix < TNMEM; tix+=3)
 	{
-		int sr = (int)(uint8_t)i1[x];
-		int cr = (int)(uint8_t)i2[x];
-		int sg = (int)(uint8_t)i1[x+1];
-		int cg = (int)(uint8_t)i2[x+1];
-		int sb = (int)(uint8_t)i1[x+2];
-		int cb = (int)(uint8_t)i2[x+2];
-		int d = (abs(sr - cr) + abs(sg - cg) + abs(sb - cb));
-		td += d;
-		/*if (ss)
+		double srx = i1[tix];
+		double crx = i2[tix];
+		double sgx = i1[tix+1];
+		double cgx = i2[tix+1];
+		double sbx = i1[tix+2];
+		double cbx = i2[tix+2];
+
+		switch (scanType)
 		{
-			*ss << ",p," << x << ",s," << sr << "," << sg << "," << sb << ",c," << cr << "," << cg << "," << cb << ",d," << d << ",td,"
-				<< td;
-		}*/
+			case Mono:
+			{
+				double lums = ((double)srx * 0.21) + ((double)sgx * 0.72) + ((double)sbx * 0.07);
+				double lumc = ((double)crx * 0.21) + ((double)cgx * 0.72) + ((double)cbx * 0.07);
+				td += abs(lums - lumc) / 255.0;
+			}
+			break;
+			case Simple:
+			{
+				int tx = abs(sbx - cbx) + abs(sgx - cgx) + abs(srx - crx);
+				td += (double)tx;
+			}
+			break;
+			case Luma:
+			{
+				double dxr = abs(srx - crx) * 0.21;
+				double dxg = abs(sgx - cgx) * 0.72;
+				double dxb = abs(sbx - cbx) * 0.07;
+				double tx = (dxr + dxg + dxb);
+				td += tx;
+			}
+		}
 	}
-	return (double)td;
-	
+
+	return td;
+
 }
 
 
+double ImgUtils::GetAsmCloseness(int8_t* i1, int8_t* i2)
+{
+	uint32_t diff = 0;
+#ifdef WIN64
+	logger::error("assembler option not supported on 64 bit arch");
+	return 0;
+#else
+	char* s = (char*)i1;
+	char* p = (char*)i2;
+
+	_asm
+	{
+		// move start pointers of thumbnails to edi,esi
+		mov edi, i1
+		mov esi, i2
+		// edx will be a counter for number of pixels to compare
+		mov edx, TNSIZE* TNSIZE * 3
+		// eax will hold total difference for all pixels
+		mov eax, 0
+
+		label:
+
+			// copy pixel data from thumbs to ecx,ebx
+			mov ecx, [edi]
+			mov ebx, [esi]
+
+			// mask out anybits > 255
+			and ecx, 0xff
+			and ebx, 0xff
+
+			// compare the two numbers, if needed swap them so the
+			// bigger number is in eax
+			cmp ecx, ebx
+			jge noex
+			xchg  ecx, ebx
+			noex :
+
+			// subtract to get the difference
+			sub ecx, ebx
+			// add diff to total
+			add eax, ecx
+			// inc the pixel pointers
+			inc edi
+			inc esi
+			// dec pixel count and process next if needed
+			dec edx
+			cmp edx, 0
+			jnz label
+
+			// finished for thumbs, copy final difference to 'diff'
+			mov diff, eax
+	}
+	return (double)diff;
+#endif
+
+}

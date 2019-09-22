@@ -17,6 +17,7 @@
 
 #pragma once
 
+enum SearchType { Luma, Mono, Simple, Assembler };
 
 // ImageInfo holds information about an image file 
 class ImageInfo
@@ -72,7 +73,8 @@ public:
 	static void Replace(string& source, string const& find, string const& replace);
 													// replace strings in a string with a string
 	static bool GetImageInfo(ImageInfo *ii);		// get other image info ( crc & thumb ) of a file in an image info
-	static double GetCloseness(int8_t *i1, int8_t *i2);// , stringstream *ss);
-													// get a closeness betreen two rgb thumbnails
+	static double GetCloseness(int8_t* i1, int8_t* i2, SearchType srch=Simple);// get a closeness between two rgb thumbnails
+	static double GetAsmCloseness(int8_t* i1, int8_t* i2);// get a closeness between two rgb thumbnails using assembler
+	
 	static string tolower(string s) { transform(s.begin(), s.end(), s.begin(), ::tolower); return s; }
 };
