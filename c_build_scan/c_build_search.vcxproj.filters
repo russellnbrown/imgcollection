@@ -30,6 +30,9 @@
     <ClCompile Include="SetSearch.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ImgUtils.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h">
@@ -54,6 +57,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SetSearch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImgUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

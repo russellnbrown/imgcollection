@@ -3,7 +3,8 @@
 
 typedef struct _SetItemFile
 {
-	char *name;
+	char	*name;
+	uint32_t dhash;
 	struct  _SetItemFile *next;
 }SetItemFile;
 

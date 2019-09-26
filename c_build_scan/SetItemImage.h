@@ -3,7 +3,8 @@
 
 typedef struct _SetItemImage
 {
-	long	csc;
+	uint32_t	ihash;
+	uint8_t*	tmb;
 	struct  _SetItemImage *next;
 }SetItemImage;
 

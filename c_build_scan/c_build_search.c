@@ -25,13 +25,16 @@ void usage()
 	return;
 }
 
+
 int main(int argc, char* argv[])
 {
+
 	// start logging
 	logto("c_build_search.log");
 
 	// inti freeimage lib
 	initFreeImage();
+
 
 	// check args to see what to do -c create, -s srarch
 	if (argc == 4 && strcmp(argv[1], "-c") == 0)
