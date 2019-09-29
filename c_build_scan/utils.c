@@ -198,6 +198,12 @@ SplitPath* util_splitPath(const char* p)
 }
 #endif
 
+void util_pathInit(char* path)
+{
+	memset(path, 0, MAX_PATH);
+}
+
+
 char *util_getExtension(const char* filename) // stacko
 {
     const char *dot = strrchr(filename, '.');

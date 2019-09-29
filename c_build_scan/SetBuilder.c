@@ -9,10 +9,10 @@ int processImageFile(const char* ipath)
 
 	uint32_t dhash = 0;
 	util_crc32(sp->fullfile, strlen(sp->fullfile), &dhash);
-	SetItemFile* f = set_addFile(s, dhash, sp->fullfile);
 	ImageInfo* ii = iutil_getImageInfo(s, ipath);
 	if (ii)
 	{
+		SetItemFile* f = set_addFile(s, dhash, ii->crc, sp->fullfile);
 		SetItemImage* sii = set_addImage(s, ii);
 	}
 
@@ -23,7 +23,8 @@ int processImageFile(const char* ipath)
 
 int processDirectory(const char* dpath)
 {
-	char* rel = set_relativeTo(s, dpath);
+	char rel[MAX_PATH];
+	set_relativeTo(s, dpath, rel);
 	uint32_t dhash = 0;
 	util_crc32(rel, strlen(rel), &dhash);
 	SetItemDir* d = set_addDir(s, rel, dhash);

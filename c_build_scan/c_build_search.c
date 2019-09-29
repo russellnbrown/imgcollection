@@ -16,7 +16,7 @@
  */
 
 //
-// c_build_search.cpp : The main function and freeimage initialization
+// c_build_search.c : The main function and freeimage initialization
 //
 
 #include "common.h"

@@ -16,14 +16,17 @@
  */
 
  //
- // ImageUtils.h - image utility stuff
+ // ImgUtils.c : utility menthods related to image processing
  //
 
 #include "common.h"
 
+//
+// iutil_makeImgInfo - allocates & initializes memory for an ImageInfo struct
+//
 ImageInfo* iutil_makeImgInfo()
 {
-	ImageInfo *ii = malloc(sizeof(ImageInfo));
+	ImageInfo* ii = malloc(sizeof(ImageInfo));
 	if (!ii)
 		return NULL;
 	ii->thumb = 0;
@@ -35,20 +38,29 @@ ImageInfo* iutil_makeImgInfo()
 	return ii;
 }
 
-void iutil_freeImageInfo(ImageInfo *ii)
+//
+// iutil_freeImageInfo - free memory used ImageInfo struct including allocated arrays
+//
+void iutil_freeImageInfo(ImageInfo* ii)
 {
 	free(ii->thumb);
 	free(ii->bytes);
 	free(ii);
 }
 
-void toStr(ImageInfo* ii, char *buf, int maxlen)
+//
+// toStr - provides test string of contents
+//
+void toStr(ImageInfo* ii, char* buf, int maxlen)
 {
 	snprintf(buf, maxlen, "ImageInfo{name=%s crc=%u}", ii->filepart, ii->crc);
 }
 
-
-ImageInfo *iutil_getImageInfo(Set *s, const char* rpath)
+//
+// iutil_getImageInfo - gets information about an image ( including thumbnail ) and
+// return an ImageInfo structure 
+//
+ImageInfo* iutil_getImageInfo(Set* s, const char* rpath)
 {
 	FIBITMAP* check = 0;
 	FIBITMAP* rescaled = 0;
@@ -57,93 +69,108 @@ ImageInfo *iutil_getImageInfo(Set *s, const char* rpath)
 	ImageInfo* ii = NULL;
 	char path[MAX_PATH];
 
-
+	// make sure path looks standard
 	util_standardizePath(path, rpath);
 
-	printf("%s\n", path);
-
-	if (  !util_isImageFile(path) )
+	// check it is an image file, else quit
+	if (!util_isImageFile(path))
 		return NULL;
 
+	// split path into constituent parts
 	SplitPath* sp = util_splitPath(path);
 	char rp[MAX_PATH];
-	rp[0] = 0;
+	util_pathInit(rp);
 	strcat(rp, sp->drv);
 	strcat(rp, sp->dir);
+	util_freeSplitPath(sp);
 
-	char* relPath = set_relativeTo(s, rp);
-	
+	// get the path relative to set top
+	char relPath[MAX_PATH];
+	set_relativeTo(s, rp, relPath);
 
+	// open the image file
 	FILE* ifs = fopen(path, "rb");
+
+	// find out its size 
 	fseek(ifs, 0, SEEK_END);
 	long len = ftell(ifs);
 	fseek(ifs, 0, SEEK_SET);
 
+	// create ImageInfo structure and allocate space for thumbnail & files bytes
 	ii = iutil_makeImgInfo();
 	ii->size = len;
 	ii->bytes = malloc(ii->size);
 	ii->thumb = malloc(TNSMEM);
 	if (!ii->bytes || !ii->thumb)
 	{
-		logger(Fatal,"ran out of memory");
-		return NULL;
+		logger(Fatal, "ran out of memory");
 	}
+
+	// read file bytes into imageinfo and close file
 	size_t br = 0;
 	br = fread(ii->bytes, 1, ii->size, ifs);
 	fclose(ifs);
-	
-	
+
+	// now get the files thumbnail, start by opening the image from a freeimage
+	// memory buffer using the file bytes we have in imageinfo rather than the 
+	// file itself
 	FIMEMORY* hmem = FreeImage_OpenMemory((BYTE*)ii->bytes, ii->size);
 	fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
+
+	// read image
 	check = FreeImage_LoadFromMemory(fif, hmem, 0);
-	//FREE_IMAGE_TYPE t = FreeImage_GetImageType(check);
+
+	// to ensure thumbnail is consistent with other languages and is stored
+	// top down, we need to flip it
 	FreeImage_FlipVertical(check);
+
+	// resize to thumb size, free original images and make sure it it 24 bits (RGB) 
+	// per pixel
 	rescaled = FreeImage_Rescale(check, 16, 16, FILTER_BOX);
 	FreeImage_Unload(check);
 	tm = FreeImage_ConvertTo24Bits(rescaled);
 	FreeImage_Unload(rescaled);
 
+	// make sure it is as expected
 	int bbp = FreeImage_GetBPP(tm);
 	int sw = FreeImage_GetPitch(tm);
 	int w = FreeImage_GetWidth(tm);
-
-	if (tm)
+	if (tm && bbp == 24 || sw == (TNSSIZE * 3) || w == TNSSIZE)
 	{
+		// get hashes for directory path & files bytes
 		util_crc32(relPath, strlen(relPath), &ii->dirhash);
 		util_crc32(ii->bytes, ii->size, &ii->crc);
 
+		// now read the scanlins and store pixels in imageinfo thumbnail structure
 		int wb = 0;
 		int tb = 0;
-
-		//logger(Info, "Thumbnail is:-");
 		for (int r = 0; r < TNSSIZE; r++)
 		{
-			//logger(Raw, "Line %d", r);
 			int8_t* sl = FreeImage_GetScanLine(tm, r);
 			tb = 0;
 			char buf[100];
 			for (int c = 0; c < TNSSIZE; c++)
 			{
-				//snprintf(buf, 100, "%d %d %d %d %d,", r, c, sl[tb + 0], sl[tb + 1], sl[tb + 2]);
-				//logger(Info, "%s", buf);
 				ii->thumb[wb++] = sl[tb + 2];
 				ii->thumb[wb++] = sl[tb + 1];
 				ii->thumb[wb++] = sl[tb + 0];
 				tb += 3;
 			}
-			//logger(Raw, "\n");
 		}
+
+		// free image
 		FreeImage_Unload(tm);
 	}
 	else
 	{
+		// failed to read, free image info
 		iutil_freeImageInfo(ii);
 		ii = 0;
 	}
 
-	util_freeSplitPath(sp);
+	// free freeimage memory buffer	
 	FreeImage_CloseMemory(hmem);
-	
+
 	return ii;
 
 }

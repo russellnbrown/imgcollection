@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//
-// Set.h - holds structures that form the 'ImageCollection'
-//
+ //
+ // Set.h - holds structures that form the 'ImageCollection'
+ //
 
 typedef struct _SetItemImage
 {
@@ -37,15 +37,16 @@ typedef struct _SetItemFile
 {
 	char* name;
 	uint32_t dhash;
+	uint32_t ihash;
 	struct  _SetItemFile* next;
 }SetItemFile;
 
 typedef struct _Set
 {
-	char*			top;
-	SetItemDir		*dirs;
-	SetItemFile		*files;
-	SetItemImage	*images;
+	char* top;
+	SetItemDir* dirs;
+	SetItemFile* files;
+	SetItemImage* images;
 }Set;
 
 typedef struct _ImageSearchResult
@@ -60,19 +61,19 @@ typedef struct _ImageInfo
 	int8_t* thumb;		// its thumbnail
 	int8_t* bytes;		// file bytes
 	uint32_t crc;		// crc of bytes
-	char *de;			// path of file
+	char* de;			// path of file
 	uint32_t dirhash;	// hash to dir
 	char* filepart;		// file name
 }ImageInfo;
 
-Set			*set_create();
-SetItemDir	*set_addDir(Set *s, const char* path, uint32_t dhash);
-SetItemFile* set_addFile(Set* s, uint32_t dhash, const char* name);
-SetItemImage* set_addImage(Set* s, ImageInfo *ii);
-void		set_setTop(Set *s, const char* _top);
-char*		set_relativeTo(Set *set, const char* dir); // make path relevant to top with a leading /
-char*		set_fullPath(Set *set, const char* rel);	// make path full by prepending top
-void		set_dump(Set* set);				    // print it out
-void		set_save(Set* set, const char* dir);       // print it out
+Set*			set_create();
+SetItemDir*		set_addDir(Set* s, const char* path, uint32_t dhash);
+SetItemFile*	set_addFile(Set* s, uint32_t dhash, uint32_t ihash, const char* name);
+SetItemImage*	set_addImage(Set* s, ImageInfo* ii);
+void			set_setTop(Set* s, const char* _top);
+void			set_relativeTo(Set* set, const char* dir, char* out);
+void			set_fullPath(Set* set, const char* rel, char* out);	
+void			set_dump(Set* set);
+void			set_save(Set* set, const char* dir);
 
 
