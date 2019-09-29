@@ -56,7 +56,7 @@ SetItemImage* set_addImage(Set* s, ImageInfo* ii)
 		fil->ihash = ii->crc;
 		fil->tmb = malloc(TNSMEM);
 		if ( fil->tmb )
-			memcpy(fil->tmb, ii->bytes, TNSMEM);
+			memcpy(fil->tmb, ii->thumb, TNSMEM);
 		fil->next = s->images;
 		s->images = fil;
 	}
@@ -79,7 +79,7 @@ char *set_relativeTo(Set *set, const char* dir)
 
 	if (strncmp(set->top, dir, strlen(set->top) ) == 0) // make sure we can be made relative
 	{
-		char *bit = dir + strlen(set->top);
+		char *bit = (char*)dir + strlen(set->top);
 		if (*bit == '/')
 			strcpy(out, bit);
 		else
@@ -141,6 +141,8 @@ void set_save(Set* s, const char* path)
 	dirfile[0] = 0;
 	filefile[0] = 0;
 	imgfile[0] = 0;
+
+	logger(Info, "Saving to path %s", path);
 
 	sprintf(dirfile, "%s/%s", path, "dirs.txt");
 	sprintf(filefile, "%s/%s", path, "files.txt");

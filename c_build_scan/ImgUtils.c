@@ -95,21 +95,23 @@ ImageInfo *iutil_getImageInfo(Set *s, const char* rpath)
 		int wb = 0;
 		int tb = 0;
 
-		logger(Info, "Thumbnail is:-");
+		//logger(Info, "Thumbnail is:-");
 		for (int r = 0; r < TNSSIZE; r++)
 		{
-			logger(Raw, "Line %d", r);
+			//logger(Raw, "Line %d", r);
 			int8_t* sl = FreeImage_GetScanLine(tm, r);
 			tb = 0;
+			char buf[100];
 			for (int c = 0; c < TNSSIZE; c++)
 			{
-				logger(Raw, "(%u %u %u)", sl[tb + 2]&0xff, sl[tb + 2]&0xff, sl[tb + 2]&0xff);
+				//snprintf(buf, 100, "%d %d %d %d %d,", r, c, sl[tb + 0], sl[tb + 1], sl[tb + 2]);
+				//logger(Info, "%s", buf);
 				ii->thumb[wb++] = sl[tb + 2];
 				ii->thumb[wb++] = sl[tb + 1];
 				ii->thumb[wb++] = sl[tb + 0];
 				tb += 3;
 			}
-			logger(Raw, "\n");
+			//logger(Raw, "\n");
 		}
 		FreeImage_Unload(tm);
 	}

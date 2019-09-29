@@ -103,7 +103,7 @@ void util_absPath(char* out, const char* in)
 #ifdef WIN32
 	_fullpath(out, in, MAX_PATH);
 #else
-	realpath(dir, apath);
+	realpath(in, out);
 #endif
 }
 

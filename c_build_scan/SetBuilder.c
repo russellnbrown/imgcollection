@@ -95,7 +95,7 @@ int winscan(const char* thisdir)
 
 int print_entry(const char *item, const struct stat *info, const int typeflag, struct FTW *pathinfo)
 {
-  PATH filepath = util_makePath();
+  char filepath[MAX_PATH];
   strncpy(filepath, item, MAX_PATH);
   
     if (typeflag == FTW_F)
@@ -114,7 +114,7 @@ int print_entry(const char *item, const struct stat *info, const int typeflag, s
         logger(Info, "DIR %s", filepath);
     }
 
-  util_freePath(filepath);
+ 
     return 0;
 }
 
@@ -156,6 +156,9 @@ void create(char *set, char *dir)
 
     if (result != 0)
         logger(Fatal, "Scan failed %d", result);
+
+	set_dump(s);
+	set_save(s, set);
               
 }
 
