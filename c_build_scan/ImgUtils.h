@@ -3,4 +3,4 @@
 
 
 ImageInfo* iutil_makeImgInfo();
-ImageInfo* iutil_getImageInfo(Set* s, PATH path);
+ImageInfo* iutil_getImageInfo(Set* s, const char* path);

@@ -1,80 +1,18 @@
 
 #include "common.h"
 
-static FILE *logfile = NULL;
-
-void logto(char *fname)
-{
-	logfile = fopen(fname, "w");
-}
 
 
 
-void logger(enum LogLevel ll, char *fmt, ...)
-{
-	va_list argp;
-	va_start(argp, fmt);
-
-
-	char *lvl=0;
-	switch (ll)
-	{
-	case Debug: lvl = "-D-"; break;
-	case Info: lvl = "-I-"; break;
-	case Warn: lvl = "-W-"; break;
-	case Error: lvl = "-E-"; break;
-	case Fatal: lvl = "-F-"; break;
-	case Raw: lvl = ""; break;
-	}
-
-	char emsg[1024];
-	_vsnprintf(emsg,sizeof(emsg), fmt, argp);
-
-	if ( ll == Raw )
-		printf("%s" , emsg);
-	else
-		printf("%s : %s\n", lvl, emsg);
-
-	if (logfile)
-	{
-		if ( ll == Raw )
-			fprintf(logfile, "%s", emsg);
-		else
-			fprintf(logfile, "%s : %s\n", lvl, emsg);
-		fflush(logfile);
-	}
-	va_end(argp);
-
-}
-
-void oops(const char *message)
-{
-	static char buf[1000]; // reserve space incase we ran out of it
-
-  snprintf(buf, 1000, "%s, errno=%d", message, errno);
-  printf("%s\n", buf); 
-  exit(-1);
-}
-
-PATH makepath()
-{
-  return malloc(MAX_PATH);
-}
-
-void freepath(PATH p)
-{
-  free(p);
-}
-
-void util_standardizePath(PATH out, const char *tocheck)
+void util_standardizePath(char* out, const char* tocheck)
 {
 	// check enough space for return, simple test as
 	// nothing we will do will increase its length
 	if (strlen(tocheck) > MAX_PATH)
-		oops("Not enough space for standardizePath");
+		logger(Fatal, "Not enough space for standardizePath");
 
-	char *pstart = (char*)tocheck;
-	char *ppos = strstr(tocheck, "\\");
+	char* pstart = (char*)tocheck;
+	char* ppos = strstr(tocheck, "\\");
 	*out = 0;
 	while (ppos)
 	{
@@ -84,29 +22,13 @@ void util_standardizePath(PATH out, const char *tocheck)
 		ppos = strstr(pstart, "\\");
 	}
 	strcat(out, pstart);
-	int last = strlen(out)-1;
+	int last = strlen(out) - 1;
 	if (out[last] == '/')
 		out[last] = 0;
 }
 
-PATH util_getcd()
-{
-	char *pwd = makepath();
-	getcwd(pwd,MAX_PATH);
-	return pwd;
-}
 
-void util_pathAppend(PATH path, const char* toAppend)
-{
-	strcat_s(path, MAX_PATH, toAppend);
-}
 
-PATH util_copyPath(PATH p)
-{
-	PATH out = util_makePath();
-	memcpy(out, p, MAX_PATH + 1);
-	return out;
-}
 
 /* Simple public domain implementation of the standard CRC32 checksum.
  * Outputs the checksum for each file given as a command line argument.
@@ -130,13 +52,19 @@ void util_crc32(const void* data, size_t n_bytes, uint32_t* crc) {
 		* crc = table[(uint8_t)* crc ^ ((uint8_t*)data)[i]] ^ *crc >> 8;
 }
 
-BOOL util_directoryExists(PATH szPath)
+BOOL util_directoryExists(const char* path)
 {
-	DWORD dwAttrib = GetFileAttributes(szPath);
-	return (dwAttrib != INVALID_FILE_ATTRIBUTES && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+	struct stat buf;
+	int result;
+	result = stat(path, &buf);
+	if (result == 0)
+	{
+		return buf.st_mode&S_IFDIR;
+	}
+	return FALSE;
 }
 
-BOOL util_fileExists(PATH path)
+BOOL util_fileExists(const char* path)
 {
 	struct stat buf;
 	int result;
@@ -145,20 +73,107 @@ BOOL util_fileExists(PATH path)
 	return result == 0;
 }
 
-BOOL util_isImageFile(PATH path)
+void util_freeSplitPath(SplitPath* sp)
+{
+	if ( sp )
+	{
+		free(sp->dir);
+		free(sp->file);
+		free(sp->ext);
+		free(sp->drv);
+		free(sp->fullfile);
+	}
+	free(sp);
+}
+
+SplitPath* util_makeSplitPath()
+{
+	SplitPath *s = malloc(sizeof(SplitPath));
+	if ( s )
+		memset(s, 0, sizeof(SplitPath));
+	return s;
+}
+
+
+void util_absPath(char* out, const char* in)
+{
+#ifdef WIN32
+	_fullpath(out, in, MAX_PATH);
+#else
+	realpath(dir, apath);
+#endif
+}
+
+
+SplitPath* util_splitPath(const char* p)
+{
+	char drv[_MAX_DRIVE];
+	char dir[MAX_PATH];
+	char sdir[MAX_PATH];
+	char fil[_MAX_FNAME];
+	char ext[_MAX_EXT];
+	drv[0] = 0;
+	dir[0] = 0;
+	sdir[0] = 0;
+	fil[0] = 0;
+	ext[0] = 0;
+
+	SplitPath* sp = util_makeSplitPath();
+
+	_splitpath_s(p, drv, _MAX_DRIVE, dir, _MAX_DIR, fil, _MAX_FNAME, ext, _MAX_EXT);
+	util_standardizePath(sdir, dir);
+
+	if ( strlen(ext) > 1 )
+		sp->ext = strdup(ext+1);
+	sp->file = strdup(fil);
+	sp->drv = strdup(drv);
+	sp->dir = strdup(dir);
+	sp->fullfile = malloc(strlen(fil) + strlen(ext) + 1);
+	sprintf(sp->fullfile, "%s%s", fil, ext);
+	return sp;
+}
+
+
+char *util_getExtension(const char* filename) // stacko
+{
+    const char *dot = strrchr(filename, '.');
+    
+    if(!dot || dot == filename) 
+      return NULL;
+          
+    return strdup(dot + 1);
+}
+
+char *util_toLower(const char *s) // stacko
+{
+    char *d = (char *)malloc(strlen(s)+1);
+	memset(d, 0, strlen(s) + 1);
+    char *rv = d;
+    while (*s)
+    {
+        *d = tolower(*s);
+        d++;
+        s++;
+    }
+	*d = 0;
+    return rv;
+}
+
+BOOL util_isImageFile(const char* path)
 {
 
-	char extpart[_MAX_EXT];
+	char *extpart = util_getExtension(path);
+	char* toLower = util_toLower(extpart);
 
-	_splitpath_s(path, 0, 0, 0, 0, 0, 0, extpart, _MAX_EXT);
-	char* toLower = CharLowerA(extpart);
-	if (strcmp(toLower, ".png") == 0)
+	if (strcmp(toLower, "png") == 0)
 		return TRUE;
-	if (strcmp(toLower, ".fif") == 0)
+	if (strcmp(toLower, "tif") == 0)
 		return TRUE;
-	if (strcmp(toLower, ".jpg") == 0)
+	if (strcmp(toLower, "jpg") == 0)
 		return TRUE;
-	if (strcmp(toLower, ".jped") == 0)
+	if (strcmp(toLower, "gif") == 0)
+		return TRUE;
+	if (strcmp(toLower, "jpeg") == 0)
 		return TRUE;
 
 	return FALSE;

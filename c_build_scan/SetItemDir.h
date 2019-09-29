@@ -3,7 +3,7 @@
 
 typedef struct _SetItemDir
 {
-	PATH path;
+	char* path;
 	uint32_t dhash;
 	struct _SetItemDir *next;
 }SetItemDir;

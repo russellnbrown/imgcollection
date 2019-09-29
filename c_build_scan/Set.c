@@ -17,13 +17,13 @@ Set *set_create()
 
 
 
-SetItemDir *set_addDir(Set *s, PATH cdir, uint32_t crc)
+SetItemDir *set_addDir(Set *s, const char* cdir, uint32_t crc)
 {
 	SetItemDir *dir = malloc(sizeof(SetItemDir));
 	if (dir)
 	{
 		dir->next = NULL;
-		dir->path = util_copyPath(cdir);
+		dir->path = strdup(cdir);
 		dir->next = s->dirs;
 		dir->dhash = crc;
 		s->dirs = dir;
@@ -39,7 +39,7 @@ SetItemFile* set_addFile(Set* s, uint32_t dhash, const char *name)
 	{
 		fil->next = NULL;
 		fil->dhash = dhash;
-		fil->name = _strdup(name);
+		fil->name = strdup(name);
 		fil->next = s->files;
 		s->files = fil;
 	}
@@ -65,15 +65,18 @@ SetItemImage* set_addImage(Set* s, ImageInfo* ii)
 }
 
 
-void set_setTop(Set *s, PATH _top) 
-{ 
-	s->top = util_copyPath(_top);
+void set_setTop(Set *s, const char* _top) 
+{   
+	logger(Info, "Set, setting top to _top");
+	s->top = strdup(_top);
 }
 
 
-PATH set_relativeTo(Set *set, PATH dir)
+char *set_relativeTo(Set *set, const char* dir)
 {
-	PATH out = util_makePath();
+	char out[MAX_PATH];
+	out[0] = 0;
+
 	if (strncmp(set->top, dir, strlen(set->top) ) == 0) // make sure we can be made relative
 	{
 		char *bit = dir + strlen(set->top);
@@ -91,12 +94,13 @@ PATH set_relativeTo(Set *set, PATH dir)
 	if (strlen(out) > 1 && out[strlen(out) - 1] == '/') // remove any tailing '/'
 		out[strlen(out) - 1] = 0;
 
-	return out;
+	return strdup(out);
 }
 
-PATH set_fullPath(Set *set,  PATH rel)
+char* set_fullPath(Set *set,  const char* rel)
 {
-	PATH out = util_makePath();
+	char out[MAX_PATH];
+	out[0] = 0;
 
 	if ( rel[0] == '/' )
 		sprintf(out, "%s%s", set->top, rel);
@@ -104,7 +108,7 @@ PATH set_fullPath(Set *set,  PATH rel)
 		sprintf(out, "%s/%s", set->top, rel);
 
 	
-	return out;
+	return strdup(out);
 }
 
 void set_dump(Set* s)
@@ -128,12 +132,15 @@ void set_dump(Set* s)
 
 }
 
-void set_save(Set* s, PATH path)
+void set_save(Set* s, const char* path)
 {
-	_mkdir(path);
-	PATH dirfile = util_makePath();
-	PATH filefile = util_makePath();
-	PATH imgfile = util_makePath();
+	mkdir(path, 0777);
+	char dirfile[MAX_PATH];
+	char filefile[MAX_PATH];
+	char imgfile[MAX_PATH];
+	dirfile[0] = 0;
+	filefile[0] = 0;
+	imgfile[0] = 0;
 
 	sprintf(dirfile, "%s/%s", path, "dirs.txt");
 	sprintf(filefile, "%s/%s", path, "files.txt");

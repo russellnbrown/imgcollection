@@ -28,34 +28,30 @@ void toStr(ImageInfo* ii, char *buf, int maxlen)
 }
 
 
-ImageInfo *iutil_getImageInfo(Set *s, PATH path)
+ImageInfo *iutil_getImageInfo(Set *s, const char* rpath)
 {
-
-	char drvpart[_MAX_DRIVE];
-	char dirpart[MAX_PATH];
-	char fnamepart[_MAX_FNAME];
-	char extpart[_MAX_EXT];
 	FIBITMAP* check = 0;
 	FIBITMAP* rescaled = 0;
 	FIBITMAP* tm = 0;
 	FREE_IMAGE_FORMAT fif = 0;
 	ImageInfo* ii = NULL;
+	char path[MAX_PATH];
 
 
-	util_standardizePath(path);
+	util_standardizePath(path, rpath);
 
 	printf("%s\n", path);
 
 	if (  !util_isImageFile(path) )
 		return NULL;
 
+	SplitPath* sp = util_splitPath(path);
+	char rp[MAX_PATH];
+	rp[0] = 0;
+	strcat(rp, sp->drv);
+	strcat(rp, sp->dir);
 
-	_splitpath_s(path, drvpart, _MAX_DRIVE, dirpart, MAX_PATH, fnamepart, _MAX_FNAME, extpart, _MAX_EXT);
-	PATH rp = util_makePath();
-	strcat(rp, drvpart);
-	strcat(rp, dirpart);
-
-	PATH relPath = set_relativeTo(s, rp);
+	char* relPath = set_relativeTo(s, rp);
 	
 
 	FILE* ifs = fopen(path, "rb");
@@ -69,7 +65,7 @@ ImageInfo *iutil_getImageInfo(Set *s, PATH path)
 	ii->thumb = malloc(TNSMEM);
 	if (!ii->bytes || !ii->thumb)
 	{
-		oops("ran out of memory");
+		logger(Fatal,"ran out of memory");
 		return NULL;
 	}
 	size_t br = 0;
@@ -90,30 +86,6 @@ ImageInfo *iutil_getImageInfo(Set *s, PATH path)
 	int bbp = FreeImage_GetBPP(tm);
 	int sw = FreeImage_GetPitch(tm);
 	int w = FreeImage_GetWidth(tm);
-
-	FreeImage_Unload(tm);
-
-
-	/*
-	bool ok = fi.flipVertical();
-		ok = fi.rescale(TNSIZE, TNSIZE, FILTER_BOX);
-		ok = fi.convertTo24Bits();
-		int bpp = fi.getBitsPerPixel();
-		int sw = fi.getScanWidth();
-		int pw = fi.getWidth();
-	*/
-
-	return NULL;
-
-	if (check)
-		rescaled = FreeImage_Rescale(check, 16, 16, FILTER_BOX);
-	if (rescaled)
-	{
-		FreeImage_FlipVertical(rescaled);
-//		FreeImage_Unload(check);
-		tm = FreeImage_ConvertTo24Bits(rescaled);
-	//	FreeImage_Unload(rescaled);
-	}
 
 	if (tm)
 	{
@@ -147,14 +119,8 @@ ImageInfo *iutil_getImageInfo(Set *s, PATH path)
 		ii = 0;
 	}
 
-	util_freePath(relPath);
-	util_freePath(rp);
-
-	// always close the memory stream
-	if ( hmem )
-		FreeImage_CloseMemory(hmem);
-
-	
+	util_freeSplitPath(sp);
+	FreeImage_CloseMemory(hmem);
 	
 	return ii;
 

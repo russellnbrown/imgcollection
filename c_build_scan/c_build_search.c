@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-
+int walker(const char *);
 
 int initFreeImage()
 {
