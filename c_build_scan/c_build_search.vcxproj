@@ -182,9 +182,6 @@
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Set.h" />
     <ClInclude Include="SetBuilder.h" />
-    <ClInclude Include="SetItemDir.h" />
-    <ClInclude Include="SetItemFile.h" />
-    <ClInclude Include="SetItemImage.h" />
     <ClInclude Include="SetSearch.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>

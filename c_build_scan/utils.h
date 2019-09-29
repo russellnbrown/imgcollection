@@ -42,3 +42,4 @@ SplitPath* util_splitPath(const char* p);
 void util_freeSplitPath(SplitPath* sp);
 SplitPath* util_makeSplitPath();
 void util_absPath(char* out, const char* in);
+

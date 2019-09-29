@@ -47,9 +47,6 @@
 #include "utils.h"
 #include "SetBuilder.h"
 #include "SetSearch.h"
-#include "SetItemDir.h"
-#include "SetItemFile.h"
-#include "SetItemImage.h"
 #include "Set.h"
 #include "ImgUtils.h"
 

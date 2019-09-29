@@ -244,7 +244,6 @@ BOOL util_isImageFile(const char* path)
 }
 
 
-
 //#include <Python.h>
 
 

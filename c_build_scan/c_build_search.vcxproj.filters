@@ -47,15 +47,6 @@
     <ClInclude Include="SetBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SetItemDir.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SetItemFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SetItemImage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
