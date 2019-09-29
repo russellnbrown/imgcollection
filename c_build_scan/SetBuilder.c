@@ -28,7 +28,7 @@ int processDirectory(const char* dpath)
 	uint32_t dhash = 0;
 	util_crc32(rel, strlen(rel), &dhash);
 	SetItemDir* d = set_addDir(s, rel, dhash);
-	free(rel);
+	
 	return 0;
 }
 
