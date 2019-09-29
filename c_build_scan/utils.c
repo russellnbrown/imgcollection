@@ -69,8 +69,11 @@ BOOL util_fileExists(const char* path)
 	struct stat buf;
 	int result;
 	result = stat(path, &buf);
-
-	return result == 0;
+	if (result == 0)
+	{
+		return buf.st_mode & S_IFREG;
+	}
+	return FALSE;
 }
 
 void util_freeSplitPath(SplitPath* sp)
@@ -104,7 +107,67 @@ void util_absPath(char* out, const char* in)
 #endif
 }
 
+SplitPath* util_splitPath(const char* p)
+{
+	char path[MAX_PATH];
+	char drv[MAX_PATH];
+	char dir[MAX_PATH];
+	char fil[MAX_PATH];
+	char ful[MAX_PATH];
+	char ext[MAX_PATH];
+	memset(path, 0, MAX_PATH);
+	memset(drv, 0, MAX_PATH);
+	memset(dir, 0, MAX_PATH);
+	memset(ful, 0, MAX_PATH);
+	memset(fil, 0, MAX_PATH);
+	memset(ext, 0, MAX_PATH);
 
+	BOOL isFile = util_fileExists(p);
+
+	char* cpos = strchr(p, ':');
+	if (cpos)
+	{
+		int cidx = (int)(cpos - p);
+		strncpy(drv, p, cidx + 1);
+		p = cpos + 1;
+	}
+
+	if (isFile)
+	{
+		char* lspos = strrchr(p, '/');
+		char* expos = strrchr(p, '.');
+		if (lspos && expos)
+		{
+			int lsidx = (int)(lspos - p);
+			int exidx = (int)(expos - p);
+			strncpy(dir, p, lsidx);
+			strncpy(ful, lspos + 1, strlen(lspos) - 1);
+			strncpy(fil, lspos + 1, strlen(lspos) - strlen(expos) -1  );
+			strncpy(ext, expos , strlen(expos) );
+		}
+	}
+	else
+	{
+		strncpy(dir, p, strlen(p));
+	}
+
+
+	SplitPath* sp = util_makeSplitPath();
+
+
+	if (strlen(ext) > 1)
+		sp->ext = strdup(ext + 1);
+	sp->file = strdup(fil);
+	sp->drv = strdup(drv);
+	sp->dir = strdup(dir);
+	sp->fullfile = strdup(ful);
+
+	return sp;
+
+
+}
+
+#ifdef BOBBY
 SplitPath* util_splitPath(const char* p)
 {
 	char drv[_MAX_DRIVE];
@@ -129,10 +192,11 @@ SplitPath* util_splitPath(const char* p)
 	sp->drv = strdup(drv);
 	sp->dir = strdup(dir);
 	sp->fullfile = malloc(strlen(fil) + strlen(ext) + 1);
-	sprintf(sp->fullfile, "%s%s", fil, ext);
+	if(sp->fullfile)
+		sprintf(sp->fullfile, "%s%s", fil, ext);
 	return sp;
 }
-
+#endif
 
 char *util_getExtension(const char* filename) // stacko
 {

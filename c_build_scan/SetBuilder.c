@@ -127,7 +127,7 @@ void create(char *set, char *dir)
 	
 	logger(Info, "Path given is %s, Set is %s", dir, set);
 
-  if ( !util_fileExists(dir) )
+  if ( !util_directoryExists(dir) )
   {
     logger(Fatal, "Dir dosnt exist %s ( resolved to %s)", dir, apath);
   }
