@@ -332,8 +332,8 @@ BOOL set_load(Set* s, const char* path)
 			ii->tmb = malloc(TNSMEM);
 			if (ii->tmb)
 			{
-				fread(&ihash, 8, 1, imf);
-				fread(ii->tmb, 1, TNSMEM, imf);
+				ok=fread(&ihash, 8, 1, imf);
+				ok=fread(ii->tmb, 1, TNSMEM, imf);
 				ii->ihash = (uint32_t)ihash;
 				hashmap_put(s->himage, ii->ihash, ii);
 				s->numImages++;
