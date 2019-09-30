@@ -206,7 +206,7 @@ void create(char* set, char* dir)
 	timer_stop(t);
 	double saveTime = timer_getElapsedTimeInMilliSec(t);
 
-	logger(Info, "Times: create %.2f ms., save %.2 ms.", createTime, saveTime);
+	logger(Info, "Times: create %.2f ms., save %.2f ms.", createTime, saveTime);
 
 }
 

@@ -12,7 +12,7 @@
 
 #include "common.h"
 
-#define INITIAL_SIZE (1000)
+#define INITIAL_SIZE (10000)
 #define MAX_CHAIN_LENGTH (8)
 
 /* We need to keep keys and values */

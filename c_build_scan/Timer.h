@@ -31,8 +31,8 @@ typedef struct _Timer
 	LARGE_INTEGER startCount;                   //
 	LARGE_INTEGER endCount;                     //
 #else
-	timeval startCount;                         //
-	timeval endCount;                           //
+	struct timeval startCount;                         //
+	struct timeval endCount;                           //
 #endif
 }Timer;
 
