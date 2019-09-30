@@ -110,7 +110,9 @@ void util_absPath(char* out, const char* in)
 #ifdef WIN32
 	_fullpath(out, in, MAX_PATH);
 #else
-	realpath(in, out);
+	char *res = realpath(in, out);
+	if (res == NULL)
+		logger(Fatal, "Error making realpath from %s", in);
 #endif
 }
 
