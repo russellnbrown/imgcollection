@@ -133,16 +133,16 @@ int process_entry(const char* item, const struct stat* info, const int typeflag,
 		if (util_isImageFile(filepath))
 		{
 			processImageFile(dhash, filepath);
-			logger(Info, "IMAGEFILE %s", filepath);
+			//logger(Info, "IMAGEFILE %s", filepath);
 		}
-		else
-			logger(Info, "FILE %s", filepath);
+		//else
+		//	logger(Info, "FILE %s", filepath);
 	}
 	// else, if a dir, call processDirectory
 	else if (typeflag == FTW_D || typeflag == FTW_DP)
 	{
 		dhash = processDirectory(filepath);
-		logger(Info, "DIR %s", filepath);
+		//logger(Info, "DIR %s", filepath);
 	}
 
 
