@@ -147,18 +147,30 @@ void search(char *set, char *file)
 	// get image thumbnail & hash etc and put in searcher
 	srch->srchImage = iutil_getImageInfo(0, file);
 
+	Timer* t = timer_create();
+	timer_start(t);
+
 	// Load the set
 	Set *s = set_create();
 	if (!set_load(s, set))
 		return;
+
+	timer_stop(t);
+	double loadTime = timer_getElapsedTimeInMilliSec(t);
+
 	set_printStats(s);
 
 
+	timer_start(t);
 	// Search the images in the set using the hashmap callback, maintain results in liked list of ImageSearchResult	
 	hashmap_iterate(s->himage, search_compareImages, srch);
 
 	// finally sort list by closeness
 	search_resultSort(srch->results);
+	timer_stop(t);
+	double searchTime = timer_getElapsedTimeInMilliSec(t);
+
+	logger(Info, "Times: load %.2f search %.2f", loadTime, searchTime);
 
 	// print results
 	for (ImageSearchResult* ir = srch->results; ir != 0; ir = ir->next)

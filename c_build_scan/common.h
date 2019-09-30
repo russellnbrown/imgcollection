@@ -43,6 +43,7 @@
 
 #define TNSSIZE 16
 #define TNSMEM 768
+#include "Timer.h"
 #include "hashmap.h"
 #include "Logger.h"
 #include "utils.h"
