@@ -190,12 +190,12 @@ double iutil_compare(uint8_t* i1, uint8_t* i2)
 
 	for (int tix = 0; tix < TNSMEM; tix += 3)
 	{
-		double srx = i1[tix];
-		double crx = i2[tix];
-		double sgx = i1[tix + 1];
-		double cgx = i2[tix + 1];
-		double sbx = i1[tix + 2];
-		double cbx = i2[tix + 2];
+		int srx = i1[tix];
+		int crx = i2[tix];
+		int sgx = i1[tix + 1];
+		int cgx = i2[tix + 1];
+		int sbx = i1[tix + 2];
+		int cbx = i2[tix + 2];
 
 		int tx = abs(sbx - cbx) + abs(sgx - cgx) + abs(srx - crx);
 		td += (double)tx;

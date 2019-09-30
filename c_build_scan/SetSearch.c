@@ -71,7 +71,7 @@ void search_resultSort(ImageSearchResult* head)
 }
 
 // search_findFirstFile - search files for a matching image hash
-search_findFirstFile(Set *s, uint32_t hash)
+SetItemFile* search_findFirstFile(Set *s, uint32_t hash)
 {
 	// return first we find ( there may be others )
 	for (SetItemFile* sif = s->files; sif != NULL; sif = sif->next)
@@ -81,7 +81,7 @@ search_findFirstFile(Set *s, uint32_t hash)
 }
 
 // search_findDirectory - search directories for a matching dhash
-search_findDirectory(Set *s, uint32_t dhash)
+SetItemDir* search_findDirectory(Set *s, uint32_t dhash)
 {
 	for (SetItemDir* sid = s->dirs; sid != NULL; sid = sid->next)
 		if (sid->dhash == dhash)
@@ -150,7 +150,7 @@ void search(char *set, char *file)
 	// Load the set
 	Set *s = set_create();
 	if (!set_load(s, set))
-		return -1;
+		return;
 	set_printStats(s);
 
 

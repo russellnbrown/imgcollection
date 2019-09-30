@@ -237,7 +237,7 @@ int hashmap_iterate(map_t in, PFany f, any_t item) {
 /*
  * Remove an element with that key from the map
  */
-int hashmap_remove(map_t in, char* key){
+int hashmap_remove(map_t in, uint32_t key){
 	int i;
 	int curr;
 	hashmap_map* m;
@@ -257,7 +257,7 @@ int hashmap_remove(map_t in, char* key){
                 /* Blank out the fields */
                 m->data[curr].in_use = 0;
                 m->data[curr].data = NULL;
-                m->data[curr].key = NULL;
+                m->data[curr].key = 0;
 
                 /* Reduce the size */
                 m->size--;
