@@ -26,11 +26,11 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <direct.h>
 #include <inttypes.h>
 #ifndef WIN32
 #define MAX_PATH 1000
 #include <unistd.h>
-#include <dirent.h>
 #else
 #include <windows.h>
 #endif
@@ -43,6 +43,7 @@
 
 #define TNSSIZE 16
 #define TNSMEM 768
+#include "hashmap.h"
 #include "Logger.h"
 #include "utils.h"
 #include "SetBuilder.h"

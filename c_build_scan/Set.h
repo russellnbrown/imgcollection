@@ -43,16 +43,20 @@ typedef struct _SetItemFile
 
 typedef struct _Set
 {
-	char* top;
-	SetItemDir* dirs;
-	SetItemFile* files;
-	SetItemImage* images;
+	char*			top;
+	SetItemDir*		dirs;
+	SetItemFile*	files;
+	map_t			himage;
+	int32_t			numImages;
+	int32_t			numFiles;
+	int32_t			numDirs;
 }Set;
 
 typedef struct _ImageSearchResult
 {
 	SetItemImage* i;
 	double closeness;
+	struct _ImageSearchResult* next;
 }ImageSearchResult;
 
 typedef struct _ImageInfo
@@ -75,5 +79,6 @@ void			set_relativeTo(Set* set, const char* dir, char* out);
 void			set_fullPath(Set* set, const char* rel, char* out);	
 void			set_dump(Set* set);
 void			set_save(Set* set, const char* dir);
-
+BOOL			set_load(Set* set, const char* dir);
+void			set_printStats(Set* s);
 

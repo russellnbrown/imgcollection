@@ -86,7 +86,11 @@ ImageInfo* iutil_getImageInfo(Set* s, const char* rpath)
 
 	// get the path relative to set top
 	char relPath[MAX_PATH];
-	set_relativeTo(s, rp, relPath);
+	util_pathInit(relPath);
+	if (s)
+		set_relativeTo(s, rp, relPath);
+	else
+		strncpy(relPath, rp, MAX_PATH);
 
 	// open the image file
 	FILE* ifs = fopen(path, "rb");
@@ -148,7 +152,6 @@ ImageInfo* iutil_getImageInfo(Set* s, const char* rpath)
 		{
 			int8_t* sl = FreeImage_GetScanLine(tm, r);
 			tb = 0;
-			char buf[100];
 			for (int c = 0; c < TNSSIZE; c++)
 			{
 				ii->thumb[wb++] = sl[tb + 2];
@@ -173,4 +176,30 @@ ImageInfo* iutil_getImageInfo(Set* s, const char* rpath)
 
 	return ii;
 
+}
+
+// iutil_compare - ultra simple compare of two thumbnails, returns the
+// total in RGB comparison
+double iutil_compare(uint8_t* i1, uint8_t* i2)
+{
+
+	float rd = 0.0;
+	float gd = 0.0;
+	float bd = 0.0;
+	double td = 0.0;
+
+	for (int tix = 0; tix < TNSMEM; tix += 3)
+	{
+		double srx = i1[tix];
+		double crx = i2[tix];
+		double sgx = i1[tix + 1];
+		double cgx = i2[tix + 1];
+		double sbx = i1[tix + 2];
+		double cbx = i2[tix + 2];
+
+		int tx = abs(sbx - cbx) + abs(sgx - cgx) + abs(srx - crx);
+		td += (double)tx;
+	}
+
+	return td;
 }

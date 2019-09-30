@@ -27,7 +27,14 @@ void util_standardizePath(char* out, const char* tocheck)
 		out[last] = 0;
 }
 
-
+int util_mkdir(const char* path)
+{
+#ifdef WIN32
+	return _mkdir(path);
+#else
+	return mkdir(path, 0777);
+#endif
+}
 
 
 /* Simple public domain implementation of the standard CRC32 checksum.

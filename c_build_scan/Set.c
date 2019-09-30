@@ -30,7 +30,10 @@ Set* set_create()
 		s->top = NULL;
 		s->dirs = NULL;
 		s->files = NULL;
-		s->images = NULL;
+		s->numDirs = 0;
+		s->numFiles = 0;
+		s->numImages = 0;
+		s->himage = hashmap_new();
 	}
 	return s;
 }
@@ -49,6 +52,7 @@ SetItemDir* set_addDir(Set* s, const char* cdir, uint32_t crc)
 		// maintain a linked list
 		dir->dhash = crc;
 		s->dirs = dir;
+		s->numDirs++;
 	}
 
 	return dir;
@@ -69,6 +73,7 @@ SetItemFile* set_addFile(Set* s, uint32_t dhash, uint32_t ihash, const char* nam
 		// maintain a linked list
 		fil->next = s->files;
 		s->files = fil;
+		s->numFiles++;
 	}
 
 	return fil;
@@ -88,18 +93,30 @@ SetItemImage* set_addImage(Set* s, ImageInfo* ii)
 		fil->tmb = malloc(TNSMEM);
 		if (fil->tmb)
 			memcpy(fil->tmb, ii->thumb, TNSMEM);
-		// maintain linked list
-		fil->next = s->images;
-		s->images = fil;
+		SetItemImage* existing = 0;
+		int dup = hashmap_get(s->himage, fil->ihash, &existing);
+		if (dup == MAP_MISSING)
+		{
+			hashmap_put(s->himage, fil->ihash, fil);
+			s->numImages++;
+		}
+		else
+			logger(Info, "Duplicate %u", fil->ihash);
 	}
 
 	return fil;
 }
 
+// set_printStats - print out number of things in the set
+void set_printStats(Set* s)
+{
+	logger(Info, "Set: top %s, num images %d, num files %d, num dirs %d", s->top, s->numImages, s->numFiles, s->numDirs);
+}
+
 // set_setTop - set the 'top' path, the one all directory entries are relative to
 void set_setTop(Set* s, const char* _top)
 {
-	logger(Info, "Set, setting top to _top");
+	logger(Info, "Set, setting top to %s", _top);
 	s->top = strdup(_top);
 }
 
@@ -145,6 +162,13 @@ void set_fullPath(Set* set, const char* rel, char* out)
 
 }
 
+void logImage(any_t q1, any_t q2)
+{
+	SetItemImage* sii = (SetItemImage*)q2;
+	logger(Info, "\t%u", sii->ihash);
+	return MAP_OK;
+}
+
 // set_dump - writes out the contents of the set to logger
 void set_dump(Set* s)
 {
@@ -157,14 +181,26 @@ void set_dump(Set* s)
 	logger(Info, "Files :-");
 	for (SetItemFile* f = s->files; f != NULL; f = f->next)
 	{
-		logger(Info, "\t%s in %u", f->name, f->dhash);
+		logger(Info, "\t%s (%u) in %u", f->name, f->ihash, f->dhash);
 	}
 	logger(Info, "Images :-");
-	for (SetItemImage* f = s->images; f != NULL; f = f->next)
-	{
-		logger(Info, "\t%u", f->ihash);
-	}
+	hashmap_iterate(s->himage, logImage, 0);
+	
 
+}
+
+
+void saveImage(any_t q1, any_t q2)
+{
+	SetItemImage* f = (SetItemImage*)q2;
+	FILE* imf = (FILE*)q1;
+
+	int64_t crc = f->ihash;
+	fwrite(&crc, 8, 1, imf);
+	fwrite(f->tmb, TNSMEM, 1, imf);
+
+
+	return MAP_OK;
 }
 
 // set_save - save the set to disk. The set is saved as three seperate files under the
@@ -174,7 +210,7 @@ void set_save(Set* s, const char* path)
 	// make the directory to hold the set files
 
 	logger(Info, "Saving to path %s", path);
-	mkdir(path, 0777);
+	util_mkdir(path);
 
 	// create paths for the files
 	char dirfile[MAX_PATH];
@@ -208,17 +244,112 @@ void set_save(Set* s, const char* path)
 	}
 
 	// write the images. each record is the image hash & thumbnail bytes
-	for (SetItemImage* f = s->images; f != NULL; f = f->next)
-	{
-		int64_t crc = f->ihash;
-		fwrite(&crc, 8, 1, imf);
-		fwrite(f->tmb, TNSMEM, 1, imf);
-	}
+	hashmap_iterate(s->himage, saveImage, imf);
 
 	// close all files
 	fclose(df);
 	fclose(ff);
 	fclose(imf);
 
+
+}
+
+int phash(any_t q1, any_t q2)
+{
+	SetItemImage* sii = (SetItemImage*)q2;
+	logger(Info, "HashIter, image=%u", sii->ihash);
+	return MAP_OK;
+}
+
+// set_save - save the set to disk. The set is saved as three seperate files under the
+// 'path' directory.
+BOOL set_load(Set* s, const char* path)
+{
+	// create paths for the files
+	char dirfile[MAX_PATH];
+	char filefile[MAX_PATH];
+	char imgfile[MAX_PATH];
+	util_pathInit(dirfile);
+	util_pathInit(filefile);
+	util_pathInit(imgfile);
+	sprintf(dirfile, "%s/%s", path, "dirs.txt");
+	sprintf(filefile, "%s/%s", path, "files.txt");
+	sprintf(imgfile, "%s/%s", path, "images.bin");
+
+	// and open them. the image file is binary as it contains thumbnails in raw format
+	FILE* df = fopen(dirfile, "r");
+	FILE* ff = fopen(filefile, "r");
+	FILE* imf = fopen(imgfile, "rb");
+
+	if (!df || !ff || !imf)
+	{
+		logger(Fatal, "One or more set files did not open");
+		return FALSE;
+	}
+
+	// wtite to the dirs file. First line is the 'top' directory
+	int ok = 0;
+	char top[MAX_PATH];
+	util_pathInit(top);
+
+	ok = fscanf(df, "%s\n", top);
+	s->top = strdup(top);
+
+	// further lines are the relative paths & hashes 
+	char file[MAX_PATH];
+	while (!feof(df))
+	{
+		SetItemDir* d = malloc(sizeof(SetItemDir));
+		if (d)
+		{
+			ok = fscanf(df, "%u,%s\n", &d->dhash, file);
+			d->path = strdup(file);
+			d->next = s->dirs;
+			s->dirs = d;
+			s->numDirs++;
+		}
+	}
+
+	while (!feof(ff))
+	{
+		SetItemFile* f = malloc(sizeof(SetItemFile));
+		if (f)
+		{
+			ok = fscanf(ff, "%u,%u,%s\n", &f->dhash, &f->ihash, file);
+			f->name = strdup(file);
+			f->next = s->files;
+			s->files = f;
+			s->numFiles++;
+		}
+	}
+
+	while (!feof(imf))
+	{
+		SetItemImage* ii = malloc(sizeof(SetItemImage));
+		if (ii)
+		{
+			int64_t ihash;
+			ii->tmb = malloc(TNSMEM);
+			if (ii->tmb)
+			{
+				fread(&ihash, 8, 1, imf);
+				fread(ii->tmb, 1, TNSMEM, imf);
+				ii->ihash = (uint32_t)ihash;
+				hashmap_put(s->himage, ii->ihash, ii);
+				s->numImages++;
+			}
+		}
+	}
+
+	//hashmap_iterate(s->himage, phash, 0);
+
+	logger(Info, "Read set OK");
+
+	// close all files
+	fclose(df);
+	fclose(ff);
+	fclose(imf);
+
+	return TRUE;
 
 }

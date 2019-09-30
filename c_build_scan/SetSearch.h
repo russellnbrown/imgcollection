@@ -19,4 +19,6 @@
  // SetSearch.h - methods to search the 'Image Database'
  //
 
+#define SEARCH_CLOSENESS_THRESHOLD 10000
+
 void search(char* set, char* file);

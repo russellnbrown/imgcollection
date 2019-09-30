@@ -20,6 +20,6 @@
 //
 
 
-
+double iutil_compare(uint8_t* t1, uint8_t* t2);
 ImageInfo* iutil_makeImgInfo();
 ImageInfo* iutil_getImageInfo(Set* s, const char* path);
