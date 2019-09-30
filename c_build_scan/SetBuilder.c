@@ -154,6 +154,9 @@ int process_entry(const char* item, const struct stat* info, const int typeflag,
 // create - this will create the Image Collection under Set 's'
 void create(char* set, char* dir)
 {
+
+	Timer* t = timer_create();
+
 	// need to convert file location to abs path so we can get
 	// a correct set 'top' location later
 	char apath[MAX_PATH];
@@ -178,6 +181,7 @@ void create(char* set, char* dir)
 	}
 
 	// create the set structure & set 'top'
+	timer_start(t);
 	s = set_create();
 	set_setTop(s, pwd);
 
@@ -193,8 +197,16 @@ void create(char* set, char* dir)
 		logger(Fatal, "Scan failed %d", result);
 
 	// save set
+	timer_stop(t);
+	double createTime = timer_getElapsedTimeInMilliSec(t);
+
 	set_printStats(s);
+	timer_start(t);
 	set_save(s, set);
+	timer_stop(t);
+	double saveTime = timer_getElapsedTimeInMilliSec(t);
+
+	logger(Info, "Times: create %.2f ms., save %.2 ms.", createTime, saveTime);
 
 }
 
