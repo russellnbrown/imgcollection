@@ -117,10 +117,12 @@ int winscan(const char* thisdir)
 #define __USE_XOPEN_EXTENDED
 #include <ftw.h>
 
+uint32_t dhash = 0;
+
 // process_entry called automatically by nftw for each file/directory ( directories  first )
 int process_entry(const char* item, const struct stat* info, const int typeflag, struct FTW* pathinfo)
 {
-	uint32_t dhash = 0;
+	
 	char filepath[MAX_PATH];
 	util_pathInit(filepath);
 	strncpy(filepath, item, MAX_PATH);
@@ -130,7 +132,7 @@ int process_entry(const char* item, const struct stat* info, const int typeflag,
 	{
 		if (util_isImageFile(filepath))
 		{
-			processImageFile(filepath);
+			processImageFile(dhash, filepath);
 			logger(Info, "IMAGEFILE %s", filepath);
 		}
 		else

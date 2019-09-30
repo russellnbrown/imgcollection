@@ -1,8 +1,16 @@
 /*
- * Generic map implementation.
+ * Generic hashmap manipulation functions
+ *
+ * Originally by Elliot C Back - http://elliottback.com/wp/hashmap-implementation-in-c/
+ *
+ * Modified by Pete Warden to fix a serious performance problem, support strings as keys
+ * and removed thread synchronization - http://petewarden.typepad.com
+ *
+ * russell brown - removed crc32 as I have same elsewhere
+ * russell brown - changed key from string to uint32_t as calculated already
  */
-#include "common.h"
 
+#include "common.h"
 
 #define INITIAL_SIZE (1000)
 #define MAX_CHAIN_LENGTH (8)
@@ -245,7 +253,7 @@ int hashmap_remove(map_t in, char* key){
 
         int in_use = m->data[curr].in_use;
         if (in_use == 1){
-            if (strcmp(m->data[curr].key,key)==0){
+            if (m->data[curr].key == key){
                 /* Blank out the fields */
                 m->data[curr].in_use = 0;
                 m->data[curr].data = NULL;

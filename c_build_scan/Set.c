@@ -94,7 +94,7 @@ SetItemImage* set_addImage(Set* s, ImageInfo* ii)
 		if (fil->tmb)
 			memcpy(fil->tmb, ii->thumb, TNSMEM);
 		SetItemImage* existing = 0;
-		int dup = hashmap_get(s->himage, fil->ihash, &existing);
+		int dup = hashmap_get(s->himage, fil->ihash,(any_t)&existing);
 		if (dup == MAP_MISSING)
 		{
 			hashmap_put(s->himage, fil->ihash, fil);
@@ -162,7 +162,7 @@ void set_fullPath(Set* set, const char* rel, char* out)
 
 }
 
-void logImage(any_t q1, any_t q2)
+int logImage(any_t q1, any_t q2)
 {
 	SetItemImage* sii = (SetItemImage*)q2;
 	logger(Info, "\t%u", sii->ihash);
@@ -184,13 +184,13 @@ void set_dump(Set* s)
 		logger(Info, "\t%s (%u) in %u", f->name, f->ihash, f->dhash);
 	}
 	logger(Info, "Images :-");
-	hashmap_iterate(s->himage, logImage, 0);
+	hashmap_iterate(s->himage, (PFany)logImage, 0);
 	
 
 }
 
 
-void saveImage(any_t q1, any_t q2)
+int saveImage(any_t q1, any_t q2)
 {
 	SetItemImage* f = (SetItemImage*)q2;
 	FILE* imf = (FILE*)q1;
@@ -244,7 +244,7 @@ void set_save(Set* s, const char* path)
 	}
 
 	// write the images. each record is the image hash & thumbnail bytes
-	hashmap_iterate(s->himage, saveImage, imf);
+	hashmap_iterate(s->himage, (PFany)saveImage, (any_t)imf);
 
 	// close all files
 	fclose(df);

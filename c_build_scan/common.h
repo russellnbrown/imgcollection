@@ -26,13 +26,13 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-#include <direct.h>
 #include <inttypes.h>
 #ifndef WIN32
 #define MAX_PATH 1000
 #include <unistd.h>
 #else
 #include <windows.h>
+#include <direct.h>
 #endif
 
 #include <ctype.h>
