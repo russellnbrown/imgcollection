@@ -123,12 +123,16 @@ bool ImgUtils::GetImageInfo(ImageInfo *ii)
 		int wb = 0;
 		int tb = 0;
 
+		char buf[100];
+		
 		for (int r = 0; r < pw; r++)
 		{
 			int8_t *sl = (int8_t*)fi.getScanLine(r);
 			tb = 0;
 			for (int c = 0; c < pw; c++)
 			{
+				//snprintf(buf, 100, "%d %d %d %d %d",r, c,  sl[tb + 0], sl[tb + 1], sl[tb + 2]);
+				//logger::raw(buf);
 				ii->thumb[wb++] = sl[tb + 2];
 				ii->thumb[wb++] = sl[tb + 1];
 				ii->thumb[wb++] = sl[tb + 0];
