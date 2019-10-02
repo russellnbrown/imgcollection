@@ -49,7 +49,11 @@ void logger::write(Level l, std::string txt)
 
 	time_t now = time(0);
 	char cur[50];
+#ifdef WIN32
 	ctime_s(cur, sizeof(cur), &now);
+#else
+	ctime_r(&now, cur);
+#endif
 	cur[strlen(cur) - 6] = 0;
 
 	string data;

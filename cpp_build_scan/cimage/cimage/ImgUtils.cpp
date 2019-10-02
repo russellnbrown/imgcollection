@@ -47,7 +47,12 @@ bool ImgUtils::IsImageFile(fs::path fileStr)
 fs::path ImgUtils::Cwd()
 {
 	char buf[MAX_PATH];
+#ifdef WIN32
 	GetCurrentDirectoryA(256, buf);
+#else
+#include <unistd.h>
+	char *unused = getcwd(buf,MAX_PATH);
+#endif
 	return fs::path(buf);
 }
 
@@ -123,7 +128,7 @@ bool ImgUtils::GetImageInfo(ImageInfo *ii)
 		int wb = 0;
 		int tb = 0;
 
-		char buf[100];
+		
 		
 		for (int r = 0; r < pw; r++)
 		{
@@ -216,7 +221,9 @@ double ImgUtils::GetAsmCloseness(int8_t* i1, int8_t* i2)
 #ifdef WIN64
 	logger::error("assembler option not supported on 64 bit arch");
 	return 0;
-#else
+#endif
+
+#ifdef WIN32
 	char* s = (char*)i1;
 	char* p = (char*)i2;
 
@@ -263,6 +270,9 @@ double ImgUtils::GetAsmCloseness(int8_t* i1, int8_t* i2)
 			mov diff, eax
 	}
 	return (double)diff;
+#else
+	logger::error("assembler option not supported on linux arch");
+	return 0;
 #endif
 
 }
