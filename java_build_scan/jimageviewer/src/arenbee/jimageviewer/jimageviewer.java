@@ -177,7 +177,6 @@ public class jimageviewer extends Application {
             {
                 Path p = ji.getPathOfImgFile(f);
                 
- //               ImageView iv = ji.getImageFrom(p,tndispsize,tndispsize); // works for file
                 ImageView iv = ji.getThumbImageFrom(f,tndispsize,tndispsize);
    
  
@@ -187,16 +186,7 @@ public class jimageviewer extends Application {
                         Path px = ji.getPathOfImgFile(f);
                         Logger.Info("Tile pressed, img is  " + px.getFileName() );
                         ImageView v = ji.getImageFrom(p);
-  //                      previewPane.getChildren().add (v);
-    //                    ImageView app = (ImageView) (Node) previewPane.getChildren().get(0);
-                        
-                        
-       //Image image = new Image("file:"+px.getFileName());
-        //ImageView imageView = new ImageView();
-        //vvv.setImage(image);
-        viewPane.setImageView(v);
-//        ImageViewPane viewPane = new ImageViewPane(v);                        
-                        
+                        viewPane.setImageView(v);
                        
                         event.consume();
                     }
@@ -389,11 +379,11 @@ public class jimageviewer extends Application {
     public ToolBar addToolbarTop() {
         ToolBar toolBar = new ToolBar();
 
-        Button button1 = new Button("Button 1");
-        toolBar.getItems().add(button1);
+        //Button button1 = new Button("Button 1");
+        //toolBar.getItems().add(button1);
 
-        Button button2 = new Button("Button 2");
-        toolBar.getItems().add(button2);
+       // Button button2 = new Button("Button 2");
+        //toolBar.getItems().add(button2);
 
         return toolBar;
     }
