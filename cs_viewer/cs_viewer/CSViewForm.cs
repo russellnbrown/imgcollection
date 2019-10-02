@@ -74,7 +74,6 @@ namespace csview
                                 ptr[2] = ba[wp++];
                                 ptr[1] = ba[wp++];
                                 ptr[0] = ba[wp++];
-                                Console.WriteLine("B:" + bx + " : " + ptr[2] + ", " + ptr[1] + "," + ptr[0]);
                                 ptr += 3;
                                 bx++;
                             }
