@@ -18,6 +18,7 @@
 
 #include "cimage.h"
 #include "crc32.h"
+#include <unistd.h>
 
 vector<string> extensions{ ".bmp", ".jpg", ".jpeg", ".png", ".gif" };
 
@@ -50,7 +51,6 @@ fs::path ImgUtils::Cwd()
 #ifdef WIN32
 	GetCurrentDirectoryA(256, buf);
 #else
-#include <unistd.h>
 	char *unused = getcwd(buf,MAX_PATH);
 #endif
 	return fs::path(buf);
