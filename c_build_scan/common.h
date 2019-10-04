@@ -27,13 +27,14 @@
 #include <errno.h>
 #include <string.h>
 #include <inttypes.h>
-#ifndef WIN32
-#define MAX_PATH 1000
-#include <unistd.h>
-#else
+#ifdef _WIN32|_WIN64
 #include <windows.h>
 #include <direct.h>
+#else
+#define MAX_PATH 1000
+#include <unistd.h>
 #endif
+
 
 #include <ctype.h>
 #include <FreeImage.h>

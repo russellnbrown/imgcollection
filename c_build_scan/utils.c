@@ -29,7 +29,7 @@ void util_standardizePath(char* out, const char* tocheck)
 
 int util_mkdir(const char* path)
 {
-#ifdef WIN32
+#ifdef _WIN32|_WIN64
 	return _mkdir(path);
 #else
 	return mkdir(path, 0777);
@@ -107,7 +107,7 @@ SplitPath* util_makeSplitPath()
 
 void util_absPath(char* out, const char* in)
 {
-#ifdef WIN32
+#ifdef _WIN32|_WIN64
 	_fullpath(out, in, MAX_PATH);
 #else
 	char *res = realpath(in, out);
