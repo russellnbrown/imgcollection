@@ -12,8 +12,10 @@ namespace cs_build_scan
         public static string StandardizePath(string p)
         {
             p = p.Replace("\\", "/");
-            if (p.EndsWith("/"))
+            if (p.Length > 1 && p.EndsWith("/"))
                 p = p.Substring(0, p.Length - 1);
+            if (p.Length == 0)
+                p = "/";
             return p;
         }
 

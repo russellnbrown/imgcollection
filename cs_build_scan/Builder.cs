@@ -22,7 +22,7 @@ namespace cs_build_scan
 
             set.SetTop(dirPath);
             build();
-            set.Dump();
+            set.Save();
 
         }
 
