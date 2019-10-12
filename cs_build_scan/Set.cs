@@ -158,14 +158,22 @@ namespace cs_build_scan
                 foreach (DirEntry de in dirs)
                     sw.WriteLine(String.Format("{0},{1}", de.dhash, de.path));
             }
+            using (StreamWriter sw = new StreamWriter(Path.Combine(location, "files.txt")))
+            {
+                foreach (FileEntry fe in files)
+                    sw.WriteLine(String.Format("{0},{1},{2}", fe.dhash, fe.crc, fe.name));
+            }
+            using (BinaryWriter sw = new BinaryWriter(new FileStream(Path.Combine(location, "images.bin"), FileMode.Create)))
+            {
+                foreach (ImgEntry ie in images.Values)
+                {
+                    Int64 c = ie.crc;
+                    sw.Write(c);
+                    sw.Write(ie.thumb);
+                }
+            }
 
 
-            l.Info("Files:");
-            foreach (FileEntry fe in files)
-                l.Info("\tFile: " + fe.ToString());
-            l.Info("Images:");
-            foreach (ImgEntry ie in images.Values)
-                l.Info("\tImg: " + ie.ToString());
         }
 
     }

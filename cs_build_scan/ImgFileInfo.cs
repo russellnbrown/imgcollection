@@ -14,7 +14,7 @@ namespace cs_build_scan
         public byte[] tmb;
         public UInt32 dhash;
         public Int64 len;
-        public const int TS = 32;
+        public const int TS = 16;
         public ImgFileInfo(Set s, FileInfo f)
         {
             string dpart = s.RelativeToTop(f.DirectoryName);
