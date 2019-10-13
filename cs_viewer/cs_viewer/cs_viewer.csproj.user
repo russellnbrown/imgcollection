@@ -2,6 +2,10 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <StartWorkingDirectory>C:\TestEnvironments\img\</StartWorkingDirectory>
-    <StartArguments>set_cs.db</StartArguments>
+    <StartArguments>setceelarge.db</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <StartArguments>setceelarge.db</StartArguments>
+    <StartWorkingDirectory>C:\TestEnvironments\img\</StartWorkingDirectory>
   </PropertyGroup>
 </Project>

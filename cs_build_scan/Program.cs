@@ -19,7 +19,7 @@ namespace cs_build_scan
 
             if (args.Length == 3 && args[0] == "-c")
                 new Builder(args[1], args[2]);
-            else if (args.Length == 3 && args[1] == "-s")
+            else if (args.Length == 3 && args[0] == "-s")
                 new Search(args[1], args[2]);
             else
                 usage();

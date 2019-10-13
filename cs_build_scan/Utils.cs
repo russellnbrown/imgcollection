@@ -29,5 +29,10 @@ namespace cs_build_scan
         {
             return Crc32.Compute(bytes);
         }
+
+        internal static Closeness FindCloseness(byte[] thumb, byte[] tmb)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -86,7 +86,7 @@ namespace csview
                     lvi = new ListViewItem();
                     lvi.ImageIndex = imglist.Images.Count-1;
                     cslist.Items.Add(lvi);
-                    if (imglist.Images.Count > 1500)
+                    if (imglist.Images.Count > 150)
                         break;
 
                 }

@@ -14,13 +14,16 @@ namespace cs_build_scan
         public byte[] tmb;
         public UInt32 dhash;
         public Int64 len;
-        public const int TS = 16;
         public ImgFileInfo(Set s, FileInfo f)
         {
-            string dpart = s.RelativeToTop(f.DirectoryName);
-            dhash = Utils.GetHash(dpart);
-            string fpart = f.Name;
-
+            if ( s != null )
+            {
+                string dpart = s.RelativeToTop(f.DirectoryName);
+                dhash = Utils.GetHash(dpart);
+            }
+            else
+                dhash = 0;
+            name = f.Name;
             var fo = f.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
             len = f.Length;
             bytes = new byte[len];
@@ -31,17 +34,17 @@ namespace cs_build_scan
 
         internal void MakeThumb()
         {
-            tmb = new byte[TS * TS * 3];
+            tmb = new byte[Settings.TNMEM];
 
             using (MemoryStream mStream = new MemoryStream(bytes))
             {
                Image i = Image.FromStream(mStream);
-                Bitmap b = new Bitmap(i, new Size(TS, TS));
+                Bitmap b = new Bitmap(i, new Size(Settings.TS, Settings.TS));
                 i.Dispose();
 
-                BitmapData bmpdata = b.LockBits(new Rectangle(0, 0, TS, TS), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+                BitmapData bmpdata = b.LockBits(new Rectangle(0, 0, Settings.TS, Settings.TS), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
                 IntPtr ptr = bmpdata.Scan0;
-                Marshal.Copy(ptr, tmb, 0, TS * TS * 3);
+                Marshal.Copy(ptr, tmb, 0, Settings.TNMEM);
                 b.UnlockBits(bmpdata);
                 b.Dispose();
             }

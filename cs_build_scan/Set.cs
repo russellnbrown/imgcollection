@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -28,6 +29,11 @@ namespace cs_build_scan
             {
                 return String.Format("Dir[ dhash:{0}, path:{1}]", dhash, path);
             }
+        }
+
+        internal SortedDictionary<UInt32, ImgEntry> GetImages()
+        {
+            return images;
         }
 
         public class FileEntry
@@ -175,6 +181,87 @@ namespace cs_build_scan
 
 
         }
+
+
+        internal bool Load(string setName)
+        {
+            string filePath = Path.Combine(setName, "files.txt");
+            string dirPath = Path.Combine(setName, "dirs.txt");
+            string imgPath = Path.Combine(setName, "images.bin");
+            Char[] seps = { ',' };
+            string line;
+
+            try
+            {
+
+                using (StreamReader sw = new StreamReader(dirPath))
+                {
+                    top = sw.ReadLine();
+                    while ((line = sw.ReadLine()) != null)
+                    {
+                        string[] parts = line.Split(seps);
+                        if (parts.Length == 2)
+                        {
+                            UInt32 dhash = UInt32.Parse(parts[0]);
+                            DirEntry fe = new DirEntry(parts[1], dhash);
+                            dirs.Add(fe);
+                        }
+                    }
+                }
+
+                using (StreamReader sw = new StreamReader(filePath))
+                {
+                    while ((line = sw.ReadLine()) != null)
+                    {
+                        string[] parts = line.Split(seps);
+                        if (parts.Length == 3)
+                        {
+                            UInt32 dhash = UInt32.Parse(parts[0]);
+                            UInt32 crc = UInt32.Parse(parts[1]);
+                            FileEntry fe = new FileEntry(dhash, crc, parts[2]);
+                            files.Add(fe);
+                        }
+                    }
+                }
+
+
+                using (BinaryReader reader = new BinaryReader(File.Open(imgPath, FileMode.Open)))
+                {
+                    while (reader.BaseStream.Position != reader.BaseStream.Length)
+                    {
+                        Int64 crc = reader.ReadInt64();
+                        byte[] ba = reader.ReadBytes(Settings.TNMEM);
+                        ImgEntry ie = new ImgEntry((UInt32)crc, ba);
+                        images.Add(ie.crc, ie);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                l.Error("Error ", e.Message, " reading set");
+                return false;
+            }
+
+            l.Info("Read set {0}, Dirs: {1}, Files: {2}, Images: {3} ", setName, dirs.Count, files.Count, images.Count);
+            return true;
+        }
+
+        public List<FileEntry> FindFilesForImage(UInt32 ihash)
+        {
+            List<FileEntry> matches = null;
+
+            foreach(FileEntry fe in files)
+            {
+                if ( fe.crc == ihash )
+                {
+                    if (matches == null)
+                        matches = new List<FileEntry>();
+                    matches.Add(fe);
+                }
+            }
+            return matches;
+        }
+
 
     }
 }
