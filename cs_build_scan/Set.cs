@@ -231,6 +231,7 @@ namespace cs_build_scan
                     {
                         Int64 crc = reader.ReadInt64();
                         byte[] ba = reader.ReadBytes(Settings.TNMEM);
+                        //Console.WriteLine(String.Format("CRC: {0} RGB: {1:X} {2:X} {3:X} \n", crc, ba[0] & 0xFF, ba[1] & 0xFF, ba[2] & 0xFF));
                         ImgEntry ie = new ImgEntry((UInt32)crc, ba);
                         images.Add(ie.crc, ie);
                     }

@@ -172,7 +172,7 @@ double ImgUtils::GetCloseness(int8_t* i1, int8_t* i2, SearchType scanType)
 	if (scanType == Assembler)
 		return GetAsmCloseness(i1, i2);
 
-
+	printf("I1: %2.2x %2.2x %2.2x  I2  %2.2x %2.2x %2.2x \n", i1[0] & 0xFF, i1[1] & 0xFF, i1[2] & 0xFF,  i2[0] & 0xFF, i2[1] & 0xFF, i2[2] & 0xFF);
 
 	for (int tix = 0; tix < TNMEM; tix+=3)
 	{

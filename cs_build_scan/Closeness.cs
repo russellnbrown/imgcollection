@@ -21,6 +21,8 @@ namespace cs_build_scan
             double td = 0.0;
             ihash = i1.crc;
 
+            Console.WriteLine(String.Format("I1: {0:X} {1:X} {2:X} I2: {3:X}  {4:X} {5:X} \n", 
+                i1.thumb[0] & 0xFF, i1.thumb[1] & 0xFF, i1.thumb[2] & 0xFF, i2[0] & 0xFF, i2[1] & 0xFF, i2[2] & 0xFF));
 
             for (int tix = 0; tix < Settings.TNMEM; tix += 3)
             {

@@ -110,7 +110,7 @@ void ImgCollectionBuilder::Load(fs::path set)
 			ImgCollectionImageItem *sii = new ImgCollectionImageItem(icrc, thumb);
 			ic->images[icrc]=sii;
 			st.incImages();
-			//printf("CRC: %lld RGB: %2.2x %2.2x %2.2x\n", icrc, thumb[0]&0xFF, thumb[1] & 0xFF, thumb[2] & 0xFF);
+		//	printf("CRC: %lld RGB: %2.2x %2.2x %2.2x\n", icrc, thumb[0]&0xFF, thumb[1] & 0xFF, thumb[2] & 0xFF);
 		}
 		else
 			break;
