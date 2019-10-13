@@ -18,7 +18,6 @@
 
 #include "cimage.h"
 #include "crc32.h"
-#include <unistd.h>
 
 vector<string> extensions{ ".bmp", ".jpg", ".jpeg", ".png", ".gif" };
 
