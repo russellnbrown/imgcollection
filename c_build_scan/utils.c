@@ -116,6 +116,23 @@ void util_absPath(char* out, const char* in)
 #endif
 }
 
+void util_printThumb(const char *txt, uint8_t* t)
+{
+	printf("%s : Pixels:-\n", txt);
+	int ix = 0;
+	for (int rx = 0; rx < 16; rx++)
+	{
+		printf("R %d: ", rx);
+		for (int cx = 0; cx < 16; cx++)
+		{
+			printf("%2.2x%2.2x%2.2x ", t[ix], t[ix + 1], t[ix + 2]);
+			ix += 3;
+		}
+		printf("\n");
+	}
+	printf("\n");
+}
+
 SplitPath* util_splitPath(const char* p)
 {
 	char path[MAX_PATH];

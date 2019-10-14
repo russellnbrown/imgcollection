@@ -21,46 +21,37 @@ namespace cs_build_scan
             double td = 0.0;
             ihash = i1.crc;
 
-            Console.WriteLine(String.Format("I1: {0:X} {1:X} {2:X} I2: {3:X}  {4:X} {5:X} \n", 
-                i1.thumb[0] & 0xFF, i1.thumb[1] & 0xFF, i1.thumb[2] & 0xFF, i2[0] & 0xFF, i2[1] & 0xFF, i2[2] & 0xFF));
+            Utils.PrintThumb("Search Img", i2);
+            Utils.PrintThumb("Candidate Img", i1.thumb);
 
-            for (int tix = 0; tix < Settings.TNMEM; tix += 3)
+
+            switch (scanType)
             {
-                double srx = i1.thumb[tix];
-                double crx = i2[tix];
-                double sgx = i1.thumb[tix + 1];
-                double cgx = i2[tix + 1];
-                double sbx = i1.thumb[tix + 2];
-                double cbx = i2[tix + 2];
+                case Method.Simple:
+                    for (int tix = 0; tix < Settings.TNMEM; tix += 3)
+                    {
+                        int srx = i1.thumb[tix];
+                        int crx = i2[tix];
+                        int sgx = i1.thumb[tix + 1];
+                        int cgx = i2[tix + 1];
+                        int sbx = i1.thumb[tix + 2];
+                        int cbx = i2[tix + 2];
 
-                switch (scanType)
-                {
-                    case Method.Mono:
-                        {
-                            double lums = ((double)srx * 0.21) + ((double)sgx * 0.72) + ((double)sbx * 0.07);
-                            double lumc = ((double)crx * 0.21) + ((double)cgx * 0.72) + ((double)cbx * 0.07);
-                            td += Math.Abs(lums - lumc) / 255.0;
-                        }
-                        break;
-                    case Method.Simple:
-                        {
-                            double tx = Math.Abs(sbx - cbx) + Math.Abs(sgx - cgx) + Math.Abs(srx - crx);
-                            td += (double)tx;
-                        }
-                        break;
-                    case Method.Luma:
-                        {
-                            double dxr = Math.Abs(srx - crx) * 0.21;
-                            double dxg = Math.Abs(sgx - cgx) * 0.72;
-                            double dxb = Math.Abs(sbx - cbx) * 0.07;
-                            double tx = (dxr + dxg + dxb);
-                            td += tx;
-                        }
-                        break;
-                }
+                        int tx = Math.Abs(sbx - cbx) + Math.Abs(sgx - cgx) + Math.Abs(srx - crx);
+                        td += (double)tx; 
+                    }
+                    break;
+
+                case Method.Mono:
+                    break;
+
+                case Method.Luma:
+                    break;
+ 
             }
 
             close =  td;
+            Console.WriteLine("Closeness = {0}", close);
         }
 
         public Closeness(Set.ImgEntry ie, double c)

@@ -107,7 +107,7 @@ int search_compareImages(any_t q1, any_t q2)
 		cv = iutil_compare(sii->tmb, srch->srchImage->thumb);
 
 	// only consider close'ish files, pointless saving others 
-	if (cv < SEARCH_CLOSENESS_THRESHOLD)
+	//if (cv < SEARCH_CLOSENESS_THRESHOLD)
 	{
 		// Make a search result and add to list
 		ImageSearchResult* iss = malloc(sizeof(ImageSearchResult));

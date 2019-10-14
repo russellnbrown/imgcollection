@@ -325,20 +325,26 @@ BOOL set_load(Set* s, const char* path)
 
 	while (!feof(imf))
 	{
-		SetItemImage* ii = malloc(sizeof(SetItemImage));
-		if (ii)
+		int64_t ihash;
+		ok = fread(&ihash, 8, 1, imf);
+		if (ok == 1)
 		{
-			int64_t ihash;
+			SetItemImage* ii = malloc(sizeof(SetItemImage));
 			ii->tmb = malloc(TNSMEM);
 			if (ii->tmb)
 			{
-				ok=fread(&ihash, 8, 1, imf);
-				ok=fread(ii->tmb, 1, TNSMEM, imf);
-				ii->ihash = (uint32_t)ihash;
-				hashmap_put(s->himage, ii->ihash, ii);
-				s->numImages++;
+				ok = fread(ii->tmb, 1, TNSMEM, imf);
+				if (ok == TNSMEM)
+				{
+					ii->ihash = (uint32_t)ihash;
+					hashmap_put(s->himage, ii->ihash, ii);
+					s->numImages++;
+					util_printThumb("Load image", ii->tmb);
+				}
 			}
 		}
+
+		
 	}
 
 	//hashmap_iterate(s->himage, phash, 0);

@@ -30,9 +30,22 @@ namespace cs_build_scan
             return Crc32.Compute(bytes);
         }
 
-        internal static Closeness FindCloseness(byte[] thumb, byte[] tmb)
+        public static void PrintThumb(string txt, Byte[] t)
         {
-            throw new NotImplementedException();
+            StringBuilder sb = new StringBuilder();
+            Console.Write("{0} : Pixels:-\n", txt);
+            int ix = 0;
+            for (int rx = 0; rx < 16; rx++)
+            {
+                Console.Write("R %d: ", rx);
+                for (int cx = 0; cx < 16; cx++)
+                {
+                    Console.Write("{0:X}{1:X}{2:X} ", t[ix], t[ix + 1], t[ix + 2]);
+                    ix += 3;
+                }
+                Console.Write("\n");
+            }
+            Console.Write("\n");
         }
     }
 }

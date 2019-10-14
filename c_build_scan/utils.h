@@ -44,4 +44,5 @@ SplitPath* util_makeSplitPath();
 void util_absPath(char* out, const char* in);
 void util_pathInit(char* path);
 int util_mkdir(const char* path);
+void util_printThumb(const char*, uint8_t* t);
 

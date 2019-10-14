@@ -58,6 +58,19 @@ namespace csview
                 {
                     Int64 crc = reader.ReadInt64();
                     byte []ba = reader.ReadBytes(3 * 16 * 16);
+                    StringBuilder sf = new StringBuilder("Pixels:-\n");
+                    int ix = 0;
+                    for(int rx=0; rx<16; rx++)
+                    {
+                        sf.Append(String.Format("R {0}: ", rx));
+                        for(int cx=0; cx<16; cx++)
+                        {
+                            sf.Append(String.Format("{0:X}{1:X}{2:X} ", ba[ix],ba[ix+1],ba[ix+2]));
+                            ix += 3;
+                        }
+                        sf.Append("\n");
+                    }
+                    Console.Write(sf.ToString());
                     Bitmap bimg = new Bitmap(16, 16, PixelFormat.Format24bppRgb);
                     Rectangle r = new Rectangle(0, 0, 16, 16);
                     BitmapData bmpData = bimg.LockBits(r, ImageLockMode.WriteOnly, bimg.PixelFormat);

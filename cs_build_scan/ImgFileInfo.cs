@@ -35,6 +35,7 @@ namespace cs_build_scan
         internal void MakeThumb()
         {
             tmb = new byte[Settings.TNMEM];
+            //Byte []ttmb = new byte[Settings.TNMEM];
 
             using (MemoryStream mStream = new MemoryStream(bytes))
             {
@@ -47,6 +48,13 @@ namespace cs_build_scan
                 Marshal.Copy(ptr, tmb, 0, Settings.TNMEM);
                 b.UnlockBits(bmpdata);
                 b.Dispose();
+            }
+            // Image gives us BGR, we need to swap B&G to give RGB
+            for(int px=0; px<Settings.TNMEM; px+=3)
+            {
+                byte t = tmb[px+0];
+                tmb[px+0] = tmb[px+2];
+                tmb[px+2] = t;
             }
         }
 

@@ -160,55 +160,92 @@ bool ImgUtils::GetImageInfo(ImageInfo *ii)
 
 }
 
-
-
-double ImgUtils::GetCloseness(int8_t* i1, int8_t* i2, SearchType scanType)
+void ImgUtils::PrintThumb(const char* txt, uint8_t* t)
 {
-	float rd = 0.0;
-	float gd = 0.0;
-	float bd = 0.0;
+	printf("%s : Pixels:-\n", txt);
+	int ix = 0;
+	for (int rx = 0; rx < 16; rx++)
+	{
+		printf("R %d: ", rx);
+		for (int cx = 0; cx < 16; cx++)
+		{
+			printf("%2.2x%2.2x%2.2x ", t[ix], t[ix + 1], t[ix + 2]);
+			ix += 3;
+		}
+		printf("\n");
+	}
+	printf("\n");
+}
+
+
+double ImgUtils::GetCloseness(int8_t* _srch, int8_t* _cand, SearchType scanType)
+{
+
 	double td = 0.0;
+	uint8_t* srch = (uint8_t*)_srch;
+	uint8_t* cand = (uint8_t*)_cand;
 
 	if (scanType == Assembler)
-		return GetAsmCloseness(i1, i2);
+		return GetAsmCloseness(_srch, _cand);
 
-	printf("I1: %2.2x %2.2x %2.2x  I2  %2.2x %2.2x %2.2x \n", i1[0] & 0xFF, i1[1] & 0xFF, i1[2] & 0xFF,  i2[0] & 0xFF, i2[1] & 0xFF, i2[2] & 0xFF);
+	PrintThumb("Search", (uint8_t*)srch);
+	PrintThumb("Candidate", (uint8_t*)cand);
 
-	for (int tix = 0; tix < TNMEM; tix+=3)
+
+	switch (scanType)
 	{
-		double srx = i1[tix];
-		double crx = i2[tix];
-		double sgx = i1[tix+1];
-		double cgx = i2[tix+1];
-		double sbx = i1[tix+2];
-		double cbx = i2[tix+2];
-
-		switch (scanType)
+	case Simple:
+		for (int tix = 0; tix < TNMEM; tix += 3)
 		{
-			case Mono:
-			{
-				double lums = ((double)srx * 0.21) + ((double)sgx * 0.72) + ((double)sbx * 0.07);
-				double lumc = ((double)crx * 0.21) + ((double)cgx * 0.72) + ((double)cbx * 0.07);
-				td += abs(lums - lumc) / 255.0;
-			}
-			break;
-			case Simple:
-			{
-				int tx = abs(sbx - cbx) + abs(sgx - cgx) + abs(srx - crx);
-				td += (double)tx;
-			}
-			break;
-			case Luma:
-			{
-				double dxr = abs(srx - crx) * 0.21;
-				double dxg = abs(sgx - cgx) * 0.72;
-				double dxb = abs(sbx - cbx) * 0.07;
-				double tx = (dxr + dxg + dxb);
-				td += tx;
-			}
+			int srx = cand[tix];
+			int crx = srch[tix];
+			int sgx = cand[tix + 1];
+			int cgx = srch[tix + 1];
+			int sbx = cand[tix + 2];
+			int cbx = srch[tix + 2];
+
+			int tx = abs(sbx - cbx) + abs(sgx - cgx) + abs(srx - crx);
+			td += (double)tx;
+		}
+		break;
+
+		//printf("SRCH: %2.2x %2.2x %2.2x  CAND  %2.2x %2.2x %2.2x \n", srch[0] & 0xFF, srch[1] & 0xFF, srch[2] & 0xFF,  cand[0] & 0xFF, cand[1] & 0xFF, cand[2] & 0xFF);
+	case Mono:
+		for (int tix = 0; tix < TNMEM; tix += 3)
+		{
+			double srx = srch[tix];
+			double crx = cand[tix];
+			double sgx = srch[tix + 1];
+			double cgx = cand[tix + 1];
+			double sbx = srch[tix + 2];
+			double cbx = cand[tix + 2];
+
+			double lums = ((double)srx * 0.21) + ((double)sgx * 0.72) + ((double)sbx * 0.07);
+			double lumc = ((double)crx * 0.21) + ((double)cgx * 0.72) + ((double)cbx * 0.07);
+			td += abs(lums - lumc) / 255.0;
+
+		}
+		break;
+
+	case Luma:
+		for (int tix = 0; tix < TNMEM; tix += 3)
+		{
+			double srx = srch[tix];
+			double crx = cand[tix];
+			double sgx = srch[tix + 1];
+			double cgx = cand[tix + 1];
+			double sbx = srch[tix + 2];
+			double cbx = cand[tix + 2];
+
+
+			double dxr = abs(srx - crx) * 0.21;
+			double dxg = abs(sgx - cgx) * 0.72;
+			double dxb = abs(sbx - cbx) * 0.07;
+			double tx = (dxr + dxg + dxb);
+			td += tx;
 		}
 	}
-
+	printf("Closeness %f\n", td);
 	return td;
 
 }

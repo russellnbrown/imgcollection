@@ -160,7 +160,7 @@ ImageInfo* iutil_getImageInfo(Set* s, const char* rpath)
 				tb += 3;
 			}
 		}
-
+		util_printThumb("Search images created", ii->thumb);
 		// free image
 		FreeImage_Unload(tm);
 	}
@@ -180,26 +180,31 @@ ImageInfo* iutil_getImageInfo(Set* s, const char* rpath)
 
 // iutil_compare - ultra simple compare of two thumbnails, returns the
 // total in RGB comparison
-double iutil_compare(uint8_t* i1, uint8_t* i2)
+double iutil_compare(uint8_t* cand, uint8_t* srch)
 {
 
-	float rd = 0.0;
-	float gd = 0.0;
-	float bd = 0.0;
+
 	double td = 0.0;
+
+	util_printThumb("Compare: search image", srch);
+	util_printThumb("Compare: candidate image", cand);
+
+	//printf("SRCH: %2.2x %2.2x %2.2x  CAND  %2.2x %2.2x %2.2x \n", srch[0] & 0xFF, srch[1] & 0xFF, srch[2] & 0xFF, cand[0] & 0xFF, cand[1] & 0xFF, cand[2] & 0xFF);
+
 
 	for (int tix = 0; tix < TNSMEM; tix += 3)
 	{
-		int srx = i1[tix];
-		int crx = i2[tix];
-		int sgx = i1[tix + 1];
-		int cgx = i2[tix + 1];
-		int sbx = i1[tix + 2];
-		int cbx = i2[tix + 2];
+		int srx = cand[tix];
+		int crx = srch[tix];
+		int sgx = cand[tix + 1];
+		int cgx = srch[tix + 1];
+		int sbx = cand[tix + 2];
+		int cbx = srch[tix + 2];
 
 		int tx = abs(sbx - cbx) + abs(sgx - cgx) + abs(srx - crx);
 		td += (double)tx;
 	}
+	printf("Closeness %f\n", td);
 
 	return td;
 }

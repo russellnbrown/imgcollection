@@ -75,6 +75,6 @@ public:
 	static bool GetImageInfo(ImageInfo *ii);		// get other image info ( crc & thumb ) of a file in an image info
 	static double GetCloseness(int8_t* i1, int8_t* i2, SearchType srch=Simple);// get a closeness between two rgb thumbnails
 	static double GetAsmCloseness(int8_t* i1, int8_t* i2);// get a closeness between two rgb thumbnails using assembler
-	
+	static void PrintThumb(const char* txt, uint8_t* t);
 	static string tolower(string s) { transform(s.begin(), s.end(), s.begin(), ::tolower); return s; }
 };
