@@ -1,4 +1,21 @@
-﻿using System;
+﻿/*
+ * Copyright (C) 2019 russell brown
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -6,6 +23,8 @@ using System.Runtime.InteropServices;
 
 namespace cs_build_scan
 {
+    // ImgFileInfo 
+    // Gets relevant information for an image file. directory & image hash, file anme, thumbnail (optional ) 
     public class ImgFileInfo : IDisposable
     {
         public string name;
@@ -16,6 +35,8 @@ namespace cs_build_scan
         public Int64 len;
         public ImgFileInfo(Set s, FileInfo f)
         {
+            // If set is specified, we will calculate the directory key for the set
+            // otherwise just ignore it
             if ( s != null )
             {
                 string dpart = s.RelativeToTop(f.DirectoryName);

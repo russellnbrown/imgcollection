@@ -1,13 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
+﻿/*
+ * Copyright (C) 2019 russell brown
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+using System;
 using System.Threading;
-using System.Text;
 
 namespace cs_build_scan
 {
+    // l - provide a basic console/file logging 
     public class l
     {
-
+        // the file log and min level to log to it
         private static System.IO.StreamWriter logs = null;
         private static Level minLevelLogged = Level.Info;
 
@@ -17,6 +33,7 @@ namespace cs_build_scan
             set { l.minLevelLogged = value; }
         }
 
+        // the min level logged to console
         private static Level miConsoleLevelLogged = Level.Info;
 
         public static Level MinConsoleLogLevel
@@ -25,14 +42,19 @@ namespace cs_build_scan
             set { l.miConsoleLevelLogged = value; }
         }
 
+        /// <summary>
+        ///  the logging levels available
+        /// </summary>
         public enum Level { Nano, Debug, Info, Warn, Error, Fatal };
         private static char[] indicators = { 'N', 'D', 'I', 'W', 'E', 'F' };
 
+        // Timestamp - provide a string to timestamp entry
         private static string Timestamp()
         {
             return DateTime.Now.ToString("HH:mm:ss.fff");
         }
 
+        // The file name to log to
         public static void To(string file)
         {
             if (logs != null)
@@ -51,6 +73,7 @@ namespace cs_build_scan
             }
         }
 
+        // Write line does the acrual logging to file & console
         public static void WriteLine(Level lvl, string l)
         {
             lock (logs)
@@ -87,72 +110,44 @@ namespace cs_build_scan
 
                 if (lvl == Level.Fatal)
                 {
+                    Close();
                     Environment.ExitCode = -1;
                     System.Diagnostics.Process.GetCurrentProcess().Kill();
                 }
             }
         }
 
-
-        public static void WriteLine(Level lvl, string fmt, object o1) { String s = String.Format(fmt, o1); WriteLine(lvl, s); }
-        public static void WriteLine(Level lvl, string fmt, object o1, object o2) { String s = String.Format(fmt, o1, o2); WriteLine(lvl, s); }
-        public static void WriteLine(Level lvl, string fmt, object o1, object o2, object o3) { String s = String.Format(fmt, o1, o2, o3); WriteLine(lvl, s); }
-        public static void WriteLine(Level lvl, string fmt, object o1, object o2, object o3, object o4) { String s = String.Format(fmt, o1, o2, o3, o4); WriteLine(lvl, s); }
-        public static void WriteLine(Level lvl, string fmt, object o1, object o2, object o3, object o4, object o5) { String s = String.Format(fmt, o1, o2, o3, o4, o5); WriteLine(lvl, s); }
-        public static void WriteLine(Level lvl, string fmt, object o1, object o2, object o3, object o4, object o5, object o6) { String s = String.Format(fmt, o1, o2, o3, o4, o5, o6); WriteLine(lvl, s); }
-        public static void WriteLine(Level lvl, string fmt, object o1, object o2, object o3, object o4, object o5, object o6, object o7) { String s = String.Format(fmt, o1, o2, o3, o4, o5, o6, o7); WriteLine(lvl, s); }
-        public static void WriteLine(Level lvl, string fmt, object o1, object o2, object o3, object o4, object o5, object o6, object o7, object o8) { String s = String.Format(fmt, o1, o2, o3, o4, o5, o6, o7, o8); WriteLine(lvl, s); }
-
+        // pretty sure there is a varargs way to do this....
         public static void Debug(string s) { WriteLine(Level.Debug, s); }
         public static void Debug(string fmt, object o1) { String s = String.Format(fmt, o1); WriteLine(Level.Debug, s); }
         public static void Debug(string fmt, object o1, object o2) { String s = String.Format(fmt, o1, o2); WriteLine(Level.Debug, s); }
         public static void Debug(string fmt, object o1, object o2, object o3) { String s = String.Format(fmt, o1, o2, o3); WriteLine(Level.Debug, s); }
         public static void Debug(string fmt, object o1, object o2, object o3, object o4) { String s = String.Format(fmt, o1, o2, o3, o4); WriteLine(Level.Debug, s); }
-        public static void Debug(string fmt, object o1, object o2, object o3, object o4, object o5) { String s = String.Format(fmt, o1, o2, o3, o4, o5); WriteLine(Level.Debug, s); }
-        public static void Debug(string fmt, object o1, object o2, object o3, object o4, object o5, object o6) { String s = String.Format(fmt, o1, o2, o3, o4, o5, o6); WriteLine(Level.Debug, s); }
-        public static void Debug(string fmt, object o1, object o2, object o3, object o4, object o5, object o6, object o7) { String s = String.Format(fmt, o1, o2, o3, o4, o5, o6, o7); WriteLine(Level.Debug, s); }
-        public static void Debug(string fmt, object o1, object o2, object o3, object o4, object o5, object o6, object o7, object o8) { String s = String.Format(fmt, o1, o2, o3, o4, o5, o6, o7, o8); WriteLine(Level.Debug, s); }
-
+ 
         public static void Info(string s) { WriteLine(Level.Info, s); }
         public static void Info(string fmt, object o1) { String s = String.Format(fmt, o1); WriteLine(Level.Info, s); }
         public static void Info(string fmt, object o1, object o2) { String s = String.Format(fmt, o1, o2); WriteLine(Level.Info, s); }
         public static void Info(string fmt, object o1, object o2, object o3) { String s = String.Format(fmt, o1, o2, o3); WriteLine(Level.Info, s); }
         public static void Info(string fmt, object o1, object o2, object o3, object o4) { String s = String.Format(fmt, o1, o2, o3, o4); WriteLine(Level.Info, s); }
-        public static void Info(string fmt, object o1, object o2, object o3, object o4, object o5) { String s = String.Format(fmt, o1, o2, o3, o4, o5); WriteLine(Level.Info, s); }
-        public static void Info(string fmt, object o1, object o2, object o3, object o4, object o5, object o6) { String s = String.Format(fmt, o1, o2, o3, o4, o5, o6); WriteLine(Level.Info, s); }
-        public static void Info(string fmt, object o1, object o2, object o3, object o4, object o5, object o6, object o7) { String s = String.Format(fmt, o1, o2, o3, o4, o5, o6, o7); WriteLine(Level.Info, s); }
-        public static void Info(string fmt, object o1, object o2, object o3, object o4, object o5, object o6, object o7, object o8) { String s = String.Format(fmt, o1, o2, o3, o4, o5, o6, o7, o8); WriteLine(Level.Info, s); }
-
+ 
         public static void Warn(string s) { WriteLine(Level.Warn, s); }
         public static void Warn(string fmt, object o1) { String s = String.Format(fmt, o1); WriteLine(Level.Warn, s); }
         public static void Warn(string fmt, object o1, object o2) { String s = String.Format(fmt, o1, o2); WriteLine(Level.Warn, s); }
         public static void Warn(string fmt, object o1, object o2, object o3) { String s = String.Format(fmt, o1, o2, o3); WriteLine(Level.Warn, s); }
         public static void Warn(string fmt, object o1, object o2, object o3, object o4) { String s = String.Format(fmt, o1, o2, o3, o4); WriteLine(Level.Warn, s); }
-        public static void Warn(string fmt, object o1, object o2, object o3, object o4, object o5) { String s = String.Format(fmt, o1, o2, o3, o4, o5); WriteLine(Level.Warn, s); }
-        public static void Warn(string fmt, object o1, object o2, object o3, object o4, object o5, object o6) { String s = String.Format(fmt, o1, o2, o3, o4, o5, o6); WriteLine(Level.Warn, s); }
-        public static void Warn(string fmt, object o1, object o2, object o3, object o4, object o5, object o6, object o7) { String s = String.Format(fmt, o1, o2, o3, o4, o5, o6, o7); WriteLine(Level.Warn, s); }
-        public static void Warn(string fmt, object o1, object o2, object o3, object o4, object o5, object o6, object o7, object o8) { String s = String.Format(fmt, o1, o2, o3, o4, o5, o6, o7, o8); WriteLine(Level.Warn, s); }
-
+ 
         public static void Error(string s) { WriteLine(Level.Error, s); }
         public static void Error(string fmt, object o1) { String s = String.Format(fmt, o1); WriteLine(Level.Error, s); }
         public static void Error(string fmt, object o1, object o2) { String s = String.Format(fmt, o1, o2); WriteLine(Level.Error, s); }
         public static void Error(string fmt, object o1, object o2, object o3) { String s = String.Format(fmt, o1, o2, o3); WriteLine(Level.Error, s); }
         public static void Error(string fmt, object o1, object o2, object o3, object o4) { String s = String.Format(fmt, o1, o2, o3, o4); WriteLine(Level.Error, s); }
-        public static void Error(string fmt, object o1, object o2, object o3, object o4, object o5) { String s = String.Format(fmt, o1, o2, o3, o4, o5); WriteLine(Level.Error, s); }
-        public static void Error(string fmt, object o1, object o2, object o3, object o4, object o5, object o6) { String s = String.Format(fmt, o1, o2, o3, o4, o5, o6); WriteLine(Level.Error, s); }
-        public static void Error(string fmt, object o1, object o2, object o3, object o4, object o5, object o6, object o7) { String s = String.Format(fmt, o1, o2, o3, o4, o5, o6, o7); WriteLine(Level.Error, s); }
-        public static void Error(string fmt, object o1, object o2, object o3, object o4, object o5, object o6, object o7, object o8) { String s = String.Format(fmt, o1, o2, o3, o4, o5, o6, o7, o8); WriteLine(Level.Error, s); }
-
+ 
         public static void Fatal(string s) { WriteLine(Level.Fatal, s); }
         public static void Fatal(string fmt, object o1) { String s = String.Format(fmt, o1); WriteLine(Level.Fatal, s); }
         public static void Fatal(string fmt, object o1, object o2) { String s = String.Format(fmt, o1, o2); WriteLine(Level.Fatal, s); }
         public static void Fatal(string fmt, object o1, object o2, object o3) { String s = String.Format(fmt, o1, o2, o3); WriteLine(Level.Fatal, s); }
         public static void Fatal(string fmt, object o1, object o2, object o3, object o4) { String s = String.Format(fmt, o1, o2, o3, o4); WriteLine(Level.Fatal, s); }
-        public static void Fatal(string fmt, object o1, object o2, object o3, object o4, object o5) { String s = String.Format(fmt, o1, o2, o3, o4, o5); WriteLine(Level.Fatal, s); }
-        public static void Fatal(string fmt, object o1, object o2, object o3, object o4, object o5, object o6) { String s = String.Format(fmt, o1, o2, o3, o4, o5, o6); WriteLine(Level.Fatal, s); }
-        public static void Fatal(string fmt, object o1, object o2, object o3, object o4, object o5, object o6, object o7) { String s = String.Format(fmt, o1, o2, o3, o4, o5, o6, o7); WriteLine(Level.Fatal, s); }
-        public static void Fatal(string fmt, object o1, object o2, object o3, object o4, object o5, object o6, object o7, object o8) { String s = String.Format(fmt, o1, o2, o3, o4, o5, o6, o7, o8); WriteLine(Level.Fatal, s); }
-
+ 
 
         public static void Close()
         {
@@ -161,17 +156,6 @@ namespace cs_build_scan
             logs = null;
         }
 
-        public static Level Parse(string clog)
-        {
-            string l = clog.ToLower();
-            if (l == "warn") return Level.Warn;
-            if (l == "error") return Level.Error;
-            if (l == "debug") return Level.Debug;
-            if (l == "fatal") return Level.Fatal;
-            if (l == "info") return Level.Info;
-            if (l == "nano") return Level.Nano;
-            return Level.Debug;
-        }
     }
 }
 
