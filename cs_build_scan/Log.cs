@@ -16,6 +16,7 @@
  */
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace cs_build_scan
@@ -74,6 +75,7 @@ namespace cs_build_scan
         }
 
         // Write line does the acrual logging to file & console
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public static void WriteLine(Level lvl, string l)
         {
             lock (logs)

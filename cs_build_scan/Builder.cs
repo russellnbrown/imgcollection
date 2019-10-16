@@ -24,6 +24,7 @@ namespace cs_build_scan
     class Builder
     {
         Set set = new Set();
+        
 
         public Builder(string setPath, string dirPath)
         {
@@ -58,6 +59,7 @@ namespace cs_build_scan
         {
             DirectoryInfo dtop = new DirectoryInfo(set.GetTop());
             walk(dtop);
+            set.StopAnyProcessingThreads();
         }
 
         private int processDirectory(DirectoryInfo d)

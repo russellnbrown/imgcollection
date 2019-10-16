@@ -19,6 +19,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace cs_build_scan
 {
@@ -26,6 +28,8 @@ namespace cs_build_scan
     public class Set
     {
         private string location = "";                           // where the set is located
+        private bool useThreads = true;                         // are we going to use multiple threads
+                                                                // for image processing
 
         // the following constitute the 'set' 
         private string top = "";                                // top path to which all others are relative
@@ -35,7 +39,121 @@ namespace cs_build_scan
             new SortedDictionary<UInt32, ImgEntry>();           // unique images 
         internal SortedDictionary<UInt32, ImgEntry> GetImages() { return images;  }
 
-        // DirEntry - Holds data relecant to a directory
+        // processors is a list of image processing threads
+        private List<ImgProcessor> processors = new List<ImgProcessor>();
+        // singleton for easy access
+        private static Set instance = null;
+        public static Set Get { get => instance;  }
+
+        //
+        // ImgProcessor - implement file loading, crc calc & thumbnail creation
+        // in in threads to maximize throughput. Set.processors is a list of these
+        // threads. call AddFile to process a file. call Stop to stop
+        //
+        public class ImgProcessor
+        {
+            private int             pnum = 0;
+            private int             filecount = 0; // keep tabs on how many images we processed
+            public int Filecount { get => filecount; set => filecount = value; }
+            private bool            running = true;
+            private ImgFileInfo     ifi = null;
+            private Thread          thr = null;
+
+            // ImgProcessor
+            // Stores the thread count and start thread
+            public ImgProcessor(int pnum)
+            {
+                this.pnum = pnum; 
+                l.Info("Starting thread {0}", pnum);
+                thr = new Thread(new ThreadStart(Run));
+                thr.Start();
+            }
+
+            // Stop
+            // Stop thread. set running to false so that main thread loop exists. call
+            // Join to ensure it stopped correctly
+            public void Stop()
+            {
+                l.Info("Stopping thread {0}", pnum);
+                running = false;
+                if ( thr != null )
+                    thr.Join();
+                l.Info("Stopped thread {0}, it processes {1} files.", pnum, Filecount);
+            }
+
+            // AddFile
+            // Calle by Set.AddFile to process a file. If our thread is busy processing
+            // an existing file ( ifi not null ) then return false to indicate we couldnt
+            // process it. otherwise return true.
+            // the thread monitors ifi in its main loop to get/clear a file to process
+ 
+            public bool AddFile(ImgFileInfo _ifi)
+            {
+                if (ifi != null) // we are busy, reject file
+                    return false;
+
+                // not doing anything - we can accept this file, thread will pick it up
+                ifi = _ifi;
+                //l.Info("File {0} accepted by thread {1}", ifi.name, pnum);
+                return true;
+            }
+
+            // Run
+            // The main thread body. 
+            public void Run()
+            {
+                // loop continuously looking for work to do. We stop when
+                // running is set to false ( via Stop )
+                //l.Info("Thread {0} is running", pnum);
+                while (running)
+                {
+                    // if ifi is null, then there is nothing to do. have a nap and repeat
+                    if ( ifi == null ) // nowt to do
+                    {
+                        Thread.Sleep(1);
+                        continue;
+                    }
+                    // ifi is set, we have a file to work with
+                    //l.Info("Thread {0} is processing {1}", pnum, ifi.name);
+                    // read data & make crc32
+                    ifi.MakeHashes();
+                    // mahe the thumb
+                    ifi.MakeThumb();
+                    filecount++;
+
+                    // Call Set.LoadFile to return crc & thumb and have it entered into set
+                    // 'LoadFile' is synchronized to prevent multiple threads from acessing
+                    // set structures at the same time
+                    Set.Get.LoadFile(ifi, pnum);
+
+                    // now set ifi to null to indicate we can accept another file
+                    ifi = null;
+                }
+                //l.Info("Thread {0} is stopping", pnum);
+            }
+        }
+
+        // LoadFile - this is used by image processing threads, if created, to deposit results into
+        // set - it needs to be synchronized to prevent files and images becoming corrupted. 
+        // Alternitivly it may just be called by main thread if threading not enabled
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        internal void LoadFile(ImgFileInfo ifi, int p)
+        {
+
+            FileEntry fe = new FileEntry(ifi.dhash, ifi.crc, ifi.name);
+            ImgEntry ie = new ImgEntry(ifi.crc, ifi.tmb);
+            //l.Info("File {0} added by thread {1}", ifi.name, p);
+
+            // now add file entry to files list
+            files.Add(fe);
+            // and the imgentry to the images map ( ignore if duplicate )
+            if (!images.ContainsKey(ie.crc))
+                images.Add(ie.crc, ie);
+            else
+                l.Info("Duplicate image: " + ie);
+        }
+
+        // DirEntry - Holds data relevant to a directory
         public class DirEntry
         {
             public UInt32 dhash;    // CRC32 of directory path ( key used in fileent )
@@ -87,12 +205,19 @@ namespace cs_build_scan
 
         };
 
+        // Set constructor
+        // set instance singleton to allow easy access via 'Get'
+        internal Set()
+        {
+            instance = this;
+        }
+
         // Initialize
-        // basic initialization, check set location
-        // exists and store it
+        // basic initialization, check set location  exists and store it. Start 
+        // any image processing threads
         public bool Initialize(string path)
         {
- 
+            
             if (!Directory.Exists(path))
             {
                 try
@@ -107,6 +232,23 @@ namespace cs_build_scan
                 }
             }
             location = path;
+
+            // nothing else to do if not using threads
+            if (!useThreads)
+            {
+                l.Info("Not using threads");
+                return true;
+            }
+
+            // otherwise we need to create the image processing threads
+            // how many ? number of processors * 2 seems to work well, fewer
+            // or more seems to be slower or same
+            int nThreads = Environment.ProcessorCount * 2;
+            if (nThreads < 1)
+                nThreads = 1;
+            l.Info("Using {0} image processing threads", nThreads);
+            for(int p = 0; p < nThreads; p++)
+                processors.Add(new ImgProcessor(p));
             return true;
         }
 
@@ -126,23 +268,23 @@ namespace cs_build_scan
         // file & img entries and  add to list/map
         internal void AddFile(FileInfo f)
         {
-            // ImgFileInfo will get us the files crc
-            using (ImgFileInfo ifi = new ImgFileInfo(this, f))
+            ImgFileInfo ifi = new ImgFileInfo(this, f);
+            if ( !useThreads )
             {
-                // make a fileentry
-                FileEntry fe = new FileEntry(ifi.dhash, ifi.crc, ifi.name);
+                ifi.MakeHashes();
                 // mahe the thumb
                 ifi.MakeThumb();
-                // make an imgentry
-                ImgEntry ie = new ImgEntry(ifi.crc, ifi.tmb);
-
-                // now add file entry to files list
-                files.Add(fe);
-                // and the imgentry to the images map ( ignore if duplicate )
-                if (!images.ContainsKey(ie.crc))
-                    images.Add(ie.crc, ie);
-                else
-                    l.Info("Duplicate image: " + ie);
+                LoadFile(ifi, 0);
+                return;
+            }
+            while (true)
+            {
+                foreach (ImgProcessor ip in processors)
+                {
+                    if (ip.AddFile(ifi))
+                        return;
+                }
+                System.Threading.Thread.Sleep(1);
             }
         }
 
@@ -318,6 +460,17 @@ namespace cs_build_scan
                 }
             }
             return matches;
+        }
+
+        public void StopAnyProcessingThreads()
+        {
+            if (!useThreads)
+                return;
+
+            l.Info("Stopping all threads");
+            foreach (var p in processors)
+                p.Stop();
+            l.Info("All threads stopped");
         }
 
 

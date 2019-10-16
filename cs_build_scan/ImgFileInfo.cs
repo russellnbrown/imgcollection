@@ -28,11 +28,13 @@ namespace cs_build_scan
     public class ImgFileInfo : IDisposable
     {
         public string name;
+        public string path;
         public UInt32 crc;
         public byte[] bytes;
         public byte[] tmb;
         public UInt32 dhash;
         public Int64 len;
+
         public ImgFileInfo(Set s, FileInfo f)
         {
             // If set is specified, we will calculate the directory key for the set
@@ -44,9 +46,18 @@ namespace cs_build_scan
             }
             else
                 dhash = 0;
+
+            path = f.FullName;
             name = f.Name;
-            var fo = f.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
             len = f.Length;
+
+        }
+
+        internal void MakeHashes()
+        {
+            FileInfo f = new FileInfo(path);
+            var fo = f.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
+            
             bytes = new byte[len];
             fo.Read(bytes, 0, (int)len);
             crc = Utils.GetHash(bytes);
