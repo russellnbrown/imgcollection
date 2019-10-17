@@ -30,27 +30,29 @@ ImgCollectionBuilder::ImgCollectionBuilder()
 {
 	instance = this;
 	ic = new ImgCollection();
+	int nt = std::thread::hardware_concurrency() * 2;
+
+	// Build & Search can be multithreaded, find out how many  based on the number of
+	//  processors/cores in the machine. 
+	
+	numThreads = std::thread::hardware_concurrency() * 2; // *2 seems to work well more or less is slower
+	if (numThreads <= 0)
+		numThreads = 2;
+	//numThreads = 0;
 }
 
-// init. only called from create, creates the image encoding threads
-void ImgCollectionBuilder::init()
+// initCreate. only called from create, creates the image encoding threads
+void ImgCollectionBuilder::initCreate()
 {
 	// flag used to end threads when needed
 	running = true;
 
-	// create a number of encoder threads based on the number of processors/cores
-	// in the machine. We dont create a thread for each file as its scanned as we will 
-	// run out of resources. 
-	int nt = std::thread::hardware_concurrency();
-	if (nt <= 0)
-		nt = 2;
-	
 	// start each encoder
-	for (int t = 0; t < nt; t++)
+	for (int t = 0; t < numThreads; t++)
 	{
 		RunThreadInfo *rti = new RunThreadInfo();
 		rti->id = t;
-		rti->trd = thread(_run, rti);
+		rti->trd = thread(&ImgCollectionBuilder::imgProcessingThread, this, rti);
 		threads.push_back(rti);
 		st.incThreads();
 	}
@@ -63,8 +65,29 @@ void ImgCollectionBuilder::init()
 //    we cant use serialization **
 void ImgCollectionBuilder::Load(fs::path set)
 {
+	initFind();
+
+	// We can split loading into 3 threads, one to read each
+	// file
+	setToLoad = set;
+	thread dt = thread(&ImgCollectionBuilder::loadDirs, this);
+	thread ft = thread(&ImgCollectionBuilder::loadFiles, this);
+	thread it = thread(&ImgCollectionBuilder::loadImages, this);
+	dt.join();
+	ft.join();
+	it.join();
+
+	logger::info(st.progressStr());
+
+	return;
+}
+
+
+
+void ImgCollectionBuilder::loadDirs()
+{
 	string line;
-	ifstream idir(set.string() + "/dirs.txt");
+	ifstream idir(setToLoad.string() + "/dirs.txt");
 	getline(idir, line);
 
 	top = fs::path(line);
@@ -75,7 +98,7 @@ void ImgCollectionBuilder::Load(fs::path set)
 
 	while (getline(idir, line))
 	{
-		ImgCollectionDirItem *d = ImgCollectionDirItem::fromSave(line);
+		ImgCollectionDirItem* d = ImgCollectionDirItem::fromSave(line);
 		if (d != nullptr)
 		{
 			st.incDirs();
@@ -83,12 +106,18 @@ void ImgCollectionBuilder::Load(fs::path set)
 		}
 	}
 	idir.close();
-	
 
-	ifstream ifile(set.string() + "/files.txt");
+	return;
+}
+
+void ImgCollectionBuilder::loadFiles()
+{
+	string line;
+
+	ifstream ifile(setToLoad.string() + "/files.txt");
 	while (getline(ifile, line))
 	{
-		ImgCollectionFileItem *f = ImgCollectionFileItem::fromSave(line);
+		ImgCollectionFileItem* f = ImgCollectionFileItem::fromSave(line);
 		if (f != nullptr)
 		{
 			st.incFiles();
@@ -96,28 +125,39 @@ void ImgCollectionBuilder::Load(fs::path set)
 		}
 	}
 	ifile.close();
-	
 
 
-	ifstream iimg(set.string() + "/images.bin", ios::binary);
+	return;
+}
+
+void ImgCollectionBuilder::loadImages()
+{
+	ifstream iimg(setToLoad.string() + "/images.bin", ios::binary);
 	int64_t icrc;
 	int8_t thumb[TNMEM];
+	int stx = 0;
 	while (true)
 	{
 		if (iimg.read((char*)&icrc, sizeof(icrc)))
 		{
 			iimg.read((char*)thumb, TNMEM);
-			ImgCollectionImageItem *sii = new ImgCollectionImageItem(icrc, thumb);
-			ic->images[icrc]=sii;
+			ImgCollectionImageItem* sii = new ImgCollectionImageItem(icrc, thumb);
+			// store in image map
+			ic->images[icrc] = sii;
+			// and also in lists used by search threads
+			if (numThreads > 0)
+			{
+				srchThreads[stx]->myItems.push_back(sii);
+				if (++stx == numThreads)
+					stx = 0;
+			}
+
 			st.incImages();
-		//	printf("CRC: %lld RGB: %2.2x %2.2x %2.2x\n", icrc, thumb[0]&0xFF, thumb[1] & 0xFF, thumb[2] & 0xFF);
 		}
 		else
 			break;
 	}
 	iimg.close();
-	
-	logger::info(st.progressStr());
 
 	return;
 }
@@ -128,44 +168,63 @@ bool compareCloseness(const SearchResult *first, const SearchResult *second)
 	return first->closeness < second->closeness;
 }
 
+
+void ImgCollectionBuilder::initFind()
+{
+	if (numThreads > 0)
+		for (int x = 0; x < numThreads; x++)
+			srchThreads.push_back(new SearchThreadInfo());
+}
+
 // Find. Searches the imgcollection to find a matching image. We calculate
 // a 'closeness' value for each image and keep the results in a treeset 
 // so that we can return them in order
 void ImgCollectionBuilder::Find(fs::path search)
 {
 
+
 	// Create an ImageInfo of the file to search and get
 	// file bytes and thumb
-	ImageInfo *ii = new ImageInfo();
-	ii->de = search;
-	ImgUtils::GetImageInfo(ii);
+	searchItem = new ImageInfo();
+	searchItem->de = search;
+	ImgUtils::GetImageInfo(searchItem);
 
 	//ofstream odir("debug.c.csv");
 	
-	std::list<SearchResult*> results;
 
 
 	// go through all images and calculate a closeness
 	Timer::start();
-	for (map<int64_t, ImgCollectionImageItem*>::iterator it = ic->images.begin(); it != ic->images.end(); ++it)
+
+
+	if (srchThreads.size() == 0 )
 	{
-		int64_t icrc = it->first;
-		ImgCollectionImageItem *f = it->second;
-		SearchResult *sr = new SearchResult();
-		// create a searchresult for this image and add to the list
-		//stringstream ss;
-		//ss << "img," << f->crc;
-		sr->i = f;
-		if (ii->crc == f->crc)
-			sr->closeness = 0; // identical images
-		else
+		for (map<int64_t, ImgCollectionImageItem*>::iterator it = ic->images.begin(); it != ic->images.end(); ++it)
 		{
-			sr->closeness = ImgUtils::GetCloseness(ii->thumb, f->thumb);// , &ss);
-			//odir << ss.str() << endl;
+			int64_t icrc = it->first;
+			ImgCollectionImageItem* f = it->second;
+			SearchResult* sr = new SearchResult();
+			// create a searchresult for this image and add to the list
+			sr->i = f;
+			if (searchItem->crc == f->crc)
+				sr->closeness = 0; // identical images
+			else
+			{
+				sr->closeness = ImgUtils::GetCloseness(searchItem->thumb, f->thumb);
+			}
+			results.push_back(sr);
 		}
-		results.push_back(sr);
+	}
+	else
+	{
+		for (vector<SearchThreadInfo*>::iterator sti = srchThreads.begin(); sti != srchThreads.end(); sti++)
+			(*sti)->trd = thread(&ImgCollectionBuilder::tFind, this, (*sti));
 
-
+		for (vector<SearchThreadInfo*>::iterator sti = srchThreads.begin(); sti != srchThreads.end(); sti++)
+		{
+			(*sti)->trd.join();
+			results.splice(results.end(), (*sti)->results, (*sti)->results.begin(), (*sti)->results.end());
+		}
 	}
 	//sort results
 	
@@ -198,13 +257,29 @@ void ImgCollectionBuilder::Find(fs::path search)
 
 }
 
-void ImgCollectionBuilder::_run(RunThreadInfo *ri)
+void ImgCollectionBuilder::tFind(SearchThreadInfo *xx)
 {
-	ImgCollectionBuilder::instance->run(ri);
+
+
+	for (list<ImgCollectionImageItem*>::iterator it = xx->myItems.begin(); it != xx->myItems.end(); ++it)
+	{
+		ImgCollectionImageItem* f = *it;
+		SearchResult* sr = new SearchResult();
+		// create a searchresult for this image and add to the list
+		sr->i = f;
+		if (searchItem->crc == f->crc)
+			sr->closeness = 0; // identical images
+		else
+		{
+			sr->closeness = ImgUtils::GetCloseness(searchItem->thumb, f->thumb);
+		}
+		xx->results.push_back(sr);
+	}
 }
 
-// The 'immage processing' thread
-void ImgCollectionBuilder::run(RunThreadInfo *ri)
+
+// The 'image processing' thread
+void ImgCollectionBuilder::imgProcessingThread(RunThreadInfo *ri)
 {
 	logger::info("Thread " + to_string(ri->id) + " running");
 	ImageInfo *current = nullptr;
@@ -261,7 +336,7 @@ void ImgCollectionBuilder::Create(fs::path path)
 	stop = top.string();
 	ImgUtils::Replace(stop, "\\", "/");
 
-	init();
+	initCreate();
 	walkFiles(path);
 }
 

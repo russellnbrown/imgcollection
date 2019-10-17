@@ -84,17 +84,19 @@ int main(int argc, char *argv[])
 	FreeImage_Initialise(TRUE);
 	logger::info("Using FreeImage version " + string(FreeImage_GetVersion()));
 
+
 	// This is create...
 	if (argc == 4 && action == "-c")
 	{
 		logger::info("Create ImgCollection");
+
+
 
 		// Get files & db path & check it exists
 		fs::path files = checkFiles(argv[3]);
 		fs::path set = checkSet(argv[2], true);
 		if (!fs::exists(files))
 			logger::fatal("Dir to scan does not exist");
-
 
 		// create a Set builder. This will form the ImgCollection in memory
 		ImgCollectionBuilder *sb = new ImgCollectionBuilder();
@@ -108,6 +110,8 @@ int main(int argc, char *argv[])
 		Timer::start();
 		sb->Save(set);
 		Timer::stop("Saving ");
+
+
 	}
 	// this is a search...
 	else if (argc == 4 && action == "-s")
@@ -136,8 +140,8 @@ int main(int argc, char *argv[])
 
 	// print some stats
 	logger::info(Timer::report());
-
 	FreeImage_DeInitialise();
+
 
     return 0;
 

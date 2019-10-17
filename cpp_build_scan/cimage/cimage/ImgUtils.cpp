@@ -188,8 +188,8 @@ double ImgUtils::GetCloseness(int8_t* _srch, int8_t* _cand, SearchType scanType)
 	if (scanType == Assembler)
 		return GetAsmCloseness(_srch, _cand);
 
-	PrintThumb("Search", (uint8_t*)srch);
-	PrintThumb("Candidate", (uint8_t*)cand);
+	//PrintThumb("Search", (uint8_t*)srch);
+	//PrintThumb("Candidate", (uint8_t*)cand);
 
 
 	switch (scanType)
@@ -209,7 +209,6 @@ double ImgUtils::GetCloseness(int8_t* _srch, int8_t* _cand, SearchType scanType)
 		}
 		break;
 
-		//printf("SRCH: %2.2x %2.2x %2.2x  CAND  %2.2x %2.2x %2.2x \n", srch[0] & 0xFF, srch[1] & 0xFF, srch[2] & 0xFF,  cand[0] & 0xFF, cand[1] & 0xFF, cand[2] & 0xFF);
 	case Mono:
 		for (int tix = 0; tix < TNMEM; tix += 3)
 		{
@@ -245,7 +244,7 @@ double ImgUtils::GetCloseness(int8_t* _srch, int8_t* _cand, SearchType scanType)
 			td += tx;
 		}
 	}
-	printf("Closeness %f\n", td);
+	//printf("Closeness %f\n", td);
 	return td;
 
 }
