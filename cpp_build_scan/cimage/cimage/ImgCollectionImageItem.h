@@ -27,13 +27,13 @@ public:
 		this->crc = crc;
 		this->thumb = new int8_t[TNMEM];
 		std::memcpy(this->thumb,thumb, TNMEM);
-		tid = -1;
-		closeness = -1;
+		tix = -1;
+		
 	}
 	int64_t		crc; // the crc of the image file contents
 	int8_t		*thumb; // rgb tuples forming a thumbnail of image
-	int			tid;
-	double		closeness;
+	int			tix; // see threading notes
+	
 
 	string	toStr()
 	{

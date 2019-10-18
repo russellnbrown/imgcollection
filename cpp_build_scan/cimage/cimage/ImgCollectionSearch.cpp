@@ -1,5 +1,26 @@
 #include "cimage.h"
 
+
+#define SEARCHBYLIST
+//#define SEARCHBYINDEX
+
+// Threading Notes
+// two ways to do multithreaded search 
+// 1. SEARCHBYINDEX
+//    set a thread index in the ImageCollectionItemImage as they are loaded into the image map, inc for
+//    each new instance & back to 0 when numThreads is reached. In the search thread tFind, iterate through 
+//    all images in the map and only process those where the index matches the index of the thread
+//    ImgCollectionImageItem.tix == SearchThreadInfo.tix so each search thread only processes 1 in numThreads
+//    images
+//
+// 2. SEARCHBYLIST
+//    add a list of ImageCollectionItemImage to the SearchThreadInfo. As images are loaded add ImageCollectionItemImage
+//    to the list as well as the main map. In tFind, procedd that list rather than the main map.
+//
+// SEARCHBYLIST is faster as each thread dosn't have to iterate through the whole map, but does use more space
+// as the list duplicates pointers
+//
+
 SearchThreadInfo::SearchThreadInfo(int x)
 {
 	tix = x;
@@ -104,7 +125,7 @@ void ImgCollectionSearch::Find(fs::path search)
 
 // tFind
 // If using threads this is our thread to calc closeness
-/*
+
 void ImgCollectionSearch::tFind(SearchThreadInfo* sti)
 {
 
@@ -122,8 +143,8 @@ void ImgCollectionSearch::tFind(SearchThreadInfo* sti)
 		}
 		sti->results.push_back(sr);
 	}
-}*/
-
+}
+/*
 void ImgCollectionSearch::tFind(SearchThreadInfo* sti)
 {
 
@@ -143,7 +164,7 @@ void ImgCollectionSearch::tFind(SearchThreadInfo* sti)
 		}
 		sti->results.push_back(sr);
 	}
-}
+}*/
 
 // Load. loads the imgcollection from disk. each of the collections is read from its own
 // file. 
@@ -234,7 +255,7 @@ void ImgCollectionSearch::loadImages()
 			// object as it is hard for multiple threads to iterate through a single map
 			if (numThreads > 0)
 			{
-				sii->tid = stx;
+				sii->tix = stx;
 				srchThreads[stx]->myItems.push_back(sii);
 				if (++stx == numThreads)
 					stx = 0;
