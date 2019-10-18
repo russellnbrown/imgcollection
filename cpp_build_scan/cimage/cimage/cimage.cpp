@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
 		// load the ImgCollection from disk into a ImgCollectionBuilder
 		if (!fs::exists(set))
 			logger::fatal("File to search does not exist");
-		ImgCollectionBuilder *sb = new ImgCollectionBuilder();
+		ImgCollectionSearch *sb = new ImgCollectionSearch();
 		Timer::start();
 		sb->Load(set);
 		Timer::stop("Loaded set " + set.string());

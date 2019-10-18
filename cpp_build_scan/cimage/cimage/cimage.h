@@ -68,4 +68,5 @@ namespace fs = std::filesystem;
 #include "RunThreadInfo.h"
 #include "ImgCollection.h"
 #include "ImgCollectionBuilder.h"
+#include "ImgCollectionSearch.h"
 
