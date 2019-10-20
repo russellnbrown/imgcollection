@@ -114,8 +114,17 @@ int main(int argc, char *argv[])
 
 	}
 	// this is a search...
-	else if (argc == 4 && action == "-s")
+	else if (argc == 4 && action.length() > 1 && action.substr(0, 2) == "-s")
 	{
+		ImgCollectionSearch::SrchType stype = ImgCollectionSearch::SRCHLIST;
+		if (action.length() == 3)
+			switch (action[2])
+			{
+			case 'n': stype = ImgCollectionSearch::SRCHNOTHRD; break;
+			case 'm': stype = ImgCollectionSearch::SRCHMAP; break;
+			case 'l': stype = ImgCollectionSearch::SRCHLIST; break;
+			}
+	
 		// Get files path & check it exists
 		fs::path set = checkSet(argv[2], true);
 		fs::path search(argv[3]);
@@ -125,7 +134,7 @@ int main(int argc, char *argv[])
 		// load the ImgCollection from disk into a ImgCollectionBuilder
 		if (!fs::exists(set))
 			logger::fatal("File to search does not exist");
-		ImgCollectionSearch *sb = new ImgCollectionSearch();
+		ImgCollectionSearch *sb = new ImgCollectionSearch(stype);
 		Timer::start();
 		sb->Load(set);
 		Timer::stop("Loaded set " + set.string());

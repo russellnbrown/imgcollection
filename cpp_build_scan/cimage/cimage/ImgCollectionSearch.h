@@ -31,10 +31,13 @@ public:
 
 class ImgCollectionSearch 
 {
+public:
+	enum SrchType { SRCHMAP, SRCHLIST, SRCHNOTHRD };
+
 private:
 
 	ImgCollection* ic = nullptr;			// The ImgCollection
-	enum SrchType { SRCHMAP, SRCHLIST, SRCHNOTHRD };
+	
 	Stats st;								// stats on processing
 	fs::path top;							// the top level directory. all set directories relative to this
 	string stop;							// string of above with '/' as file seperator
@@ -44,7 +47,7 @@ private:
 	vector<SearchThreadInfo*> srchThreads;  // search threads
 
 public:
-	ImgCollectionSearch();
+	ImgCollectionSearch(SrchType);
 
 public:
 

@@ -11,12 +11,12 @@ SearchThreadInfo::SearchThreadInfo(int x)
 // ImgCollectionSearch
 // ImgCollectionSearch is a class to load and search an image database.
 //
-ImgCollectionSearch::ImgCollectionSearch()
+ImgCollectionSearch::ImgCollectionSearch(SrchType s)
 {
 	// this is the image we are looking for
 	searchItem = nullptr;
  
- srchType = SRCHNOTHRD;
+	srchType = s;
 
 	// ic holds the structures constituting the database
 	ic = new ImgCollection();
@@ -54,6 +54,7 @@ void ImgCollectionSearch::Find(fs::path search)
 	// If not using threads, just go through images and calculate a closeness, put result in 'results'
 	if (srchThreads.size() == 0)
 	{
+		logger::info("Not using threads for search");
 		for (map<int64_t, ImgCollectionImageItem*>::iterator it = ic->images.begin(); it != ic->images.end(); ++it)
 		{
 			int64_t icrc = it->first;
@@ -118,10 +119,16 @@ void ImgCollectionSearch::Find(fs::path search)
 
 void ImgCollectionSearch::tFind(SearchThreadInfo* sti)
 {
+	int pimage = 0;
+	// this is the search thread main loop. We either iterate over the list of ImgCollectionImageItem in myItems
+	// (SRCHLIST) OR we iterate over the whole map but only process the ImgCollectionImageItem if the index matches
+	// ours ( See Load )
 	if (srchType == SRCHLIST)
 	{
+		logger::info("Thread " + to_string(sti->tix) + " searching using list");
 		for (list<ImgCollectionImageItem*>::iterator it = sti->myItems.begin(); it != sti->myItems.end(); ++it)
 		{
+			pimage++;
 			ImgCollectionImageItem* f = *it;
 			SearchResult* sr = new SearchResult();
 			// create a searchresult for this image and add to the list
@@ -137,11 +144,13 @@ void ImgCollectionSearch::tFind(SearchThreadInfo* sti)
 	}
 	else // SRCHMAP
 	{
+		logger::info("Thread " + to_string(sti->tix) + " searching using map");
 		for (map<int64_t, ImgCollectionImageItem*>::iterator it = ic->images.begin(); it != ic->images.end(); ++it)
 		{
 			ImgCollectionImageItem* f = it->second;
 			if (f->tix != sti->tix)
 				continue;
+			pimage++;
 			SearchResult* sr = new SearchResult();
 			// create a searchresult for this image and add to the list
 			sr->i = f;
@@ -154,6 +163,7 @@ void ImgCollectionSearch::tFind(SearchThreadInfo* sti)
 			sti->results.push_back(sr);
 		}
 	}
+	logger::info("Thread " + to_string(sti->tix) + " searched " + to_string(pimage) + " images");
 }
 
 // Load. loads the imgcollection from disk. each of the collections is read from its own
@@ -168,12 +178,15 @@ void ImgCollectionSearch::Load(fs::path set)
 	setToLoad = set;
 	if (srchType == SRCHNOTHRD)
 	{
+		logger::info("Loading with no threads");
+
 		loadDirs();
 		loadFiles();
 		loadImages();
 	}
 	else
 	{
+		logger::info("Loading with threads");
 		// We can split loading into 3 threads, one to read each
 		thread dt = thread(&ImgCollectionSearch::loadDirs, this);
 		thread ft = thread(&ImgCollectionSearch::loadFiles, this);
@@ -250,17 +263,17 @@ void ImgCollectionSearch::loadImages()
 			ImgCollectionImageItem* sii = new ImgCollectionImageItem(icrc, thumb);
 			// store in image map
 			ic->images[icrc] = sii;
-			// if we are using threads to do the search, we also add the item to a list in each thread controller
-			// object as it is hard for multiple threads to iterate through a single map
-			if (srchType == SRCHLIST)
-			{
+			// if we are using threads to do the search, stx incs from 0 to numThreads then back to 0 and repeats, we either
+			// use this in the ImgCollectionImageItem as an indicatior of the thread instance that is to process it if
+			// each thread iterates the whole map (SRCHMAP) OR we also add the ImgCollectionImageItem to the a list in
+			// the appropriate thread instance (SRCHLIST). Latter is faster but uses more memory as each ImgCollectionImageItem
+			// is duplicated in the map & list.
+			if (srchType == SRCHMAP)
 				sii->tix = stx;
-			}
-			else if (srchType == SRCHMAP)
-			{
+			else if (srchType == SRCHLIST)
 				srchThreads[stx]->myItems.push_back(sii);
-			}
-			if (++stx == numThreads)
+
+			if (++stx == numThreads) // wrap around
 				stx = 0;
 
 			st.incImages();
@@ -285,8 +298,15 @@ void ImgCollectionSearch::initFind()
 	// if using threads, create the SearchThreadInfo objects used
 	// by the threads
 	if (numThreads > 0)
+	{
 		for (int x = 0; x < numThreads; x++)
+		{
+			logger::info("Creating search thread " + to_string(x));
 			srchThreads.push_back(new SearchThreadInfo(x));
+		}
+	}
+	else
+		logger::info("Not creating any search threads");
 }
 
 string ImgCollectionSearch::pathOf(ImgCollectionFileItem* f)
