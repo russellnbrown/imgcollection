@@ -1,25 +1,6 @@
 #include "cimage.h"
 
 
-#define SEARCHBYLIST
-//#define SEARCHBYINDEX
-
-// Threading Notes
-// two ways to do multithreaded search 
-// 1. SEARCHBYINDEX
-//    set a thread index in the ImageCollectionItemImage as they are loaded into the image map, inc for
-//    each new instance & back to 0 when numThreads is reached. In the search thread tFind, iterate through 
-//    all images in the map and only process those where the index matches the index of the thread
-//    ImgCollectionImageItem.tix == SearchThreadInfo.tix so each search thread only processes 1 in numThreads
-//    images
-//
-// 2. SEARCHBYLIST
-//    add a list of ImageCollectionItemImage to the SearchThreadInfo. As images are loaded add ImageCollectionItemImage
-//    to the list as well as the main map. In tFind, procedd that list rather than the main map.
-//
-// SEARCHBYLIST is faster as each thread dosn't have to iterate through the whole map, but does use more space
-// as the list duplicates pointers
-//
 
 SearchThreadInfo::SearchThreadInfo(int x)
 {
@@ -34,6 +15,8 @@ ImgCollectionSearch::ImgCollectionSearch()
 {
 	// this is the image we are looking for
 	searchItem = nullptr;
+ 
+ srchType = SRCHNOTHRD;
 
 	// ic holds the structures constituting the database
 	ic = new ImgCollection();
@@ -41,9 +24,16 @@ ImgCollectionSearch::ImgCollectionSearch()
 	// calculate how many threads to use for search. We use number of cores *2
 	// as this seems to work well, fewer or more is slower
 	// ** to prevent multithreading, set this to 0
-	numThreads = std::thread::hardware_concurrency() * 2; 
-	if (numThreads <= 0) // just in case above dosn't return a correct value
-		numThreads = 2;
+  if ( srchType == SRCHNOTHRD )
+    numThreads=0;
+  else
+  {
+	  numThreads = std::thread::hardware_concurrency() * 2; 
+	  if (numThreads <= 0) // just in case above dosn't return a correct value
+		  numThreads = 2;
+   }
+   logger::info("Number of search threads in use: " + to_string(numThreads) );
+
 }
 
 // Find. Searches the imgcollection to find a matching image. We calculate
@@ -128,43 +118,43 @@ void ImgCollectionSearch::Find(fs::path search)
 
 void ImgCollectionSearch::tFind(SearchThreadInfo* sti)
 {
-
-	for (list<ImgCollectionImageItem*>::iterator it = sti->myItems.begin(); it != sti->myItems.end(); ++it)
+	if (srchType == SRCHLIST)
 	{
-		ImgCollectionImageItem* f = *it;
-		SearchResult* sr = new SearchResult();
-		// create a searchresult for this image and add to the list
-		sr->i = f;
-		if (searchItem->crc == f->crc)
-			sr->closeness = 0; // identical images
-		else
+		for (list<ImgCollectionImageItem*>::iterator it = sti->myItems.begin(); it != sti->myItems.end(); ++it)
 		{
-			sr->closeness = ImgUtils::GetCloseness(searchItem->thumb, f->thumb);
+			ImgCollectionImageItem* f = *it;
+			SearchResult* sr = new SearchResult();
+			// create a searchresult for this image and add to the list
+			sr->i = f;
+			if (searchItem->crc == f->crc)
+				sr->closeness = 0; // identical images
+			else
+			{
+				sr->closeness = ImgUtils::GetCloseness(searchItem->thumb, f->thumb);
+			}
+			sti->results.push_back(sr);
 		}
-		sti->results.push_back(sr);
+	}
+	else // SRCHMAP
+	{
+		for (map<int64_t, ImgCollectionImageItem*>::iterator it = ic->images.begin(); it != ic->images.end(); ++it)
+		{
+			ImgCollectionImageItem* f = it->second;
+			if (f->tix != sti->tix)
+				continue;
+			SearchResult* sr = new SearchResult();
+			// create a searchresult for this image and add to the list
+			sr->i = f;
+			if (searchItem->crc == f->crc)
+				sr->closeness = 0; // identical images
+			else
+			{
+				sr->closeness = ImgUtils::GetCloseness(searchItem->thumb, f->thumb);
+			}
+			sti->results.push_back(sr);
+		}
 	}
 }
-/*
-void ImgCollectionSearch::tFind(SearchThreadInfo* sti)
-{
-
-	for (map<int64_t, ImgCollectionImageItem*>::iterator it = ic->images.begin(); it != ic->images.end(); ++it)
-	{
-		ImgCollectionImageItem* f = it->second;
-		if (f->tid != sti->tix)
-			continue;
-		SearchResult* sr = new SearchResult();
-		// create a searchresult for this image and add to the list
-		sr->i = f;
-		if (searchItem->crc == f->crc)
-			sr->closeness = 0; // identical images
-		else
-		{
-			sr->closeness = ImgUtils::GetCloseness(searchItem->thumb, f->thumb);
-		}
-		sti->results.push_back(sr);
-	}
-}*/
 
 // Load. loads the imgcollection from disk. each of the collections is read from its own
 // file. 
@@ -174,15 +164,24 @@ void ImgCollectionSearch::Load(fs::path set)
 {
 	initFind();
 
-	// We can split loading into 3 threads, one to read each
-	// file
+	
 	setToLoad = set;
-	thread dt = thread(&ImgCollectionSearch::loadDirs, this);
-	thread ft = thread(&ImgCollectionSearch::loadFiles, this);
-	thread it = thread(&ImgCollectionSearch::loadImages, this);
-	dt.join();
-	ft.join();
-	it.join();
+	if (srchType == SRCHNOTHRD)
+	{
+		loadDirs();
+		loadFiles();
+		loadImages();
+	}
+	else
+	{
+		// We can split loading into 3 threads, one to read each
+		thread dt = thread(&ImgCollectionSearch::loadDirs, this);
+		thread ft = thread(&ImgCollectionSearch::loadFiles, this);
+		thread it = thread(&ImgCollectionSearch::loadImages, this);
+		dt.join();
+		ft.join();
+		it.join();
+	}
 
 	logger::info(st.progressStr());
 
@@ -253,13 +252,16 @@ void ImgCollectionSearch::loadImages()
 			ic->images[icrc] = sii;
 			// if we are using threads to do the search, we also add the item to a list in each thread controller
 			// object as it is hard for multiple threads to iterate through a single map
-			if (numThreads > 0)
+			if (srchType == SRCHLIST)
 			{
 				sii->tix = stx;
-				srchThreads[stx]->myItems.push_back(sii);
-				if (++stx == numThreads)
-					stx = 0;
 			}
+			else if (srchType == SRCHMAP)
+			{
+				srchThreads[stx]->myItems.push_back(sii);
+			}
+			if (++stx == numThreads)
+				stx = 0;
 
 			st.incImages();
 		}

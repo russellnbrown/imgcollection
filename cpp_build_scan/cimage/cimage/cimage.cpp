@@ -21,7 +21,7 @@
 
 void usage()
 {
-	logger::raw("usage: cimage [-c <ic> <files>|-s <ic> <search>]");
+	logger::raw("usage: cimage [-cX <ic> <files>|-s <ic> <search>]");
 	logger::raw("where:");
 	logger::raw("-c       : create database");
 	logger::raw("-s       : search database");

@@ -42,6 +42,9 @@
 #include <cstring>
 #include <mutex>
 #include <thread>
+#ifndef WIN32
+#include <unistd.h>
+#endif
 
 #include "FreeImagePlus.h"
 

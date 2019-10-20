@@ -1,25 +1,40 @@
-#pragma once
+
+
+
+// Threading Notes
+// two ways to do multithreaded search 
+// 1. SRCHMAP
+//    set a thread index in the ImageCollectionItemImage as they are loaded into the image map, inc for
+//    each new instance & back to 0 when numThreads is reached. In the search thread tFind, iterate through 
+//    all images in the map and only process those where the index matches the index of the thread
+//    ImgCollectionImageItem.tix == SearchThreadInfo.tix so each search thread only processes 1 in numThreads
+//    images
+//
+// 2. SRCHLIST
+//    add a list of ImageCollectionItemImage to the SearchThreadInfo. As images are loaded add ImageCollectionItemImage
+//    to the list as well as the main map. In tFind, procedd that list rather than the main map.
+//
+// SRCHLIST is faster as each thread dosn't have to iterate through the whole map, but does use more space
+// as the list duplicates pointers
+//
 
 class SearchThreadInfo
 {
 public:
 	SearchThreadInfo(int x);
-
-	list<ImgCollectionImageItem*> myItems;
-	thread trd;
-	std::list<SearchResult*> results;
-	int tix = -1;
+ 
+	list<ImgCollectionImageItem*>  myItems;
+	thread                         trd;
+	std::list<SearchResult*>       results;
+	int                            tix;
 };
 
-
-
-
-class ImgCollectionSearch
+class ImgCollectionSearch 
 {
 private:
 
 	ImgCollection* ic = nullptr;			// The ImgCollection
-
+	enum SrchType { SRCHMAP, SRCHLIST, SRCHNOTHRD };
 	Stats st;								// stats on processing
 	fs::path top;							// the top level directory. all set directories relative to this
 	string stop;							// string of above with '/' as file seperator
@@ -45,6 +60,7 @@ private:
 	void initFind();
 	string pathOf(ImgCollectionFileItem* f); // full path of a file
 	fs::path setToLoad;
+  SrchType srchType;
 
 };
 
