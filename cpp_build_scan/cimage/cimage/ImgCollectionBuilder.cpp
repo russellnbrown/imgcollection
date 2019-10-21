@@ -20,8 +20,7 @@
 
 
  // ImgCollectionBuilder. This is a helper class to build an Image Collection.
- // it is derived from SimpleFileVisitor as one of its functions will be
- // to scan all the image files in the 'top' directory
+ // It can use a simple or multithreaded approach.
 
 
 // constructor. set the singleton
