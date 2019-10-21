@@ -253,12 +253,8 @@ double ImgUtils::GetCloseness(int8_t* _srch, int8_t* _cand, SearchType scanType)
 double ImgUtils::GetAsmCloseness(int8_t* i1, int8_t* i2)
 {
 	uint32_t diff = 0;
-#ifdef WIN64
-	logger::error("assembler option not supported on 64 bit arch");
-	return 0;
-#endif
 
-#ifdef WIN32
+#if !defined(_WIN64) && !defined(LINUX)
 	char* s = (char*)i1;
 	char* p = (char*)i2;
 
@@ -306,7 +302,7 @@ double ImgUtils::GetAsmCloseness(int8_t* i1, int8_t* i2)
 	}
 	return (double)diff;
 #else
-	logger::error("assembler option not supported on linux arch");
+	logger::error("assembler option not supported on linux or 64bit arch");
 	return 0;
 #endif
 

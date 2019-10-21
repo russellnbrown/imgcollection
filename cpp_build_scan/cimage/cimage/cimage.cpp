@@ -21,10 +21,12 @@
 
 void usage()
 {
-	logger::raw("usage: cimage [-cX <ic> <files>|-s <ic> <search>]");
+	logger::raw("usage: cimage [[-c|-cn] <ic> <files>|[-s|-sn] <ic> <search>]");
 	logger::raw("where:");
-	logger::raw("-c       : create database");
-	logger::raw("-s       : search database");
+	logger::raw("-c       : create database (with threads)");
+	logger::raw("-cn      : create database (without threads)");
+	logger::raw("-s       : search database (with threading)");
+	logger::raw("-sn      : search database (without threading)");
 	logger::raw("<ic>     : image colletion location");
 	logger::raw("<files>  : images to add");
 	logger::raw("<search> : image to search for");
@@ -86,8 +88,16 @@ int main(int argc, char *argv[])
 
 
 	// This is create...
-	if (argc == 4 && action == "-c")
+	if (argc == 4 && action.length() > 1 && action.substr(0,2) == "-c")
 	{
+		ImgCollectionBuilder::CreateType ctype = ImgCollectionBuilder::CREATETHREADS;
+
+		if (action.length() == 3)
+			switch (action[2])
+			{
+			case 'n': ctype = ImgCollectionBuilder::CREATENOTHREADS; break;
+			}
+
 		logger::info("Create ImgCollection");
 
 
@@ -99,7 +109,7 @@ int main(int argc, char *argv[])
 			logger::fatal("Dir to scan does not exist");
 
 		// create a Set builder. This will form the ImgCollection in memory
-		ImgCollectionBuilder *sb = new ImgCollectionBuilder();
+		ImgCollectionBuilder *sb = new ImgCollectionBuilder(ctype);
 
 		// Add all files to ther ImgCollection
 		Timer::start();

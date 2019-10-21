@@ -25,8 +25,9 @@
 
 
 // constructor. set the singleton
-ImgCollectionBuilder::ImgCollectionBuilder()
+ImgCollectionBuilder::ImgCollectionBuilder(CreateType ct)
 {
+	createType = ct;
 	//instance = this;
 	ic = new ImgCollection();
 	int nt = std::thread::hardware_concurrency() * 2;
@@ -34,10 +35,14 @@ ImgCollectionBuilder::ImgCollectionBuilder()
 	// Build & Search can be multithreaded, find out how many  based on the number of
 	//  processors/cores in the machine. 
 	
-	numThreads = std::thread::hardware_concurrency() * 2; // *2 seems to work well, more or less is slower
-	if (numThreads <= 0)
-		numThreads = 2;
-	//numThreads = 0;
+	if (createType == CREATETHREADS)
+	{
+		numThreads = std::thread::hardware_concurrency() * 2; // *2 seems to work well, more or less is slower
+		if (numThreads <= 0)
+			numThreads = 2;
+	}
+	else
+		numThreads = 0;
 }
 
 // initCreate. only called from create, creates the image encoding threads
@@ -46,7 +51,7 @@ void ImgCollectionBuilder::initCreate()
 	// flag used to end threads when needed
 	running = true;
 
-	// start each encoder
+	// start each encoder if configured
 	for (int t = 0; t < numThreads; t++)
 	{
 		RunThreadInfo *rti = new RunThreadInfo();
@@ -202,8 +207,6 @@ bool ImgCollectionBuilder::walkFiles(fs::path dir)
 	}
 
 	MSNOOZE(10); // allow any thread to pick up task if set. there is a better way to do this... 
-	logger::info("Running set to false");
-	running = false;
 	waitOnProcessingThreads();
 
 	return true;
@@ -211,12 +214,16 @@ bool ImgCollectionBuilder::walkFiles(fs::path dir)
 
 void ImgCollectionBuilder::waitOnProcessingThreads()
 {
+	logger::info("Running set to false");
+	running = false;
 
-
-	for (list<RunThreadInfo*>::iterator rt = threads.begin(); rt != threads.end(); rt++)
+	if (createType == CREATETHREADS)
 	{
-		(*rt)->trd.join();
-		logger::debug("Finished " + to_string((*rt)->id) + " has finished normally.");
+		for (list<RunThreadInfo*>::iterator rt = threads.begin(); rt != threads.end(); rt++)
+		{
+			(*rt)->trd.join();
+			logger::debug("Finished " + to_string((*rt)->id) + " has finished normally.");
+		}
 	}
 
 
@@ -261,16 +268,25 @@ void ImgCollectionBuilder::processItem(ImageInfo *ii)
 	
 	try
 	{
+		if (createType == CREATETHREADS)
+		{
+			// if too many encodes in Q just wait
+			while (threadFeeder.size() > (threads.size() * 2))
+				MSNOOZE(10);
 
-		// if too many encodes in Q just wait
-		while( threadFeeder.size() > (threads.size()*2) )
-			MSNOOZE(10);
-
-		// add job to queue
-		//logger::info("Enqueue " + ii->filepart);
-		tflock.lock();
-		threadFeeder.push_back(ii);
-		tflock.unlock();
+			// add job to queue
+			//logger::info("Enqueue " + ii->filepart);
+			tflock.lock();
+			threadFeeder.push_back(ii);
+			tflock.unlock();
+		}
+		else
+		{
+			if (ImgUtils::GetImageInfo(ii))
+				processItemResult(ii);
+			else
+				st.incErrors();
+		}
 
 	
 	}

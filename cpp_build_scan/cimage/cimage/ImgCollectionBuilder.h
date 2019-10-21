@@ -23,6 +23,9 @@
 
 class ImgCollectionBuilder
 {
+public:
+	enum CreateType { CREATETHREADS, CREATENOTHREADS };
+
 private:
 
 	ImgCollection *ic = nullptr;			// The ImgCollection
@@ -38,9 +41,10 @@ private:
 	list<SearchResult*> results;			// in searches, the results of comparisons
 	ImageInfo* searchItem;					// in searches, the image being searched for
 	int numThreads;							// number of threads we can use for threaded operations
+	CreateType createType;					// create with or without threading
 
 public:
-	ImgCollectionBuilder();
+	ImgCollectionBuilder(CreateType);
 
 public:
 
