@@ -30,7 +30,7 @@ int processImageFile(uint32_t dhash, const char* ipath)
 {
 	SplitPath* sp = util_splitPath(ipath);
 
-	ImageInfo* ii = iutil_getImageInfo(s, ipath);
+	ImageInfo* ii = iutil_getImageInfo(s, ipath, sp);
 	if (ii)
 	{
 		SetItemFile* f = set_addFile(s, dhash, ii->crc, sp->fullfile);

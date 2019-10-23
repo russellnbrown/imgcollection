@@ -144,8 +144,11 @@ void search(char *set, char *file)
 	}
 	memset(srch, 0, sizeof(Searcher));
 
+
 	// get image thumbnail & hash etc and put in searcher
-	srch->srchImage = iutil_getImageInfo(0, file);
+	SplitPath* sp = util_splitPath(file);
+	srch->srchImage = iutil_getImageInfo(0, file, sp);
+	util_freeSplitPath(sp);
 
 	Timer* t = timer_create();
 

@@ -44,7 +44,7 @@ namespace cs_build_scan
         // singleton for easy access
         private static Set instance = null;
         public static Set Get { get => instance;  }
-
+ 
         //
         // ImgProcessor - implement file loading, crc calc & thumbnail creation
         // in in threads to maximize throughput. Set.processors is a list of these
@@ -207,9 +207,10 @@ namespace cs_build_scan
 
         // Set constructor
         // set instance singleton to allow easy access via 'Get'
-        internal Set()
+        internal Set(bool useThreads)
         {
             instance = this;
+            this.useThreads = useThreads;
         }
 
         // Initialize

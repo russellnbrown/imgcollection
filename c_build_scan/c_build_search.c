@@ -45,6 +45,17 @@ void usage()
 int main(int argc, char* argv[])
 {
 
+#if defined(LINUX)
+	printf("Linux version\n");
+#elif defined(_WIN64) 
+	printf("WIN64 version\n");
+#elif defined(_WIN32)
+	printf("WIN32 version\n");
+#endif
+#if defined(_DEBUG)
+	printf("DEBUG version\n");
+#endif
+
 	// start logging
 	logto("c_build_search.log");
 

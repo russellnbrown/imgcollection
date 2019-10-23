@@ -29,7 +29,6 @@ ImgCollectionBuilder::ImgCollectionBuilder(CreateType ct)
 	createType = ct;
 	//instance = this;
 	ic = new ImgCollection();
-	int nt = std::thread::hardware_concurrency() * 2;
 
 	// Build & Search can be multithreaded, find out how many  based on the number of
 	//  processors/cores in the machine. 
@@ -180,7 +179,7 @@ bool ImgCollectionBuilder::walkFiles(fs::path dir)
 			continue;
 		}
 
-		if (++fcntr % 100 == 0)
+		if (++fcntr % 1000 == 0)
 		{
 			logger::info("At: " + st.progressStr());
 		}
@@ -205,7 +204,6 @@ bool ImgCollectionBuilder::walkFiles(fs::path dir)
 		}
 	}
 
-	MSNOOZE(10); // allow any thread to pick up task if set. there is a better way to do this... 
 	waitOnProcessingThreads();
 
 	return true;
@@ -218,6 +216,7 @@ void ImgCollectionBuilder::waitOnProcessingThreads()
 
 	if (createType == CREATETHREADS)
 	{
+		MSNOOZE(10); // allow any thread to pick up final task if set. there is a better way to do this... 
 		for (list<RunThreadInfo*>::iterator rt = threads.begin(); rt != threads.end(); rt++)
 		{
 			(*rt)->trd.join();
@@ -281,8 +280,18 @@ void ImgCollectionBuilder::processItem(ImageInfo *ii)
 		}
 		else
 		{
+			//st.addBytes(ii->size);
 			if (ImgUtils::GetImageInfo(ii))
-				processItemResult(ii);
+			{
+				ic->files.push_back(new ImgCollectionFileItem(ii->dirhash, ii->crc, ii->filepart));
+				if (ic->images.find(ii->crc) == ic->images.end())
+				{
+					ic->images[ii->crc] = new ImgCollectionImageItem(ii->crc, ii->thumb);
+					//st.incImages();
+				}
+				//else
+				//	st.incDuplicates();
+			}
 			else
 				st.incErrors();
 		}

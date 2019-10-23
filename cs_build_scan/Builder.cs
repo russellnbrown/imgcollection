@@ -23,11 +23,13 @@ namespace cs_build_scan
 {
     class Builder
     {
-        Set set = new Set();
+        Set set = null;
         
 
-        public Builder(string setPath, string dirPath)
+        public Builder(string setPath, string dirPath, bool useThreads)
         {
+            set = new Set(useThreads);
+
             Stopwatch stopwatch = new Stopwatch();
             // check files directory exists
             if ( !Directory.Exists(dirPath) )

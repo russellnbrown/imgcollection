@@ -37,20 +37,29 @@ import arenbee.jutils.Timer;
 // to scan all the image files in the 'top' directory
 public class ImgCollectionBuilder extends SimpleFileVisitor<Path>
 {
+ 
+    public ImgCollectionBuilder(boolean ut)
+    {
+        useThreads = ut;
+        set = new ImgCollection(ut);
+    }
     // The collection we are building
-    private ImgCollection set = new ImgCollection();
+    private ImgCollection set = null;
 
     // signal to stop threads
     public boolean running = true;
     // number of processing threads
     private int numThreads = 0;
+    private boolean useThreads = true;
     // keep some stats on whats happening
     private final Stats st = new Stats();
-
+ 
     // ImgProcessingThread. This is the thread that will processs the images
     // in the scan. 
     class ImgProcessingThread implements Runnable
     {
+        
+
         // Info about our thread
         public int id;
         public Thread thread;
@@ -107,15 +116,13 @@ public class ImgCollectionBuilder extends SimpleFileVisitor<Path>
     // is thread safe
     public ConcurrentLinkedQueue<ImageInfo> threadFeeder = new ConcurrentLinkedQueue<>();
 
-    public ImgCollectionBuilder()
-    {
-    }
+ 
 
     private void setUpCreateThreads()
     {
         // create the processing threads. See how many processors we have
         Runtime rt = Runtime.getRuntime();
-        numThreads = rt.availableProcessors();// - 1; // don't hog all threads
+        numThreads = rt.availableProcessors() * 2;// - 1; // don't hog all threads
         // unless we only have the one processor, in which case we will have to hog it...
         if (numThreads < 1)
             numThreads = 1;
@@ -162,7 +169,8 @@ public class ImgCollectionBuilder extends SimpleFileVisitor<Path>
         }
 
         // if creating, create the threads. we dont need to do this for a 'Load'
-        setUpCreateThreads();
+        if ( useThreads )
+            setUpCreateThreads();
 
         try
         {
@@ -175,7 +183,8 @@ public class ImgCollectionBuilder extends SimpleFileVisitor<Path>
             
             // All files & dis added, wait for any thumbnails to finish
             // encoder.WaitTillFinished();
-            waitForThreads();
+            if ( useThreads )
+                waitForThreads();
             
             // and save to disk
             Timer.stagestop("Create");
@@ -232,8 +241,11 @@ public class ImgCollectionBuilder extends SimpleFileVisitor<Path>
         ii.sfile = set.AddFile(sid, file);
 
         // send to a thread
-        add(ii);
-
+        if ( useThreads )
+            add(ii);
+        else
+            processFile(ii);
+        
         // let user know we are still alive
         if (st.getFiles() % 50 == 0)
         {
@@ -242,6 +254,7 @@ public class ImgCollectionBuilder extends SimpleFileVisitor<Path>
 
         return CONTINUE;
     }
+
 
     void add(ImageInfo ii)
     {

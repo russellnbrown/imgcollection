@@ -60,7 +60,7 @@ void toStr(ImageInfo* ii, char* buf, int maxlen)
 // iutil_getImageInfo - gets information about an image ( including thumbnail ) and
 // return an ImageInfo structure 
 //
-ImageInfo* iutil_getImageInfo(Set* s, const char* rpath)
+ImageInfo* iutil_getImageInfo(Set* s, const char* rpath, SplitPath *sp)
 {
 	FIBITMAP* check = 0;
 	FIBITMAP* rescaled = 0;
@@ -77,12 +77,12 @@ ImageInfo* iutil_getImageInfo(Set* s, const char* rpath)
 		return NULL;
 
 	// split path into constituent parts
-	SplitPath* sp = util_splitPath(path);
+	//SplitPath* sp = util_splitPath(path);
 	char rp[MAX_PATH];
 	util_pathInit(rp);
 	strcat(rp, sp->drv);
 	strcat(rp, sp->dir);
-	util_freeSplitPath(sp);
+	//util_freeSplitPath(sp);
 
 	// get the path relative to set top
 	char relPath[MAX_PATH];
@@ -160,7 +160,7 @@ ImageInfo* iutil_getImageInfo(Set* s, const char* rpath)
 				tb += 3;
 			}
 		}
-		util_printThumb("Search images created", ii->thumb);
+		//util_printThumb("Search images created", ii->thumb);
 		// free image
 		FreeImage_Unload(tm);
 	}
@@ -186,8 +186,8 @@ double iutil_compare(uint8_t* cand, uint8_t* srch)
 
 	double td = 0.0;
 
-	util_printThumb("Compare: search image", srch);
-	util_printThumb("Compare: candidate image", cand);
+	//util_printThumb("Compare: search image", srch);
+	//util_printThumb("Compare: candidate image", cand);
 
 	//printf("SRCH: %2.2x %2.2x %2.2x  CAND  %2.2x %2.2x %2.2x \n", srch[0] & 0xFF, srch[1] & 0xFF, srch[2] & 0xFF, cand[0] & 0xFF, cand[1] & 0xFF, cand[2] & 0xFF);
 
@@ -204,7 +204,7 @@ double iutil_compare(uint8_t* cand, uint8_t* srch)
 		int tx = abs(sbx - cbx) + abs(sgx - cgx) + abs(srx - crx);
 		td += (double)tx;
 	}
-	printf("Closeness %f\n", td);
+	//printf("Closeness %f\n", td);
 
 	return td;
 }

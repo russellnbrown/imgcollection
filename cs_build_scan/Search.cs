@@ -25,10 +25,14 @@ namespace cs_build_scan
 {
     class Search
     {
-        Set set = new Set();
+        Set set = null;
 
-        public Search(string v1, string v2)
+        private bool useThreads = false;
+
+        public Search(string v1, string v2, bool useThreads)
         {
+            set = new Set(useThreads);
+
             string fileToSearch = v2;
             string setName = v1;
             Stopwatch stopwatch = new Stopwatch();
@@ -37,7 +41,7 @@ namespace cs_build_scan
                 l.Fatal("File to search does not exist: ", fileToSearch);
 
             stopwatch.Start();
-            if ( !set.Load(setName) )
+            if (!set.Load(setName))
                 l.Fatal("Set does not exist: ", setName);
             stopwatch.Stop();
             long loadt = stopwatch.ElapsedMilliseconds;
@@ -48,7 +52,7 @@ namespace cs_build_scan
             SortedList<double, Closeness> matches = new SortedList<double, Closeness>(new DuplicateKeyComparer<double>());
 
             stopwatch.Restart();
-            foreach(Set.ImgEntry ie in set.GetImages().Values)
+            foreach (Set.ImgEntry ie in set.GetImages().Values)
             {
                 Closeness c;
 
@@ -74,8 +78,7 @@ namespace cs_build_scan
             l.Info("Timings:-");
             l.Info("\tload - " + loadt);
             l.Info("\tsearch - " + searcht);
-
-
+            this.useThreads = useThreads;
         }
     }
 

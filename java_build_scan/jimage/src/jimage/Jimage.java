@@ -29,21 +29,24 @@ import arenbee.jutils.Logger.Level;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.PriorityQueue;
-import java.util.TreeSet;
 
 public class Jimage
 {
-
+    
     public static void main(String[] args)
     {
-        Logger.Create("JImage", Level.Debug, Level.Info);
-
+        boolean useThreads = true;
+   
+         Logger.Create("JImage", Level.Debug, Level.Info);
+        
+        
         // -c : Create the image collection
-        if (args[0].equals("-c") && args.length == 3)
+        if (args[0].startsWith("-c") && args.length == 3)
         {
+            if ( args[0].equals("-cn") )
+                useThreads = false;
             // We need to create a builder to create our collection
-            ImgCollectionBuilder icbuilder = new ImgCollectionBuilder();
+            ImgCollectionBuilder icbuilder = new ImgCollectionBuilder(useThreads);
             Path imageSetPath = Paths.get(args[1]);
             Path directoriesPath = Paths.get(args[2]);
             // create the collection. This will also save to disk
@@ -51,13 +54,16 @@ public class Jimage
             Logger.Raw(Timer.stagereport("Create Timings"));
 
         } // -s : search for an image in tge collection
-        else if (args[0].equals("-s") && args.length == 3)
+        else if (args[0].startsWith("-s") && args.length == 3)
         {
-            Path imageSetPath = Paths.get(args[1]);
+            if ( args[0].equals("-sn") )
+                useThreads = false;
+            
+           Path imageSetPath = Paths.get(args[1]);
             Path fileToSearch = Paths.get(args[2]);
 
             // Create the collection & load from disk
-            ImgCollection st = new ImgCollection();
+            ImgCollection st = new ImgCollection(useThreads);
             st.Load(imageSetPath);
             
             // Get list of images similar to the search image

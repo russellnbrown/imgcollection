@@ -72,6 +72,17 @@ fs::path checkSet(string spath, bool createIfNeeded)
 int main(int argc, char *argv[])
 {
 
+#if defined(LINUX)
+	cout << "Linux version" << endl;
+#elif defined(_WIN64) 
+	cout << "WIN64 version" << endl;
+#elif defined(_WIN32)
+	cout << "WIN32 version" << endl;
+#endif
+#if defined(_DEBUG)
+	cout << "DEBUG version" << endl;
+#endif
+
 	// Start logging. To screen and logfile
 	logger::to("cimage.log", logger::Debug, logger::Info);
 

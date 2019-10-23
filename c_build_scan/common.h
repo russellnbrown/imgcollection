@@ -27,7 +27,7 @@
 #include <errno.h>
 #include <string.h>
 #include <inttypes.h>
-#ifdef _WIN32|_WIN64
+#if defined( _WIN32) || defined(_WIN64)
 #include <windows.h>
 #include <direct.h>
 #else

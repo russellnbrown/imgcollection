@@ -49,9 +49,15 @@ import java.util.Scanner;
 // image set. 
 public class ImgCollection
 {
-
+    public ImgCollection(boolean ut)
+    {
+        useThreads = ut;
+    }
+    
     // These four items define the ImageCollection. 
     private String top;
+    private boolean useThreads = true;
+
     private final ConcurrentHashMap<Long, ImgCollectionDirItem> dirs = new ConcurrentHashMap<>();
 
     public ConcurrentHashMap<Long, ImgCollectionDirItem> getDirs() {
