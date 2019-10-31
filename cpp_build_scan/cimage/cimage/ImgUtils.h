@@ -17,7 +17,6 @@
 
 #pragma once
 
-enum SearchType { Luma, Mono, Simple, Assembler };
 
 // ImageInfo holds information about an image file 
 class ImageInfo
@@ -65,6 +64,9 @@ public:
 // bits 'n bobs 
 class ImgUtils
 {
+public:
+	enum SearchType { Luma, Mono, Simple, Assembler };
+
 public:
 	static int64_t GetHash(string &path);			// get crc of a file on disk
 	static int64_t GetHash(int8_t *bytes, int len);	// get crc hash of a files bytes

@@ -21,15 +21,16 @@
 
 void usage()
 {
-	logger::raw("usage: cimage [[-c|-cn] <ic> <files>|[-s|-sn] <ic> <search>]");
+	logger::raw("usage: cimage [-c <ic> <files>|-s <ic> <search>] [-nt] [-cm <cmethod>]");
 	logger::raw("where:");
 	logger::raw("-c       : create database (with threads)");
-	logger::raw("-cn      : create database (without threads)");
-	logger::raw("-s       : search database (with threading)");
-	logger::raw("-sn      : search database (without threading)");
+	logger::raw("-s       : search database (with list threading)");
+	logger::raw("-nt      : don't use threading");
 	logger::raw("<ic>     : image colletion location");
 	logger::raw("<files>  : images to add");
 	logger::raw("<search> : image to search for");
+	logger::raw("<cmethod> : image search type: 's' simple, 'm' mono, 'l' luma, 'a' assembler");
+	exit(0);
 }
 
 // Get files path & check it exists
@@ -87,35 +88,53 @@ int main(int argc, char *argv[])
 	logger::to("cimage.log", logger::Debug, logger::Info);
 
 	// Check we have enough arguments to start
-	if ( argc < 3 )
+	if ( argc < 4 )
 		usage();
 
 	// this is what we are going to do 
 	string action = argv[1];
+	string sset = argv[2];
+	string sfiles = argv[3];
 
 	// Initialize the free image library
 	FreeImage_Initialise(TRUE);
 	logger::info("Using FreeImage version " + string(FreeImage_GetVersion()));
 
+	// any additional switches
+	bool useThreads = true;
+	ImgUtils::SearchType istype = ImgUtils::SearchType::Simple;
+	for(int ax = 0; ax < argc; ax++)
+	{
+		string par = string(argv[ax]);
+		string par2 = "";
+		if ( ax < argc - 1)
+			par2 = string(argv[ax+1]);
+
+		if (par == "-nt")
+			useThreads = false;
+		if (par == "-cm" && par2.length() > 0)
+		{
+			switch (par2[0])
+			{
+			case 's': istype = ImgUtils::SearchType::Simple; break;
+			case 'm': istype = ImgUtils::SearchType::Mono; break;
+			case 'l': istype = ImgUtils::SearchType::Luma; break;
+			case 'a': istype = ImgUtils::SearchType::Assembler; break;
+			default: usage(); break;
+			}
+		}
+	}
 
 	// This is create...
-	if (argc == 4 && action.length() > 1 && action.substr(0,2) == "-c")
+	if (action  == "-c")
 	{
-		ImgCollectionBuilder::CreateType ctype = ImgCollectionBuilder::CREATETHREADS;
-
-		if (action.length() == 3)
-			switch (action[2])
-			{
-			case 'n': ctype = ImgCollectionBuilder::CREATENOTHREADS; break;
-			}
+		ImgCollectionBuilder::CreateType ctype = useThreads ? ImgCollectionBuilder::CreateType::CREATETHREADS : ImgCollectionBuilder::CreateType::CREATENOTHREADS;
 
 		logger::info("Create ImgCollection");
 
-
-
 		// Get files & db path & check it exists
-		fs::path files = checkFiles(argv[3]);
-		fs::path set = checkSet(argv[2], true);
+		fs::path files = checkFiles(sfiles);
+		fs::path set = checkSet(sset, true);
 		if (!fs::exists(files))
 			logger::fatal("Dir to scan does not exist");
 
@@ -132,30 +151,22 @@ int main(int argc, char *argv[])
 		sb->Save(set);
 		Timer::stop("Saving ");
 
-
 	}
 	// this is a search...
-	else if (argc == 4 && action.length() > 1 && action.substr(0, 2) == "-s")
+	else if (action == "-s")
 	{
-		ImgCollectionSearch::SrchType stype = ImgCollectionSearch::SRCHLIST;
-		if (action.length() == 3)
-			switch (action[2])
-			{
-			case 'n': stype = ImgCollectionSearch::SRCHNOTHRD; break;
-			case 'm': stype = ImgCollectionSearch::SRCHMAP; break;
-			case 'l': stype = ImgCollectionSearch::SRCHLIST; break;
-			}
-	
+		ImgCollectionSearch::SrchType stype = useThreads ? ImgCollectionSearch::SrchType::SRCHLIST : ImgCollectionSearch::SRCHNOTHRD;
+
 		// Get files path & check it exists
-		fs::path set = checkSet(argv[2], true);
-		fs::path search(argv[3]);
+		fs::path set = checkSet(sset, true);
+		fs::path search(sfiles);
 		if (!fs::exists(search))
 			logger::fatal("File to search does not exist");
 
 		// load the ImgCollection from disk into a ImgCollectionBuilder
 		if (!fs::exists(set))
 			logger::fatal("File to search does not exist");
-		ImgCollectionSearch *sb = new ImgCollectionSearch(stype);
+		ImgCollectionSearch *sb = new ImgCollectionSearch(stype, istype);
 		Timer::start();
 		sb->Load(set);
 		Timer::stop("Loaded set " + set.string());

@@ -47,12 +47,12 @@ private:
 	vector<SearchThreadInfo*> srchThreads;  // search threads
 
 public:
-	ImgCollectionSearch(SrchType);
+	ImgCollectionSearch(SrchType,  ImgUtils::SearchType istype);
 
 public:
 
 	void Load(fs::path set);				// Load ImgCollection from file set
-	void Find(fs::path search);				// search the ImgCollection for an image
+		void Find(fs::path search);			// search the ImgCollection for an image
 
 private:
 
@@ -63,7 +63,8 @@ private:
 	void initFind();
 	string pathOf(ImgCollectionFileItem* f); // full path of a file
 	fs::path setToLoad;
-  SrchType srchType;
+	SrchType srchType;						// search threading mode
+	ImgUtils::SearchType istype;			// closeness mode
 
 };
 

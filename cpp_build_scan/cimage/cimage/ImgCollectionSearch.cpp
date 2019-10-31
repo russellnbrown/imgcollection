@@ -11,11 +11,11 @@ SearchThreadInfo::SearchThreadInfo(int x)
 // ImgCollectionSearch
 // ImgCollectionSearch is a class to load and search an image database.
 //
-ImgCollectionSearch::ImgCollectionSearch(SrchType s)
+ImgCollectionSearch::ImgCollectionSearch(SrchType s, ImgUtils::SearchType _istype)
 {
 	// this is the image we are looking for
 	searchItem = nullptr;
- 
+	istype = _istype;
 	srchType = s;
 
 	// ic holds the structures constituting the database
@@ -24,15 +24,26 @@ ImgCollectionSearch::ImgCollectionSearch(SrchType s)
 	// calculate how many threads to use for search. We use number of cores *2
 	// as this seems to work well, fewer or more is slower
 	// ** to prevent multithreading, set this to 0
-  if ( srchType == SRCHNOTHRD )
-    numThreads=0;
+	if (srchType == SRCHNOTHRD)
+	{
+		logger::info("Search, not using threads");
+		numThreads = 0;
+	}
   else
   {
 	  numThreads = std::thread::hardware_concurrency() * 2; 
 	  if (numThreads <= 0) // just in case above dosn't return a correct value
 		  numThreads = 2;
-   }
-   logger::info("Number of search threads in use: " + to_string(numThreads) );
+	  logger::info("Search, Number of threads in use: " + to_string(numThreads));
+	}
+
+	switch (istype)
+	{
+	case ImgUtils::SearchType::Assembler: logger::info("Closeness calculation is ASSEMBLER"); break;
+	case ImgUtils::SearchType::Luma: logger::info("Closeness calculation is LUMA"); break;
+	case ImgUtils::SearchType::Simple: logger::info("Closeness calculation is SIMPLE"); break;
+	case ImgUtils::SearchType::Mono: logger::info("Closeness calculation is MONO"); break;
+	}
 
 }
 
@@ -66,7 +77,7 @@ void ImgCollectionSearch::Find(fs::path search)
 				sr->closeness = 0; // identical images
 			else
 			{
-				sr->closeness = ImgUtils::GetCloseness(searchItem->thumb, f->thumb);
+				sr->closeness = ImgUtils::GetCloseness(searchItem->thumb, f->thumb, istype);
 			}
 			results.push_back(sr);
 		}
@@ -122,10 +133,10 @@ void ImgCollectionSearch::tFind(SearchThreadInfo* sti)
 	int pimage = 0;
 	// this is the search thread main loop. We either iterate over the list of ImgCollectionImageItem in myItems
 	// (SRCHLIST) OR we iterate over the whole map but only process the ImgCollectionImageItem if the index matches
-	// ours ( See Load )
+	// ours ( See Load ). There is currently no way of setting srchType to SRCHMAP
 	if (srchType == SRCHLIST)
 	{
-		logger::info("Thread " + to_string(sti->tix) + " searching using list");
+		logger::debug("Thread " + to_string(sti->tix) + " searching using list");
 		for (list<ImgCollectionImageItem*>::iterator it = sti->myItems.begin(); it != sti->myItems.end(); ++it)
 		{
 			pimage++;
@@ -136,15 +147,13 @@ void ImgCollectionSearch::tFind(SearchThreadInfo* sti)
 			if (searchItem->crc == f->crc)
 				sr->closeness = 0; // identical images
 			else
-			{
-				sr->closeness = ImgUtils::GetCloseness(searchItem->thumb, f->thumb);
-			}
+				sr->closeness = ImgUtils::GetCloseness(searchItem->thumb, f->thumb, istype);
 			sti->results.push_back(sr);
 		}
 	}
-	else // SRCHMAP
+	else // SRCHMAP  
 	{
-		logger::info("Thread " + to_string(sti->tix) + " searching using map");
+		logger::debug("Thread " + to_string(sti->tix) + " searching using map");
 		for (map<int64_t, ImgCollectionImageItem*>::iterator it = ic->images.begin(); it != ic->images.end(); ++it)
 		{
 			ImgCollectionImageItem* f = it->second;
@@ -157,13 +166,11 @@ void ImgCollectionSearch::tFind(SearchThreadInfo* sti)
 			if (searchItem->crc == f->crc)
 				sr->closeness = 0; // identical images
 			else
-			{
 				sr->closeness = ImgUtils::GetCloseness(searchItem->thumb, f->thumb);
-			}
 			sti->results.push_back(sr);
 		}
 	}
-	logger::info("Thread " + to_string(sti->tix) + " searched " + to_string(pimage) + " images");
+	logger::debug("Thread " + to_string(sti->tix) + " searched " + to_string(pimage) + " images");
 }
 
 // Load. loads the imgcollection from disk. each of the collections is read from its own
@@ -301,7 +308,7 @@ void ImgCollectionSearch::initFind()
 	{
 		for (int x = 0; x < numThreads; x++)
 		{
-			logger::info("Creating search thread " + to_string(x));
+			logger::debug("Creating search thread " + to_string(x));
 			srchThreads.push_back(new SearchThreadInfo(x));
 		}
 	}
