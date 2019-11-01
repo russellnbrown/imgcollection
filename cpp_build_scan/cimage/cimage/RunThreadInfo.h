@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
 
 // RunThreadInfo is used to keep info on each encoding thread
 class RunThreadInfo

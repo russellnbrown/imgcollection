@@ -17,8 +17,11 @@
 
 #pragma once
 
-
-// SetItemFile holds information about a file in the set
+//
+// ImgCollectionFileItem 
+//
+// holds information about a file in the set and some helpers
+//
 class ImgCollectionFileItem
 {
 public:
@@ -28,10 +31,11 @@ public:
 		this->crc = crc;
 		this->name = name;
 	}
-	int64_t	dhash;
-	int64_t	crc;
-	string	name;
+	int64_t	dhash;			// the key to DirItems for out directory
+	int64_t	crc;			// crc of the file 
+	string	name;			// name of the file
 
+	// toStr 
 	string	toStr()
 	{ 
 		stringstream ss;
@@ -39,6 +43,7 @@ public:
 		return ss.str();
 	}
 
+	// toSave - create a string suitable for saving to a file file
 	string	toSave()
 	{
 		stringstream ss;
@@ -46,6 +51,7 @@ public:
 		return ss.str();
 	}
 
+	// return a FileItem by parsing a line from a file file
 	static ImgCollectionFileItem *fromSave(string &s)
 	{
 		string crc, name, hash;

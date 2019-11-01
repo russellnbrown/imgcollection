@@ -15,10 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
 
-
-// ImgCollectionDirItem holds information about a directory in the set
+//
+// ImgCollectionDirItem 
+//
+// Holds information about a directory in the set and a couple of helper functions
+//
 class ImgCollectionDirItem
 {
 public:
@@ -27,9 +29,10 @@ public:
 		path = p;
 		hash = h;
 	}
-	int64_t		hash;
-	string		path;
+	int64_t		hash;		// csc32 of directory path ( used as indef ny FileItem )
+	string		path;		// the path ( relative to collection top )
 
+	// toSave - create a string suitable for saving to a dir file
 	inline string toSave()
 	{
 		stringstream s;
@@ -37,6 +40,7 @@ public:
 		return s.str();
 	}
 
+	// return a DirItem by parsing a line from a dir file
 	static inline ImgCollectionDirItem *fromSave(string s)
 	{
 		string dir,hash;
@@ -48,7 +52,7 @@ public:
 		return d;
 	}
 
-
+	// toStr 
 	inline string toStr()
 	{
 		ostringstream ret;

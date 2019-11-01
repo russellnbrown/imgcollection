@@ -18,6 +18,11 @@
 // as the list duplicates pointers
 //
 
+//
+// SearchThreadInfo
+//
+// Holds information about a search thread.
+//
 class SearchThreadInfo
 {
 public:
@@ -29,6 +34,11 @@ public:
 	int                            tix;
 };
 
+//
+// ImgCollectionSearch
+//
+// Holds information about a search.
+//
 class ImgCollectionSearch 
 {
 public:
@@ -36,7 +46,7 @@ public:
 
 private:
 
-	ImgCollection* ic = nullptr;			// The ImgCollection
+	ImgCollection* ic = nullptr;			// The ImgCollection being searched
 	
 	Stats st;								// stats on processing
 	fs::path top;							// the top level directory. all set directories relative to this

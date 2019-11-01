@@ -21,6 +21,8 @@
 
 #include "common.h"
 
+int nThreads = 8;
+
 // set_create - create & initialize the set structure.
 Set* set_create()
 {
@@ -261,10 +263,22 @@ int phash(any_t q1, any_t q2)
 	return MAP_OK;
 }
 
+
+
+
 // set_save - save the set to disk. The set is saved as three seperate files under the
 // 'path' directory.
 BOOL set_load(Set* s, const char* path)
 {
+	s->numThreads = 8;
+	s->threads = malloc(sizeof(SrchThreadInfo)* s->numThreads);
+	memset(s->threads, 0, sizeof(SrchThreadInfo) * s->numThreads);
+	for (int t = 0; t < s->numThreads; t++)
+	{
+		s->threads[t].threadNum = t;
+		s->threads[t].images = 0;
+	}
+
 	// create paths for the files
 	char dirfile[MAX_PATH];
 	char filefile[MAX_PATH];
@@ -323,6 +337,7 @@ BOOL set_load(Set* s, const char* path)
 		}
 	}
 
+	int ct = 0;
 	while (!feof(imf))
 	{
 		int64_t ihash;
@@ -339,7 +354,12 @@ BOOL set_load(Set* s, const char* path)
 					ii->ihash = (uint32_t)ihash;
 					hashmap_put(s->himage, ii->ihash, ii);
 					s->numImages++;
-					util_printThumb("Load image", ii->tmb);
+
+					ii->next = s->threads[ct].images;
+					s->threads[ct].images = ii;
+					if (ct++ >= s->numThreads)
+						ct = 0;
+					//util_printThumb("Load image", ii->tmb);
 				}
 			}
 		}

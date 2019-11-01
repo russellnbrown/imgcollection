@@ -18,22 +18,31 @@
 
 #include "cimage.h"
 
-
+//
+// usage 
+//
+// called when someting wrong with command line arguments, missing files etc.
+//
 void usage()
 {
-	logger::raw("usage: cimage [-c <ic> <files>|-s <ic> <search>] [-nt] [-cm <cmethod>]");
+	logger::raw("usage: cimage [-c <ic> <files>|-s <ic> <search>|-h] [-nt] [-cm <cmethod>]");
 	logger::raw("where:");
-	logger::raw("-c       : create database (with threads)");
-	logger::raw("-s       : search database (with list threading)");
-	logger::raw("-nt      : don't use threading");
-	logger::raw("<ic>     : image colletion location");
-	logger::raw("<files>  : images to add");
-	logger::raw("<search> : image to search for");
+	logger::raw("-c        : create database (with threads)");
+	logger::raw("-s        : search database (with list threading)");
+	logger::raw("-nt       : don't use threading");
+	logger::raw("<ic>      : image colletion location");
+	logger::raw("<files>   : images to add");
+	logger::raw("<search>  : image to search for");
 	logger::raw("<cmethod> : image search type: 's' simple, 'm' mono, 'l' luma, 'a' assembler");
-	exit(0);
+	logger::raw("-h        : display help");
+	exit(0); // give up !
 }
 
-// Get files path & check it exists
+//
+// checkFiles
+//
+// Check if a file exists and return a path
+//
 fs::path checkFiles(string spath)
 {
 	
@@ -41,21 +50,24 @@ fs::path checkFiles(string spath)
 	files = fs::canonical(files);
 	if (!fs::exists(files))
 	{
-		logger::fatal("Directory " + files.string() + " does not exist");
+		logger::fatal("File " + files.string() + " does not exist");
 	}
 	return files;
 }
 
+//
+// checkSet
+//
+// Check if a set's directory exists, optionally create it if flag is set
+//
 fs::path checkSet(string spath, bool createIfNeeded)
 {
-	// Get set path & create directory id needed
+	// check if it exists and is a dirctory
 	fs::path set(spath);
 	if (fs::exists(set))
 	{
 		if (!fs::is_directory(set))
-		{
 			logger::fatal("Path " + set.string() + " exists and isnt a directory");
-		}
 	}
 	else if ( createIfNeeded )
 	{
@@ -76,7 +88,7 @@ int main(int argc, char *argv[])
 #if defined(LINUX)
 	cout << "Linux version" << endl;
 #elif defined(_WIN64) 
-	cout << "WIN64 version" << endl;
+	cout << "WIN64 version" << endl;  // elif because WIN64 also defines WIN32
 #elif defined(_WIN32)
 	cout << "WIN32 version" << endl;
 #endif
@@ -96,6 +108,10 @@ int main(int argc, char *argv[])
 	string sset = argv[2];
 	string sfiles = argv[3];
 
+	// help
+	if (action == "-h")
+		usage();
+
 	// Initialize the free image library
 	FreeImage_Initialise(TRUE);
 	logger::info("Using FreeImage version " + string(FreeImage_GetVersion()));
@@ -105,13 +121,16 @@ int main(int argc, char *argv[])
 	ImgUtils::SearchType istype = ImgUtils::SearchType::Simple;
 	for(int ax = 0; ax < argc; ax++)
 	{
+		// par is current arg & par2 is next if there
 		string par = string(argv[ax]);
 		string par2 = "";
 		if ( ax < argc - 1)
 			par2 = string(argv[ax+1]);
 
+		// -nt - no threads
 		if (par == "-nt")
 			useThreads = false;
+		// -cm closeness mode
 		if (par == "-cm" && par2.length() > 0)
 		{
 			switch (par2[0])
@@ -132,13 +151,11 @@ int main(int argc, char *argv[])
 
 		logger::info("Create ImgCollection");
 
-		// Get files & db path & check it exists
+		// Get files & db path & check it exists - exits of not
 		fs::path files = checkFiles(sfiles);
 		fs::path set = checkSet(sset, true);
-		if (!fs::exists(files))
-			logger::fatal("Dir to scan does not exist");
 
-		// create a Set builder. This will form the ImgCollection in memory
+		// create a builder. This will form the ImgCollection in memory
 		ImgCollectionBuilder *sb = new ImgCollectionBuilder(ctype);
 
 		// Add all files to ther ImgCollection
@@ -158,14 +175,12 @@ int main(int argc, char *argv[])
 		ImgCollectionSearch::SrchType stype = useThreads ? ImgCollectionSearch::SrchType::SRCHLIST : ImgCollectionSearch::SRCHNOTHRD;
 
 		// Get files path & check it exists
-		fs::path set = checkSet(sset, true);
+		fs::path set = checkSet(sset, false);
 		fs::path search(sfiles);
 		if (!fs::exists(search))
 			logger::fatal("File to search does not exist");
 
 		// load the ImgCollection from disk into a ImgCollectionBuilder
-		if (!fs::exists(set))
-			logger::fatal("File to search does not exist");
 		ImgCollectionSearch *sb = new ImgCollectionSearch(stype, istype);
 		Timer::start();
 		sb->Load(set);

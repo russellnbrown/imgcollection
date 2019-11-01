@@ -16,15 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-// ImgCollectionBuilder. This is a helper class to build an Image Collection and to
+//
+// ImgCollectionBuilder
+//
+// This is a helper class to build an Image Collection and to
 // provide various methods to access it
-
+//
 
 class ImgCollectionBuilder
 {
 public:
-	enum CreateType { CREATETHREADS, CREATENOTHREADS };
+	enum CreateType { CREATETHREADS, CREATENOTHREADS }; // we can use threads optionally to create the collection
 
 private:
 

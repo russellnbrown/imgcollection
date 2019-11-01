@@ -16,11 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
 
+//
+// Timer
+//
 // used to provide timings of various operations
 // call start(tag),stop[,start(tag2),stop],report
-
+//
 class Timer
 {
 

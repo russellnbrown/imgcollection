@@ -15,10 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+class ImgCollectionImageItem; // fwd
 
-
-// ImageInfo holds information about an image file 
+//
+// ImageInfo 
+//
+// holds information about an image file 
+//
 class ImageInfo
 {
 public:
@@ -51,9 +54,12 @@ public:
 	}
 };
 
+//
+// SearchResult
+//
 // Holds info about an file searched in an image search. Closeness is a measure of how 
 // similar it is to the searched image
-class ImgCollectionImageItem;
+//
 class SearchResult
 {
 public:

@@ -17,8 +17,11 @@
 
 #pragma once
 
-
-// SetItemImage holds information about an image in the set
+//
+// ImgCollectionImageItem 
+//
+// holds information about an image in the set
+//
 class ImgCollectionImageItem
 {
 public:
@@ -30,9 +33,9 @@ public:
 		tix = -1;
 		
 	}
-	int64_t		crc; // the crc of the image file contents
+	int64_t		crc;	// the crc of the image file contents
 	int8_t		*thumb; // rgb tuples forming a thumbnail of image
-	int			tix; // see threading notes
+	int			tix;	// see threading notes
 	
 
 	string	toStr()

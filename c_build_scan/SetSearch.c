@@ -107,7 +107,7 @@ int search_compareImages(any_t q1, any_t q2)
 		cv = iutil_compare(sii->tmb, srch->srchImage->thumb);
 
 	// only consider close'ish files, pointless saving others 
-	//if (cv < SEARCH_CLOSENESS_THRESHOLD)
+	if (cv < SEARCH_CLOSENESS_THRESHOLD)
 	{
 		// Make a search result and add to list
 		ImageSearchResult* iss = malloc(sizeof(ImageSearchResult));
@@ -122,6 +122,25 @@ int search_compareImages(any_t q1, any_t q2)
 
 	// continue iteration
 	return MAP_OK;
+}
+
+DWORD WINAPI searchThreadFunc(LPVOID param)
+{
+	SrchThreadInfo* sti = (SrchThreadInfo*)param;
+	logger(Info, "Created thread %d", sti->threadNum);
+	return 0;
+}
+
+void run_threads(Set *s, Searcher *srch)
+{
+	for (int tx = 0; tx < s->numThreads; tx++)
+	{
+		CreateThread(NULL, 0, searchThreadFunc, (LPVOID)&s->threads[tx], 0, &s->threads[tx].threadId);
+	}
+	for (int tx = 0; tx < s->numThreads; tx++)
+	{
+		WaitForSingleObject(s->threads[tx].threadId, INFINITE);
+	}
 }
 
 // search - searches for the image 'file' in the set 'set'. 
@@ -164,7 +183,11 @@ void search(char *set, char *file)
 
 	timer_start(t);
 	// Search the images in the set using the hashmap callback, maintain results in liked list of ImageSearchResult	
-	hashmap_iterate(s->himage, search_compareImages, srch);
+	BOOL usingThreads = FALSE;
+	if (!usingThreads)
+		hashmap_iterate(s->himage, search_compareImages, srch);
+	else
+		run_threads(s, srch);
 	// finally sort list by closeness
 	search_resultSort(srch->results);
 	timer_stop(t);

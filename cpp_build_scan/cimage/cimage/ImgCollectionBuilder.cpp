@@ -69,6 +69,9 @@ void ImgCollectionBuilder::imgProcessingThread(RunThreadInfo *ri)
 	ImageInfo *current = nullptr;
 	int tp = 0;
 
+	//
+	// loop round reading items to process off the threadFeeder queue (populated by the fileWalker )
+	//
 	while (true)
 	{
 		// get next job
@@ -80,6 +83,7 @@ void ImgCollectionBuilder::imgProcessingThread(RunThreadInfo *ri)
 			threadFeeder.pop_front();
 		}
 		tflock.unlock();
+		// nothing to do, have a nap and try again
 		if (current == nullptr)
 		{
 			if (!running)
@@ -111,7 +115,7 @@ void ImgCollectionBuilder::imgProcessingThread(RunThreadInfo *ri)
 }
 
 
-// Two ways to use the builder, either Craete ( build from files ) or
+// Two ways to use the builder, either Create ( build from files ) or
 // Load ( load an existing set ) 
 // in either case the 'ic' will be filled
 void ImgCollectionBuilder::Create(fs::path path)
@@ -121,6 +125,7 @@ void ImgCollectionBuilder::Create(fs::path path)
 	ImgUtils::Replace(stop, "\\", "/");
 
 	initCreate();
+	// call file walker with the 'top' directory
 	walkFiles(path);
 }
 
@@ -156,22 +161,33 @@ int64_t ImgCollectionBuilder::pathsplit(const fs::path d, string &dirpart, strin
 	return ImgUtils::GetHash(dirpart);
 }
 
-
+//
+// walkFiles
+//
+// The main 'Create' method. Called initially from the 'top' directory
+// we then loop through files in that dir, if we find a directory, call ourselves
+// recursivly. If we find a file, call processFile to deal with it ( in 
+// imgProcessingThread )
+//
 bool ImgCollectionBuilder::walkFiles(fs::path dir)
 {
 
 	string dirpart;
 	string filepart;
+
+	// add 'top' directory to the collection 
 	int64_t dirHash = pathsplit(dir, dirpart, filepart);
 	ic->dirs.push_back(new ImgCollectionDirItem(dirHash, dirpart));
 	st.incDirs();
 
+	// loop for all its files/subdirs
 	int fcntr = 0;
-
 	for (fs::directory_entry de : fs::recursive_directory_iterator(dir))
 	{
 		string dirpart;
 		string filepart;
+
+		// get crc32 of the directory path
 		int64_t dirHash = pathsplit(de, dirpart, filepart);
 		if (dirHash == 0)
 		{
@@ -179,11 +195,13 @@ bool ImgCollectionBuilder::walkFiles(fs::path dir)
 			continue;
 		}
 
-		if (++fcntr % 1000 == 0)
+		// givee occasional feedback
+		if (++fcntr % 5000 == 0)
 		{
 			logger::info("At: " + st.progressStr());
 		}
 
+		// if its a directory, create a DirItem and add to collection
 		if (filepart.empty())
 		{
 			st.incDirs();
@@ -192,6 +210,7 @@ bool ImgCollectionBuilder::walkFiles(fs::path dir)
 		}
 		else
 		{
+			// if its an image file, create a ImageInfo and process it
 			st.incFiles();
 			if (ImgUtils::IsImageFile(de.path()))
 			{
@@ -204,6 +223,7 @@ bool ImgCollectionBuilder::walkFiles(fs::path dir)
 		}
 	}
 
+	// wait for image processing threads to stop
 	waitOnProcessingThreads();
 
 	return true;
@@ -263,35 +283,28 @@ void ImgCollectionBuilder::processItemResult(ImageInfo *ii)
 
 void ImgCollectionBuilder::processItem(ImageInfo *ii)
 {
+	// process an image file
 	
 	try
 	{
+		// if using threads, add the ImageInfo to the thread feeder queue, 
+		// a thread will pick it off when it is ready
 		if (createType == CREATETHREADS)
 		{
 			// if too many encodes in Q just wait
-			while (threadFeeder.size() > (threads.size() * 2))
+			while (threadFeeder.size() > (threads.size() * 10))
 				MSNOOZE(10);
 
-			// add job to queue
-			//logger::info("Enqueue " + ii->filepart);
+			// add to queue (protected as threads will access and remove items )
 			tflock.lock();
 			threadFeeder.push_back(ii);
 			tflock.unlock();
 		}
 		else
 		{
-			//st.addBytes(ii->size);
+			//otherwise, just do what the thread would have done
 			if (ImgUtils::GetImageInfo(ii))
-			{
-				ic->files.push_back(new ImgCollectionFileItem(ii->dirhash, ii->crc, ii->filepart));
-				if (ic->images.find(ii->crc) == ic->images.end())
-				{
-					ic->images[ii->crc] = new ImgCollectionImageItem(ii->crc, ii->thumb);
-					//st.incImages();
-				}
-				//else
-				//	st.incDuplicates();
-			}
+				processItemResult(ii);
 			else
 				st.incErrors();
 		}
@@ -315,6 +328,11 @@ void ImgCollectionBuilder::processItem(ImageInfo *ii)
 
 }
 
+//
+// Save
+//
+// This saves the ImgCollection as three seperate files, dirss, files & images
+//
 bool ImgCollectionBuilder::Save(fs::path dir)
 {
 	string dirpart;
