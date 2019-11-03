@@ -42,6 +42,9 @@
     <ClCompile Include="bst.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mutex.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h">
@@ -75,6 +78,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="bst.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mutex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

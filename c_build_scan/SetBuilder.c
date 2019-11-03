@@ -23,6 +23,8 @@
 
 // Set will be created in 's'
 Set* s = NULL;
+HANDLE tlock;
+HANDLE* threads;
 
 struct threadItem
 {
@@ -47,19 +49,25 @@ void set_addToThreadQ(uint32_t dhash, const char* ipath)
 	BOOL placed = FALSE;
 	while (!placed)
 	{
-		if (threadListLen < (s->numThreads*5) )
+		mutex_lock(tlock);
+		if (threadListLen < (s->numThreads*2) )
 		{
 			ti->next = threadList;
 			threadList = ti;
 			threadListLen++;
 			placed = TRUE;
+			mutex_unlock(tlock);
 		}
 		else
+		{
+			mutex_unlock(tlock);
 			util_msleep(10);
+		}
 	}
 }
 
-void threadRun()
+
+DWORD WINAPI  threadRun()
 {
 /*
 		if (s->useThreads)
@@ -82,6 +90,30 @@ void threadRun()
 		return 0;
 	}*/
 }
+
+
+void set_startthreads()
+{
+	tlock = mutex_get();
+	threads = malloc(sizeof(HANDLE) * s->numThreads);
+	for (int tx = 0; tx < s->numThreads; tx++)
+	{
+		CreateThread(NULL, 0, &threadRun, 0, 0, &threads[tx]);
+	}
+
+}
+
+void set_waitthreads()
+{
+
+	for (int tx = 0; tx < s->numThreads; tx++)
+	{
+		WaitForSingleObject(&threads[tx], INFINITE);
+
+	}
+
+}
+
 
 // processImageFile - get hashes & thumbs for an image and store in a SetItemImage and SetItemFile
 // put those into the set
@@ -249,6 +281,9 @@ void create(char* set, char* dir, BOOL useThreads)
 	timer_start(t);
 	s = set_create(useThreads);
 	set_setTop(s, pwd);
+
+	if (useThreads)
+		set_startthreads();
 
 	// Start the directory scan using appropriate scanner
 

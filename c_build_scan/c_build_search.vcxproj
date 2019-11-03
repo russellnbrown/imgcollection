@@ -172,6 +172,7 @@
     <ClCompile Include="c_build_search.c" />
     <ClCompile Include="ImgUtils.c" />
     <ClCompile Include="Logger.c" />
+    <ClCompile Include="mutex.c" />
     <ClCompile Include="Set.c" />
     <ClCompile Include="SetBuilder.c" />
     <ClCompile Include="SetSearch.c" />
@@ -184,6 +185,7 @@
     <ClInclude Include="hashmap.h" />
     <ClInclude Include="ImgUtils.h" />
     <ClInclude Include="Logger.h" />
+    <ClInclude Include="mutex.h" />
     <ClInclude Include="Set.h" />
     <ClInclude Include="SetBuilder.h" />
     <ClInclude Include="SetSearch.h" />
