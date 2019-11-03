@@ -24,10 +24,75 @@
 // Set will be created in 's'
 Set* s = NULL;
 
+struct threadItem
+{
+	uint32_t dhash;
+	char ipath[MAX_PATH];
+	struct threadItem* next;
+};
+
+struct threadItem* threadList = 0;
+int threadListLen = 0;
+
+void set_addToThreadQ(uint32_t dhash, const char* ipath)
+{
+	// create a threadItem for this file
+	struct threadItem *ti = malloc(sizeof(struct threadItem));
+	memset(ti, 0, sizeof(struct threadItem));
+	strncpy(ti->ipath, ipath,MAX_PATH);
+	ti->dhash = dhash;
+
+	// add it to the thread queue, but if Q is too long then
+	// hang back so it dosn't get too big
+	BOOL placed = FALSE;
+	while (!placed)
+	{
+		if (threadListLen < (s->numThreads*5) )
+		{
+			ti->next = threadList;
+			threadList = ti;
+			threadListLen++;
+			placed = TRUE;
+		}
+		else
+			util_msleep(10);
+	}
+}
+
+void threadRun()
+{
+/*
+		if (s->useThreads)
+		{
+			set_addToThreadQ(dhash, ipath);
+			return;
+		}
+
+		SplitPath* sp = util_splitPath(ipath);
+
+		ImageInfo* ii = iutil_getImageInfo(s, ipath, sp);
+		if (ii)
+		{
+			SetItemFile* f = set_addFile(s, dhash, ii->crc, sp->fullfile);
+			SetItemImage* sii = set_addImage(s, ii);
+		}
+
+		util_freeSplitPath(sp);
+
+		return 0;
+	}*/
+}
+
 // processImageFile - get hashes & thumbs for an image and store in a SetItemImage and SetItemFile
 // put those into the set
 int processImageFile(uint32_t dhash, const char* ipath)
 {
+	if (s->useThreads)
+	{
+		set_addToThreadQ(dhash, ipath);
+		return;
+	}
+
 	SplitPath* sp = util_splitPath(ipath);
 
 	ImageInfo* ii = iutil_getImageInfo(s, ipath, sp);
@@ -37,7 +102,7 @@ int processImageFile(uint32_t dhash, const char* ipath)
 		SetItemImage* sii = set_addImage(s, ii);
 	}
 
-	util_freeSplitPath(sp);
+	util_freeSplitPath(sp); 
 
 	return 0;
 }
@@ -94,7 +159,7 @@ int winscan(const char* thisdir)
 				winscan(thisfile);
 		}
 		else
-			// else its a file
+		// else its a file
 		{
 			processImageFile(dhash, thisfile);
 		}
@@ -152,7 +217,7 @@ int process_entry(const char* item, const struct stat* info, const int typeflag,
 #endif
 
 // create - this will create the Image Collection under Set 's'
-void create(char* set, char* dir)
+void create(char* set, char* dir, BOOL useThreads)
 {
 
 	Timer* t = timer_create();
@@ -182,7 +247,7 @@ void create(char* set, char* dir)
 
 	// create the set structure & set 'top'
 	timer_start(t);
-	s = set_create();
+	s = set_create(useThreads);
 	set_setTop(s, pwd);
 
 	// Start the directory scan using appropriate scanner

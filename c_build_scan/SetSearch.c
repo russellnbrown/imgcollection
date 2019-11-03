@@ -50,6 +50,9 @@ void search_resultSort(ImageSearchResult* head)
 	ImageSearchResult* traverse;
 	ImageSearchResult* min;
 
+	if (head == NULL)
+		return;
+
 	while (start->next)
 	{
 		min = start;
@@ -90,13 +93,15 @@ SetItemDir* search_findDirectory(Set *s, uint32_t dhash)
 
 }
 
+Searcher* srch;
+
 // search_compareImages - used as a callback fot the hah map iterator
-int search_compareImages(any_t q1, any_t q2)
+void search_compareImages(void *q1)
 {
 	// the image in the iteration
-	SetItemImage* sii = (SetItemImage*)q2;
+	SetItemImage* sii = (SetItemImage*)q1;
 	// searcher is used to store results & image being searched for
-	Searcher* srch = (Searcher*)q1;
+	//Searcher* srch = (Searcher*)q1;
 
 	double cv;
 	
@@ -120,8 +125,7 @@ int search_compareImages(any_t q1, any_t q2)
 		}
 	}
 
-	// continue iteration
-	return MAP_OK;
+
 }
 
 DWORD WINAPI searchThreadFunc(LPVOID param)
@@ -144,7 +148,7 @@ void run_threads(Set *s, Searcher *srch)
 }
 
 // search - searches for the image 'file' in the set 'set'. 
-void search(char *set, char *file)
+void search(char *set, char *file, BOOL useThreads)
 {
 	// quick checks
 
@@ -155,7 +159,7 @@ void search(char *set, char *file)
 		logger(Fatal, "File does not exist: %s", file);
 
 	// Searcher is passed to the hash map iterator to allow us to keep results 
-	Searcher* srch = malloc(sizeof(Searcher));
+	srch = malloc(sizeof(Searcher));
 	if (!srch)
 	{
 		logger(Fatal, "Couldnt create a searcher");
@@ -173,7 +177,7 @@ void search(char *set, char *file)
 
 	timer_start(t);
 	// Load the set
-	Set *s = set_create();
+	Set *s = set_create(useThreads);
 	if (!set_load(s, set))
 		return;
 	timer_stop(t);
@@ -185,7 +189,7 @@ void search(char *set, char *file)
 	// Search the images in the set using the hashmap callback, maintain results in liked list of ImageSearchResult	
 	BOOL usingThreads = FALSE;
 	if (!usingThreads)
-		hashmap_iterate(s->himage, search_compareImages, srch);
+		tree_inorder(s->imageTree, search_compareImages);
 	else
 		run_threads(s, srch);
 	// finally sort list by closeness

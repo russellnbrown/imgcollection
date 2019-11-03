@@ -21,6 +21,7 @@
 
 #include "common.h"
 
+BOOL useThreads = TRUE;
 
 int initFreeImage()
 {
@@ -38,7 +39,7 @@ int cleanupFreeImage()
 
 void usage()
 {
-	printf("usage: c_build_search [-c <img collection> <root dir>|-s <img collection> <file to find>\n");
+	printf("usage: c_build_search [-c <img collection> <root dir>|-s <img collection> <file to find>][-nt]\n");
 	return;
 }
 
@@ -62,12 +63,17 @@ int main(int argc, char* argv[])
 	// inti freeimage lib
 	initFreeImage();
 
+	if (argc < 4 || argc > 5)
+		usage();
+
+	if (argc == 5 && strcmp(argv[4], "-nt") == 0)
+		useThreads = FALSE;
 
 	// check args to see what to do -c create, -s srarch
-	if (argc == 4 && strcmp(argv[1], "-c") == 0)
-		create(argv[2], argv[3]);
-	else if (argc == 4 && strcmp(argv[1], "-s") == 0)
-		search(argv[2], argv[3]);
+	if (argc >= 4 && strcmp(argv[1], "-c") == 0)
+		create(argv[2], argv[3], useThreads);
+	else if (argc >= 4 && strcmp(argv[1], "-s") == 0)
+		search(argv[2], argv[3], useThreads);
 	else
 		usage();
 

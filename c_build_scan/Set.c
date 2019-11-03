@@ -22,9 +22,10 @@
 #include "common.h"
 
 int nThreads = 8;
+FILE* imf = 0;
 
 // set_create - create & initialize the set structure.
-Set* set_create()
+Set* set_create(BOOL useThreads)
 {
 	Set* s = malloc(sizeof(Set));
 	if (s)
@@ -35,7 +36,10 @@ Set* set_create()
 		s->numDirs = 0;
 		s->numFiles = 0;
 		s->numImages = 0;
-		s->himage = hashmap_new();
+		s->imageTree = 0;
+		s->useThreads = useThreads;
+		if (useThreads)
+			s->numThreads = 8;
 	}
 	return s;
 }
@@ -89,21 +93,30 @@ SetItemImage* set_addImage(Set* s, ImageInfo* ii)
 	if (fil)
 	{
 		// initialize with data provided
-		fil->next = NULL;
+		//fil->next = NULL;
 		fil->ihash = ii->crc;
 		// copt the thumbnsil locslly
 		fil->tmb = malloc(TNSMEM);
 		if (fil->tmb)
 			memcpy(fil->tmb, ii->thumb, TNSMEM);
-		SetItemImage* existing = 0;
-		int dup = hashmap_get(s->himage, fil->ihash,(any_t)&existing);
-		if (dup == MAP_MISSING)
+
+		// Add image to image tree map
+		// if tree is empty, just iitialize tree and add
+		if (s->imageTree == 0)
 		{
-			hashmap_put(s->himage, fil->ihash, fil);
-			s->numImages++;
+			s->numImages = 1;
+			s->imageTree = tree_insert(s->imageTree, fil);
 		}
-		else
-			logger(Info, "Duplicate %u", fil->ihash);
+		else // otherwise, see if it is already there
+		{
+			if (!tree_search(s->imageTree, fil))
+			{
+				s->numImages++;
+				tree_insert(s->imageTree, fil);
+			}
+			else // yes - its a duplicate
+				logger(Info, "Duplicate %u", fil->ihash);
+		}
 	}
 
 	return fil;
@@ -164,11 +177,19 @@ void set_fullPath(Set* set, const char* rel, char* out)
 
 }
 
-int logImage(any_t q1, any_t q2)
+void printImage(void *p)
 {
-	SetItemImage* sii = (SetItemImage*)q2;
-	logger(Info, "\t%u", sii->ihash);
-	return MAP_OK;
+	SetItemImage* f = (SetItemImage*)p;
+	printf("TI: %d\n", f->ihash);
+}
+
+void saveImage(void*p)
+{
+	SetItemImage* f = (SetItemImage*)p;
+
+	int64_t crc = f->ihash;
+	fwrite(&crc, 8, 1, imf);
+	fwrite(f->tmb, TNSMEM, 1, imf);
 }
 
 // set_dump - writes out the contents of the set to logger
@@ -186,24 +207,10 @@ void set_dump(Set* s)
 		logger(Info, "\t%s (%u) in %u", f->name, f->ihash, f->dhash);
 	}
 	logger(Info, "Images :-");
-	hashmap_iterate(s->himage, (PFany)logImage, 0);
-	
-
+	tree_inorder(s->imageTree, printImage);
 }
 
 
-int saveImage(any_t q1, any_t q2)
-{
-	SetItemImage* f = (SetItemImage*)q2;
-	FILE* imf = (FILE*)q1;
-
-	int64_t crc = f->ihash;
-	fwrite(&crc, 8, 1, imf);
-	fwrite(f->tmb, TNSMEM, 1, imf);
-
-
-	return MAP_OK;
-}
 
 // set_save - save the set to disk. The set is saved as three seperate files under the
 // 'path' directory.
@@ -228,7 +235,7 @@ void set_save(Set* s, const char* path)
 	// and open them. the image file is binary as it contains thumbnails in raw format
 	FILE* df = fopen(dirfile, "w");
 	FILE* ff = fopen(filefile, "w");
-	FILE* imf = fopen(imgfile, "wb");
+	imf = fopen(imgfile, "wb");
 
 	// wtite to the dirs file. First line is the 'top' directory
 	fprintf(df, "%s\n", s->top);
@@ -246,7 +253,7 @@ void set_save(Set* s, const char* path)
 	}
 
 	// write the images. each record is the image hash & thumbnail bytes
-	hashmap_iterate(s->himage, (PFany)saveImage, (any_t)imf);
+	tree_inorder(s->imageTree, saveImage);
 
 	// close all files
 	fclose(df);
@@ -256,14 +263,6 @@ void set_save(Set* s, const char* path)
 
 }
 
-int phash(any_t q1, any_t q2)
-{
-	SetItemImage* sii = (SetItemImage*)q2;
-	logger(Info, "HashIter, image=%u", sii->ihash);
-	return MAP_OK;
-}
-
-
 
 
 // set_save - save the set to disk. The set is saved as three seperate files under the
@@ -271,7 +270,7 @@ int phash(any_t q1, any_t q2)
 BOOL set_load(Set* s, const char* path)
 {
 	s->numThreads = 8;
-	s->threads = malloc(sizeof(SrchThreadInfo)* s->numThreads);
+	s->threads = malloc(sizeof(SrchThreadInfo) * s->numThreads);
 	memset(s->threads, 0, sizeof(SrchThreadInfo) * s->numThreads);
 	for (int t = 0; t < s->numThreads; t++)
 	{
@@ -352,22 +351,27 @@ BOOL set_load(Set* s, const char* path)
 				if (ok == TNSMEM)
 				{
 					ii->ihash = (uint32_t)ihash;
-					hashmap_put(s->himage, ii->ihash, ii);
+					if ( s->imageTree == 0 )
+						s->imageTree = tree_insert(s->imageTree, ii);
+					else
+						tree_insert(s->imageTree, ii);
+
 					s->numImages++;
 
-					ii->next = s->threads[ct].images;
+					ii->trdnext = s->threads[ct].images;
 					s->threads[ct].images = ii;
-					if (ct++ >= s->numThreads)
+					if (++ct == s->numThreads)
 						ct = 0;
 					//util_printThumb("Load image", ii->tmb);
 				}
 			}
 		}
-
+		
 		
 	}
 
 	//hashmap_iterate(s->himage, phash, 0);
+	tree_inorder(s->imageTree, printImage);
 
 	logger(Info, "Read set OK");
 

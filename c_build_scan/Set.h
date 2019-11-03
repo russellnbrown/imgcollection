@@ -22,8 +22,8 @@
 typedef struct _SetItemImage
 {
 	uint32_t	ihash;
-	uint8_t* tmb;
-	struct  _SetItemImage* next; // used by search threads, SetItemImages are stored in a hashmap
+	uint8_t*	tmb;
+	struct  _SetItemImage* trdnext; // used by search threads, SetItemImages are stored in a hashmap
 }SetItemImage;
 
 typedef struct _SetItemDir
@@ -54,12 +54,14 @@ typedef struct _Set
 	char*			top;
 	SetItemDir*		dirs;
 	SetItemFile*	files;
-	map_t			himage;
+	struct ImgTreeNode *imageTree;
 	int32_t			numImages;
 	int32_t			numFiles;
 	int32_t			numDirs;
 	SrchThreadInfo* threads;
 	int				numThreads;
+	BOOL			useThreads;
+
 }Set;
 
 
@@ -82,7 +84,8 @@ typedef struct _ImageInfo
 	char* filepart;		// file name
 }ImageInfo;
 
-Set*			set_create();
+
+Set*			set_create(BOOL useThreads);
 SetItemDir*		set_addDir(Set* s, const char* path, uint32_t dhash);
 SetItemFile*	set_addFile(Set* s, uint32_t dhash, uint32_t ihash, const char* name);
 SetItemImage*	set_addImage(Set* s, ImageInfo* ii);

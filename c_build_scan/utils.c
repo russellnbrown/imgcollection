@@ -29,7 +29,7 @@ void util_standardizePath(char* out, const char* tocheck)
 
 int util_mkdir(const char* path)
 {
-#ifdef _WIN32|_WIN64
+#if defined( _WIN32)|defined(_WIN64)
 	return _mkdir(path);
 #else
 	return mkdir(path, 0777);
@@ -107,7 +107,7 @@ SplitPath* util_makeSplitPath()
 
 void util_absPath(char* out, const char* in)
 {
-#ifdef _WIN32|_WIN64
+#if defined(_WIN32)|defined(_WIN64)
 	_fullpath(out, in, MAX_PATH);
 #else
 	char *res = realpath(in, out);
@@ -275,6 +275,26 @@ BOOL util_isImageFile(const char* path)
 	return FALSE;
 }
 
+#ifdef LINUX
+void util_msleep(unsigned int msec)
+{
+	usleep(msec * 1000);
+}
+#else
+void util_msleep(unsigned int msec)
+{
+	HANDLE timer;
+	LARGE_INTEGER ft;
+
+	ft.QuadPart = -(10 * (__int64)msec*1000);
+	timer = CreateWaitableTimer(NULL, TRUE, NULL);
+
+	SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+	WaitForSingleObject(timer, INFINITE);
+
+	CloseHandle(timer);
+}
+#endif
 
 //#include <Python.h>
 

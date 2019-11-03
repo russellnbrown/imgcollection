@@ -19,5 +19,5 @@
  // SetBuilder.h - methods to create the 'Image Database'
  //
 
-void create(char* set, char* dir);
+void create(char* set, char* dir, BOOL useThreads);
 

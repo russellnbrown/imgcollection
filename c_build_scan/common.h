@@ -46,8 +46,8 @@
 #define TNSMEM 768
 
 
+#include "bst.h"
 #include "Timer.h"
-#include "hashmap.h"
 #include "Logger.h"
 #include "utils.h"
 #include "SetBuilder.h"

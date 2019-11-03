@@ -36,10 +36,10 @@
     <ClCompile Include="Logger.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="hashmap.c">
+    <ClCompile Include="Timer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Timer.c">
+    <ClCompile Include="bst.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -72,6 +72,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SrchThreadInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bst.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

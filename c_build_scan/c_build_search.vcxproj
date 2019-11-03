@@ -168,8 +168,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="bst.c" />
     <ClCompile Include="c_build_search.c" />
-    <ClCompile Include="hashmap.c" />
     <ClCompile Include="ImgUtils.c" />
     <ClCompile Include="Logger.c" />
     <ClCompile Include="Set.c" />
@@ -179,6 +179,7 @@
     <ClCompile Include="utils.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bst.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="hashmap.h" />
     <ClInclude Include="ImgUtils.h" />
