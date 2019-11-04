@@ -24,7 +24,16 @@
 // Set will be created in 's'
 Set* s = NULL;
 HANDLE tlock;
-HANDLE* threads;
+BOOLEAN running = TRUE;
+
+
+struct threadControl
+{
+	THREADHANDLE tid;
+	int tix;
+	Set* s;
+}*threads;
+
 
 struct threadItem
 {
@@ -33,7 +42,9 @@ struct threadItem
 	struct threadItem* next;
 };
 
-struct threadItem* threadList = 0;
+// we will place at end and remove from front
+struct threadItem* threadListHead = 0;
+struct threadItem* threadListTail = 0;
 int threadListLen = 0;
 
 void set_addToThreadQ(uint32_t dhash, const char* ipath)
@@ -44,19 +55,26 @@ void set_addToThreadQ(uint32_t dhash, const char* ipath)
 	strncpy(ti->ipath, ipath,MAX_PATH);
 	ti->dhash = dhash;
 
-	// add it to the thread queue, but if Q is too long then
+	// add it to the tail of the thread queue, but if Q is too long then
 	// hang back so it dosn't get too big
 	BOOL placed = FALSE;
+	int inq = 0;
 	while (!placed)
 	{
 		mutex_lock(tlock);
 		if (threadListLen < (s->numThreads*2) )
 		{
-			ti->next = threadList;
-			threadList = ti;
-			threadListLen++;
+			if (threadListTail != NULL)
+				threadListTail->next = ti;
+			threadListTail = ti;
+			if (threadListHead == NULL)
+				threadListHead = threadListTail;
+			inq = threadListLen++;
+
 			placed = TRUE;
 			mutex_unlock(tlock);
+			logger(Info, "TRDDIST added %s to Q, size now %d", ipath, inq);
+
 		}
 		else
 		{
@@ -67,38 +85,67 @@ void set_addToThreadQ(uint32_t dhash, const char* ipath)
 }
 
 
-DWORD WINAPI  threadRun()
+THREADRETURN threadRun(THREADPAR p)
 {
-/*
-		if (s->useThreads)
+	struct threadControl* tc = (struct threadControl*)p;
+	printf("Thread %d is running\n", tc->tix);
+
+	int inq = 0;
+	while(TRUE)
+	{
+		// Get next item to process from head of Q
+		mutex_lock(tlock);
+		// remove from the head
+		struct threadItem* item = threadListHead;
+		if (item != NULL)
 		{
-			set_addToThreadQ(dhash, ipath);
-			return;
+			// adjust pointers to remove item from Q
+			threadListHead = item->next;
+			threadListLen--;
+			inq = threadListLen;
+		}
+		mutex_unlock(tlock);
+
+		// nothing in list, just wait and repeat unless running was set to FALSE 
+		if (item == NULL)
+		{
+			if (!running )
+			{
+				logger(Info, "TRD[%d] is finished", tc->tix);
+				return;
+			}
+
+			util_msleep(10);
+			continue;
 		}
 
-		SplitPath* sp = util_splitPath(ipath);
+		logger(Info, "TRD[%d] removed %s from Q size now %d ", tc->tix, item->ipath, inq);
 
-		ImageInfo* ii = iutil_getImageInfo(s, ipath, sp);
+		SplitPath* sp = util_splitPath(item->ipath);
+
+		ImageInfo* ii = iutil_getImageInfo(s, item->ipath, sp);
 		if (ii)
 		{
-			SetItemFile* f = set_addFile(s, dhash, ii->crc, sp->fullfile);
+			SetItemFile* f = set_addFile(s, item->dhash, ii->crc, sp->fullfile);
 			SetItemImage* sii = set_addImage(s, ii);
 		}
 
 		util_freeSplitPath(sp);
 
-		return 0;
-	}*/
+	}
+	printf("Thread %d is exiting\n", tc->tix);
 }
 
 
 void set_startthreads()
 {
 	tlock = mutex_get();
-	threads = malloc(sizeof(HANDLE) * s->numThreads);
+	threads = malloc(sizeof(struct threadControl) * s->numThreads);
 	for (int tx = 0; tx < s->numThreads; tx++)
 	{
-		CreateThread(NULL, 0, &threadRun, 0, 0, &threads[tx]);
+		threads[tx].s = s;
+		threads[tx].tix = tx;
+		threads[tx].tid = thread_start(&threadRun, &threads[tx]);
 	}
 
 }
@@ -108,8 +155,7 @@ void set_waitthreads()
 
 	for (int tx = 0; tx < s->numThreads; tx++)
 	{
-		WaitForSingleObject(&threads[tx], INFINITE);
-
+		thread_wait(threads[tx].tid);
 	}
 
 }
@@ -295,6 +341,14 @@ void create(char* set, char* dir, BOOL useThreads)
 
 	if (result != 0)
 		logger(Fatal, "Scan failed %d", result);
+
+	if (useThreads)
+	{
+		logger(Info, "Files processed - signal threads can stop when finished last in Q");
+		running = FALSE;
+		set_waitthreads();
+		logger(Info, "Threads stopped");
+	}
 
 	// save set
 	timer_stop(t);

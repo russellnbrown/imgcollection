@@ -46,6 +46,7 @@
 #define TNSMEM 768
 
 #include "mutex.h"
+#include "thread.h"
 #include "bst.h"
 #include "Timer.h"
 #include "Logger.h"

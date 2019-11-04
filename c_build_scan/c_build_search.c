@@ -43,8 +43,26 @@ void usage()
 	return;
 }
 
+typedef struct _thrData
+{
+	int tdx;
+}THRDATA;
+
+THREADRETURN threadFunc(THREADPAR p)
+{
+	THRDATA* td = (THRDATA*)p;
+	printf("Thread running, id is %d\n", td->tdx);
+}
+
 int main(int argc, char* argv[])
 {
+	THRDATA td;
+	td.tdx = 1;
+	THREADHANDLE t = thread_start(threadFunc, (THREADPAR)&td);
+	util_msleep(100);
+	thread_wait(t);
+	printf("Finished");
+
 
 #if defined(LINUX)
 	printf("Linux version\n");

@@ -45,6 +45,9 @@
     <ClCompile Include="mutex.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="thread.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h">
@@ -74,13 +77,13 @@
     <ClInclude Include="Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SrchThreadInfo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="bst.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mutex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="thread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

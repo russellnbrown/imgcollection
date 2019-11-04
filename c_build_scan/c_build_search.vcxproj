@@ -176,6 +176,7 @@
     <ClCompile Include="Set.c" />
     <ClCompile Include="SetBuilder.c" />
     <ClCompile Include="SetSearch.c" />
+    <ClCompile Include="thread.c" />
     <ClCompile Include="Timer.c" />
     <ClCompile Include="utils.c" />
   </ItemGroup>
@@ -189,7 +190,7 @@
     <ClInclude Include="Set.h" />
     <ClInclude Include="SetBuilder.h" />
     <ClInclude Include="SetSearch.h" />
-    <ClInclude Include="SrchThreadInfo.h" />
+    <ClInclude Include="thread.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>

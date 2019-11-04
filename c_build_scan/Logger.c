@@ -24,11 +24,14 @@
 
 // the file we will log to
 static FILE* logfile = NULL;
+static MUTEXHANDLE llock;
 
 // logto - initializes logging to a file.
 void logto(char* fname)
 {
+	llock = mutex_get();
 	logfile = fopen(fname, "w");
+
 }
 
 // logger - writes message & level to screen and or file. uses varargs.
@@ -53,6 +56,8 @@ void logger(enum LogLevel ll, char* fmt, ...)
 	char emsg[1024];
 	vsnprintf(emsg, sizeof(emsg), fmt, argp);
 
+	mutex_lock(llock);
+
 	// write to screen
 	if (ll == Raw)
 		printf("%s", emsg);
@@ -69,6 +74,8 @@ void logger(enum LogLevel ll, char* fmt, ...)
 		fflush(logfile);
 	}
 	va_end(argp);
+
+	mutex_unlock(llock);
 
 	// exit if it was a fatal error
 	if (ll == Fatal)
