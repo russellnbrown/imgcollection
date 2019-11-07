@@ -52,16 +52,12 @@ THREADRETURN threadFunc(THREADPAR p)
 {
 	THRDATA* td = (THRDATA*)p;
 	printf("Thread running, id is %d\n", td->tdx);
+	util_msleep(5000);
+	printf("Thread stopping, id is %d\n", td->tdx);
 }
 
 int main(int argc, char* argv[])
 {
-	THRDATA td;
-	td.tdx = 1;
-	THREADHANDLE t = thread_start(threadFunc, (THREADPAR)&td);
-	util_msleep(100);
-	thread_wait(t);
-	printf("Finished");
 
 
 #if defined(LINUX)
@@ -89,7 +85,7 @@ int main(int argc, char* argv[])
 
 	// check args to see what to do -c create, -s srarch
 	if (argc >= 4 && strcmp(argv[1], "-c") == 0)
-		create(argv[2], argv[3], useThreads);
+		setbuild_create(argv[2], argv[3], useThreads);
 	else if (argc >= 4 && strcmp(argv[1], "-s") == 0)
 		search(argv[2], argv[3], useThreads);
 	else
@@ -99,3 +95,4 @@ int main(int argc, char* argv[])
 	cleanupFreeImage();
 	return 0;
 }
+

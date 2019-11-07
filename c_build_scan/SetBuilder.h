@@ -19,5 +19,11 @@
  // SetBuilder.h - methods to create the 'Image Database'
  //
 
-void create(char* set, char* dir, BOOL useThreads);
-
+void setbuild_create(char*, char*, BOOL);
+int setbuild_winscan(const char*);
+uint32_t setbuild_processDirectory(const char*);
+int setbuild_processImageFile(uint32_t, const char*);
+void setbuild_waitthreads();
+void setbuild_startthreads();
+THREADRETURN setbuild_threadRun(THREADPAR);
+void setbuild_addToThreadQ(uint32_t, const char*);

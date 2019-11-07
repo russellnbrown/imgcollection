@@ -2,11 +2,33 @@
 
 #ifdef LINUX
 
+MUTEXHANDLE mutex_get()
+{
+  MUTEXHANDLE t = malloc(sizeof(pthread_mutex_t ));
+  memset(t,0,sizeof(pthread_mutex_t ));
+  return t;
+}
+
+void mutex_lock(MUTEXHANDLE h)
+{
+	pthread_mutex_lock(h); 
+}
+
+void mutex_unlock(MUTEXHANDLE h)
+{
+	pthread_mutex_unlock(h); 
+}
+
+void mutex_free(MUTEXHANDLE h)
+{
+
+}
+
 #else
 
 #include <Windows.h>
 
-HANDLE mutex_get()
+MUTEXHANDLE mutex_get()
 {
 	PSRWLOCK lock = malloc(sizeof(RTL_SRWLOCK));
 	InitializeSRWLock(lock);

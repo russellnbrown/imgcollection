@@ -94,6 +94,17 @@ SetItemDir* search_findDirectory(Set *s, uint32_t dhash)
 }
 
 Searcher* srch;
+MUTEXHANDLE srchProtect;
+
+void search_addResult(ImageSearchResult* iss)
+{
+	if (srchProtect!=NULL)
+		mutex_lock(srchProtect);
+	iss->next = srch->results;
+	srch->results = iss;
+	if (srchProtect!=NULL)
+		mutex_unlock(srchProtect);
+}
 
 // search_compareImages - used as a callback fot the hah map iterator
 void search_compareImages(void *q1)
@@ -120,30 +131,42 @@ void search_compareImages(void *q1)
 		{
 			iss->closeness = cv;
 			iss->i = sii;
-			iss->next = srch->results;
-			srch->results = iss;
+			search_addResult(iss);
 		}
 	}
 
 
 }
 
-DWORD WINAPI searchThreadFunc(LPVOID param)
+void *searchThreadFunc(void * param)
 {
 	SrchThreadInfo* sti = (SrchThreadInfo*)param;
 	logger(Info, "Created thread %d", sti->threadNum);
+	for (SetItemImage* si = sti->images; si != NULL; si = si->trdnext)
+	{
+		search_compareImages(si);
+		sti->numProcessed++;
+	}
+	logger(Info, "Thread %d finished, processed %d images.", sti->threadNum, sti->numProcessed);
 	return 0;
 }
 
 void run_threads(Set *s, Searcher *srch)
 {
+	// Create ther search threads. These will process all the images in their
+	// input Q. Each has same number to process rather than a single feed Q as
+	// we used with encoding. this is because procesing time should be identical
+	// and its quicker than maintaining a synced Q. 
+	// The searchThreadFunc is the same function used whne threads not being used
+	// Results go into 'srch' Q
 	for (int tx = 0; tx < s->numThreads; tx++)
 	{
-		CreateThread(NULL, 0, searchThreadFunc, (LPVOID)&s->threads[tx], 0, &s->threads[tx].threadId);
+		s->threads[tx].threadId = thread_start((THREADFUNC)searchThreadFunc, (THREADPAR)&s->threads[tx]);
 	}
+	// wait for them to finish
 	for (int tx = 0; tx < s->numThreads; tx++)
 	{
-		WaitForSingleObject(s->threads[tx].threadId, INFINITE);
+		thread_wait(s->threads[tx].threadId);
 	}
 }
 
@@ -158,7 +181,8 @@ void search(char *set, char *file, BOOL useThreads)
 	if (!util_fileExists(file))
 		logger(Fatal, "File does not exist: %s", file);
 
-	// Searcher is passed to the hash map iterator to allow us to keep results 
+	// Searcher is used to hold image to be searched for and the
+	// results of the search
 	srch = malloc(sizeof(Searcher));
 	if (!srch)
 	{
@@ -166,6 +190,9 @@ void search(char *set, char *file, BOOL useThreads)
 		return;
 	}
 	memset(srch, 0, sizeof(Searcher));
+	// if using threads, we will need to protect srch with a mutex
+	if (useThreads)
+		srchProtect = mutex_get();
 
 
 	// get image thumbnail & hash etc and put in searcher
@@ -173,25 +200,24 @@ void search(char *set, char *file, BOOL useThreads)
 	srch->srchImage = iutil_getImageInfo(0, file, sp);
 	util_freeSplitPath(sp);
 
-	Timer* t = timer_create();
-
+	// Now we load the set from disk
+	Timer* t = timer_createx();
 	timer_start(t);
-	// Load the set
 	Set *s = set_create(useThreads);
 	if (!set_load(s, set))
 		return;
 	timer_stop(t);
 	double loadTime = timer_getElapsedTimeInMilliSec(t);
 
-	set_printStats(s);
-
+	// Now we do the actual search
 	timer_start(t);
-	// Search the images in the set using the hashmap callback, maintain results in liked list of ImageSearchResult	
-	BOOL usingThreads = FALSE;
-	if (!usingThreads)
-		tree_inorder(s->imageTree, search_compareImages);
-	else
+	// Search the images either using tree traversal if not using threads or
+	// the list of images in the threadcontrol object	
+	if (s->useThreads)
 		run_threads(s, srch);
+	else
+		tree_inorder(s->imageTree, search_compareImages);
+
 	// finally sort list by closeness
 	search_resultSort(srch->results);
 	timer_stop(t);

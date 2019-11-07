@@ -23,18 +23,23 @@
 
 // Set will be created in 's'
 Set* s = NULL;
-HANDLE tlock;
-BOOLEAN running = TRUE;
 
+BOOL running = TRUE; // signal threads when we are finished
 
+// threadControl
+// used to keep data relevant to a thread. An array 'threads' is
+// created when startting the threads
 struct threadControl
 {
-	THREADHANDLE tid;
-	int tix;
-	Set* s;
+	THREADHANDLE tid;	// it's id
+	int tix;			// it's index (0..numThreads)
+	Set* s;				// pass it the set
 }*threads;
 
-
+// threadItem
+// used to pass information about to build threads. We have a Q of
+// these, one for each file, the threads read off this Q when ready 
+// for the next file to process. Protected with 'tlock'
 struct threadItem
 {
 	uint32_t dhash;
@@ -42,12 +47,15 @@ struct threadItem
 	struct threadItem* next;
 };
 
-// we will place at end and remove from front
+// this is the Q of the above. we will place at end and remove from front
+MUTEXHANDLE tlock;	// mutex for thread input q
 struct threadItem* threadListHead = 0;
 struct threadItem* threadListTail = 0;
 int threadListLen = 0;
 
-void set_addToThreadQ(uint32_t dhash, const char* ipath)
+// set_addToThreadQ
+// this is called to add a file to the build thread queue
+void setbuild_addToThreadQ(uint32_t dhash, const char* ipath)
 {
 	// create a threadItem for this file
 	struct threadItem *ti = malloc(sizeof(struct threadItem));
@@ -55,8 +63,10 @@ void set_addToThreadQ(uint32_t dhash, const char* ipath)
 	strncpy(ti->ipath, ipath,MAX_PATH);
 	ti->dhash = dhash;
 
-	// add it to the tail of the thread queue, but if Q is too long then
-	// hang back so it dosn't get too big
+	// add it to the tail of the thread queue. If Q is too long then
+	// just wait until it shrinks as items are processes by the threads.
+	// This prevents it get too big as wile walker will be much faster than
+	// file processing
 	BOOL placed = FALSE;
 	int inq = 0;
 	while (!placed)
@@ -73,24 +83,26 @@ void set_addToThreadQ(uint32_t dhash, const char* ipath)
 
 			placed = TRUE;
 			mutex_unlock(tlock);
-			logger(Info, "TRDDIST added %s to Q, size now %d", ipath, inq);
+			logger(Debug, "TRDDIST added %s to Q, size now %d", ipath, inq);
 
 		}
 		else
 		{
 			mutex_unlock(tlock);
-			util_msleep(10);
+			util_msleep(10); // quick nap before trying again
 		}
 	}
 }
 
-
-THREADRETURN threadRun(THREADPAR p)
+// threadRun
+// this is the builder thread. basically it performs the same function as
+// processImageFile but in a thread, reading the thread input Q for files
+// to process
+THREADRETURN setbuild_threadRun(THREADPAR p)
 {
 	struct threadControl* tc = (struct threadControl*)p;
-	printf("Thread %d is running\n", tc->tix);
 
-	int inq = 0;
+	// we loop until there is nothing left to process & running has been set to false in set_threadsstop()
 	while(TRUE)
 	{
 		// Get next item to process from head of Q
@@ -102,7 +114,6 @@ THREADRETURN threadRun(THREADPAR p)
 			// adjust pointers to remove item from Q
 			threadListHead = item->next;
 			threadListLen--;
-			inq = threadListLen;
 		}
 		mutex_unlock(tlock);
 
@@ -112,15 +123,13 @@ THREADRETURN threadRun(THREADPAR p)
 			if (!running )
 			{
 				logger(Info, "TRD[%d] is finished", tc->tix);
-				return;
+				return THREADRETURNOK;
 			}
-
 			util_msleep(10);
 			continue;
 		}
 
-		logger(Info, "TRD[%d] removed %s from Q size now %d ", tc->tix, item->ipath, inq);
-
+		// process the file & then repeat
 		SplitPath* sp = util_splitPath(item->ipath);
 
 		ImageInfo* ii = iutil_getImageInfo(s, item->ipath, sp);
@@ -133,44 +142,62 @@ THREADRETURN threadRun(THREADPAR p)
 		util_freeSplitPath(sp);
 
 	}
-	printf("Thread %d is exiting\n", tc->tix);
+	
 }
 
-
-void set_startthreads()
+// set_startthreads
+//
+// starts the building threads
+//
+void setbuild_startthreads()
 {
-	tlock = mutex_get();
+	// Start the build procssing threads. 
+
+	// create thread input Q protection lock
+	tlock = mutex_get(); 
+
+	// create threadControl items
 	threads = malloc(sizeof(struct threadControl) * s->numThreads);
+
+	// sart the threads
 	for (int tx = 0; tx < s->numThreads; tx++)
 	{
 		threads[tx].s = s;
 		threads[tx].tix = tx;
-		threads[tx].tid = thread_start(&threadRun, &threads[tx]);
+		threads[tx].tid = thread_start(setbuild_threadRun, &threads[tx]);
+		logger(Info, "TCTRL started thread %d ID is %d", tx, threads[tx].tid);
 	}
-
 }
 
-void set_waitthreads()
+// set_waitthreads
+//
+// wait for all threads to stop
+//
+void setbuild_waitthreads()
 {
+	logger(Info, "Waiting for threads to close");
 
 	for (int tx = 0; tx < s->numThreads; tx++)
-	{
 		thread_wait(threads[tx].tid);
-	}
+
+	logger(Info, "All closed");
 
 }
 
 
 // processImageFile - get hashes & thumbs for an image and store in a SetItemImage and SetItemFile
 // put those into the set
-int processImageFile(uint32_t dhash, const char* ipath)
+int setbuild_processImageFile(uint32_t dhash, const char* ipath)
 {
+	// if using threads, call set_addToThreadQ which will add the file to
+	// the build thread Q
 	if (s->useThreads)
 	{
-		set_addToThreadQ(dhash, ipath);
-		return;
+		setbuild_addToThreadQ(dhash, ipath);
+		return 0;
 	}
 
+	// otherwise we will just process the file
 	SplitPath* sp = util_splitPath(ipath);
 
 	ImageInfo* ii = iutil_getImageInfo(s, ipath, sp);
@@ -186,7 +213,7 @@ int processImageFile(uint32_t dhash, const char* ipath)
 }
 
 // processDirectory - calculate dhash, creates a SetItemDir and stores in the set
-uint32_t processDirectory(const char* dpath)
+uint32_t setbuild_processDirectory(const char* dpath)
 {
 	char rel[MAX_PATH];
 	set_relativeTo(s, dpath, rel);
@@ -203,12 +230,12 @@ uint32_t processDirectory(const char* dpath)
 
 #ifdef WIN32
 
-int winscan(const char* thisdir)
+int setbuild_winscan(const char* thisdir)
 {
 	WIN32_FIND_DATA ff;
 
 	// process the directory we are in
-	uint32_t dhash = processDirectory(thisdir);
+	uint32_t dhash = setbuild_processDirectory(thisdir);
 
 	// set up a wildcard scan path
 	char scandir[MAX_PATH];
@@ -234,12 +261,12 @@ int winscan(const char* thisdir)
 		if (ff.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
 			if (strcmp(ff.cFileName, ".") != 0 && strcmp(ff.cFileName, "..") != 0)
-				winscan(thisfile);
+				setbuild_winscan(thisfile);
 		}
 		else
 		// else its a file
 		{
-			processImageFile(dhash, thisfile);
+			setbuild_processImageFile(dhash, thisfile);
 		}
 
 		// continue with next dir entry
@@ -263,7 +290,7 @@ int winscan(const char* thisdir)
 uint32_t dhash = 0;
 
 // process_entry called automatically by nftw for each file/directory ( directories  first )
-int process_entry(const char* item, const struct stat* info, const int typeflag, struct FTW* pathinfo)
+int  setbuild_processEntry(const char* item, const struct stat* info, const int typeflag, struct FTW* pathinfo)
 {
 	
 	char filepath[MAX_PATH];
@@ -275,7 +302,7 @@ int process_entry(const char* item, const struct stat* info, const int typeflag,
 	{
 		if (util_isImageFile(filepath))
 		{
-			processImageFile(dhash, filepath);
+			setbuild_processImageFile(dhash, filepath);
 			//logger(Info, "IMAGEFILE %s", filepath);
 		}
 		//else
@@ -284,7 +311,7 @@ int process_entry(const char* item, const struct stat* info, const int typeflag,
 	// else, if a dir, call processDirectory
 	else if (typeflag == FTW_D || typeflag == FTW_DP)
 	{
-		dhash = processDirectory(filepath);
+		dhash = setbuild_processDirectory(filepath);
 		//logger(Info, "DIR %s", filepath);
 	}
 
@@ -295,10 +322,10 @@ int process_entry(const char* item, const struct stat* info, const int typeflag,
 #endif
 
 // create - this will create the Image Collection under Set 's'
-void create(char* set, char* dir, BOOL useThreads)
+void  setbuild_create(char* set, char* dir, BOOL useThreads)
 {
 
-	Timer* t = timer_create();
+	Timer* t = timer_createx();
 
 	// need to convert file location to abs path so we can get
 	// a correct set 'top' location later
@@ -329,14 +356,14 @@ void create(char* set, char* dir, BOOL useThreads)
 	set_setTop(s, pwd);
 
 	if (useThreads)
-		set_startthreads();
+		setbuild_startthreads();
 
 	// Start the directory scan using appropriate scanner
 
 #ifdef WIN32
-	int result = winscan(pwd);
+	int result = setbuild_winscan(pwd);
 #else
-	int result = nftw(pwd, process_entry, 20, FTW_PHYS);
+	int result = nftw(pwd, setbuild_processEntry, 20, FTW_PHYS);
 #endif
 
 	if (result != 0)
@@ -344,10 +371,10 @@ void create(char* set, char* dir, BOOL useThreads)
 
 	if (useThreads)
 	{
-		logger(Info, "Files processed - signal threads can stop when finished last in Q");
+		logger(Info, "TCTRL Files processed, running set to false ");
 		running = FALSE;
-		set_waitthreads();
-		logger(Info, "Threads stopped");
+		setbuild_waitthreads();
+		logger(Info, "TCTRL Threads stopped");
 	}
 
 	// save set

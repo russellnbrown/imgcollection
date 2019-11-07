@@ -14,7 +14,7 @@
 
 #include "common.h"
 
-Timer *timer_create()
+Timer *timer_createx()
 {
 	Timer* t = (Timer*)malloc(sizeof(Timer));
 #if defined(WIN32) || defined(_WIN32)

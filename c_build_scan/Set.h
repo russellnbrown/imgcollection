@@ -44,8 +44,9 @@ typedef struct _SetItemFile
 
 typedef struct _SrchThreadInfo
 {
-	HANDLE	threadId;
+	THREADHANDLE	threadId;
 	int		threadNum;
+	int		numProcessed;
 	SetItemImage* images;
 }SrchThreadInfo;
 

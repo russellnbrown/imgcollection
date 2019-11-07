@@ -1,5 +1,5 @@
 
-// binary tree implementation
+// original binary tree implementation
 // https://www.codesdope.com/blog/article/binary-search-tree-in-c/
 
 // removed delete
@@ -7,7 +7,7 @@
 
 #include "common.h"
 
-struct ImgTreeNode* tree_search(struct ImgTreeNode* root, SetItemImage* _x)
+struct ImgTreeNode* tree_search(struct ImgTreeNode* root, void* _x)
 {
 	SetItemImage* x = (SetItemImage *)_x;
 	if (root == NULL || ((SetItemImage *)root->info)->ihash == x->ihash) //if root->data is x then the element is found
@@ -20,9 +20,10 @@ struct ImgTreeNode* tree_search(struct ImgTreeNode* root, SetItemImage* _x)
 
 
 //function to create a node
-struct ImgTreeNode* tree_new_node(SetItemImage* x)
+struct ImgTreeNode* tree_new_node(void *_x)
 {
 	struct ImgTreeNode* p;
+	SetItemImage *x = (SetItemImage*)_x;
 	p = malloc(sizeof(struct ImgTreeNode));
 	p->info = x;
 	p->left_child = NULL;
@@ -31,8 +32,9 @@ struct ImgTreeNode* tree_new_node(SetItemImage* x)
 	return p;
 }
 
-struct ImgTreeNode* tree_insert(struct ImgTreeNode* root, SetItemImage* x)
+struct ImgTreeNode* tree_insert(struct ImgTreeNode* root, void *_x)
 {
+	SetItemImage* x = (SetItemImage*)_x;
 	//searching for the place to insert
 	if (root == NULL)
 		return tree_new_node(x);

@@ -3,12 +3,25 @@
 
 #ifdef LINUX
 
+
+THREADHANDLE thread_start(THREADFUNC f, THREADPAR p)
+{
+	THREADHANDLE threadId;
+	threadId = pthread_create(&threadId, NULL, f, p );
+	return threadId;
+}
+
+void thread_wait(THREADHANDLE th)
+{
+	pthread_join(th, NULL);
+}
+
 #else
 
 THREADHANDLE thread_start(THREADFUNC f, THREADPAR p)
 {
-	HANDLE threadId;
-	CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)f, p, 0, &threadId);
+	unsigned int threadId;
+	_beginthreadex(NULL, 0, (void*)f, p, 0, &threadId);
 	return (THREADHANDLE)threadId;
 }
 

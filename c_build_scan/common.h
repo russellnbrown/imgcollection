@@ -30,9 +30,15 @@
 #if defined( _WIN32) || defined(_WIN64)
 #include <windows.h>
 #include <direct.h>
+#include <process.h>
 #else
 #define MAX_PATH 1000
 #include <unistd.h>
+#include <sys/sysinfo.h>
+#endif
+
+#ifndef HANDLE
+#define HANDLE void *
 #endif
 
 

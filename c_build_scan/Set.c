@@ -39,7 +39,15 @@ Set* set_create(BOOL useThreads)
 		s->imageTree = 0;
 		s->useThreads = useThreads;
 		if (useThreads)
-			s->numThreads = 8;
+		{
+#ifdef LINUX
+			s->numThreads = get_nprocs_conf();
+#else
+			SYSTEM_INFO systemInfo;
+			GetSystemInfo(&systemInfo);
+			s->numThreads = systemInfo.dwNumberOfProcessors;
+#endif
+		}
 	}
 	return s;
 }
@@ -269,7 +277,6 @@ void set_save(Set* s, const char* path)
 // 'path' directory.
 BOOL set_load(Set* s, const char* path)
 {
-	s->numThreads = 8;
 	s->threads = malloc(sizeof(SrchThreadInfo) * s->numThreads);
 	memset(s->threads, 0, sizeof(SrchThreadInfo) * s->numThreads);
 	for (int t = 0; t < s->numThreads; t++)
@@ -357,11 +364,16 @@ BOOL set_load(Set* s, const char* path)
 						tree_insert(s->imageTree, ii);
 
 					s->numImages++;
-
-					ii->trdnext = s->threads[ct].images;
-					s->threads[ct].images = ii;
-					if (++ct == s->numThreads)
-						ct = 0;
+					// if using threads, we add the image to one of the threads
+					// images Q in a round robin fashion. When searching, each thread
+					// will process its own list
+					if (s->useThreads)
+					{
+						ii->trdnext = s->threads[ct].images;
+						s->threads[ct].images = ii;
+						if (++ct == s->numThreads)
+							ct = 0;
+					}
 					//util_printThumb("Load image", ii->tmb);
 				}
 			}

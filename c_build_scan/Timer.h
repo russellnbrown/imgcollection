@@ -36,7 +36,7 @@ typedef struct _Timer
 #endif
 }Timer;
 
-Timer* timer_create();
+Timer*  timer_createx();
 void	timer_free();
 void	timer_start(Timer*);                             // start timer
 void	timer_stop(Timer*);                              // stop the timer
