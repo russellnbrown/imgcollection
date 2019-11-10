@@ -7,7 +7,7 @@
 THREADHANDLE thread_start(THREADFUNC f, THREADPAR p)
 {
 	THREADHANDLE threadId;
-	threadId = pthread_create(&threadId, NULL, f, p );
+	pthread_create(&threadId, NULL, f, p );
 	return threadId;
 }
 
@@ -21,8 +21,8 @@ void thread_wait(THREADHANDLE th)
 THREADHANDLE thread_start(THREADFUNC f, THREADPAR p)
 {
 	unsigned int threadId;
-	_beginthreadex(NULL, 0, (void*)f, p, 0, &threadId);
-	return (THREADHANDLE)threadId;
+	THREADHANDLE th = _beginthreadex(NULL, 0, (void*)f, p, 0, &threadId);
+	return th;
 }
 
 void thread_wait(THREADHANDLE th)

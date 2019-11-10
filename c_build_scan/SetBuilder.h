@@ -19,6 +19,43 @@
  // SetBuilder.h - methods to create the 'Image Database'
  //
 
+// threadControl
+// used to keep data relevant to a thread. An array 'threads' is
+// created when startting the threads
+struct threadControl
+{
+	THREADHANDLE tid;	// it's id
+	int tix;			// it's index (0..numThreads)
+	Set* s;				// pass it the set
+	int numProcessed;	// number of images processed
+}*threads;
+
+// threadItem
+// used to pass information about to build threads. We have a Q of
+// these, one for each file, the threads read off this Q when ready 
+// for the next file to process. Protected with 'tlock'
+struct threadItem
+{
+	uint32_t dhash;
+	char* ipath;
+	struct threadItem* next;
+};
+
+typedef struct _SetBuilderInfo
+{
+	// Set will be created in 's'
+	Set* s;
+	BOOL running; // signal threads when we are finished
+	// this is the Q of the above. we will place at end and remove from front
+	MUTEXHANDLE tlock;	// mutex for thread input q
+	MUTEXHANDLE rlock;	// mutex for file & image lists
+	struct threadItem* threadListHead;
+	struct threadItem* threadListTail;
+	int threadListLen;
+}SetBuilderInfo;
+
+SetBuilderInfo* setbuild_makeSetBuilderInfo();
+void setbuild_freeSetBuilderInfo(SetBuilderInfo*);
 void setbuild_create(char*, char*, BOOL);
 int setbuild_winscan(const char*);
 uint32_t setbuild_processDirectory(const char*);
@@ -27,3 +64,5 @@ void setbuild_waitthreads();
 void setbuild_startthreads();
 THREADRETURN setbuild_threadRun(THREADPAR);
 void setbuild_addToThreadQ(uint32_t, const char*);
+struct threadItem* setbuild_makeThreadItem();
+void setbuild_freeThreadItem(struct threadItem* ti);

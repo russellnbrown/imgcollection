@@ -21,4 +21,26 @@
 
 #define SEARCH_CLOSENESS_THRESHOLD 50000
 
+// Searcher is used to hold image we are searching for and the results
+typedef struct _SetSearchInfo
+{
+	// results - used to save search results
+	ImageSearchResult* results;
+	// srchImage - the image to search for
+	ImageInfo* srchImage;
+	MUTEXHANDLE srchProtect;
+
+}SetSearchInfo;
+
+
 void search(char* set, char* file, BOOL useThreads);
+SetSearchInfo *search_makeSetSearchInfo();
+void search_freeSetSearchInfo(SetSearchInfo* si);
+void search_resultSwap(ImageSearchResult* p1, ImageSearchResult* p2);
+void search_resultSort(ImageSearchResult* head);
+SetItemFile* search_findFirstFile(Set* s, uint32_t hash);
+SetItemDir* search_findDirectory(Set* s, uint32_t dhash);
+void search_addResult(ImageSearchResult* iss);
+void search_compareImages(void* q1);
+void* searchThreadFunc(void* param);
+void run_threads(Set* s, SetSearchInfo* srch);

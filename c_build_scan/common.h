@@ -57,9 +57,9 @@
 #include "Timer.h"
 #include "Logger.h"
 #include "utils.h"
+#include "Set.h"
 #include "SetBuilder.h"
 #include "SetSearch.h"
-#include "Set.h"
 #include "ImgUtils.h"
 
 

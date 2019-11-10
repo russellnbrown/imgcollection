@@ -21,14 +21,20 @@
 
 #include "common.h"
 
-// Searcher is used in hashmap iterator rather than using a global
-typedef struct _Searcher
+// SetSearchInfo will hold items relecant to this search
+SetSearchInfo* srch = NULL;
+
+SetSearchInfo* search_makeSetSearchInfo()
 {
-	// results - used to save search results
-	ImageSearchResult* results;
-	// srchImage - the image to search for
-	ImageInfo* srchImage;
-}Searcher;
+	srch = malloc(sizeof(SetSearchInfo));
+	memset(srch, 0, sizeof(SetSearchInfo));
+}
+
+void search_freeSetSearchInfo(SetSearchInfo* si)
+{
+	free(si);
+}
+
 
 // Some pinched simple sort algos to sort the final result by 'closeness'
 // http://www.firmcodes.com/c-program-to-sorting-a-singly-linked-list/
@@ -93,17 +99,15 @@ SetItemDir* search_findDirectory(Set *s, uint32_t dhash)
 
 }
 
-Searcher* srch;
-MUTEXHANDLE srchProtect;
 
 void search_addResult(ImageSearchResult* iss)
 {
-	if (srchProtect!=NULL)
-		mutex_lock(srchProtect);
+	if (srch->srchProtect!=NULL)
+		mutex_lock(srch->srchProtect);
 	iss->next = srch->results;
 	srch->results = iss;
-	if (srchProtect!=NULL)
-		mutex_unlock(srchProtect);
+	if (srch->srchProtect!=NULL)
+		mutex_unlock(srch->srchProtect);
 }
 
 // search_compareImages - used as a callback fot the hah map iterator
@@ -151,7 +155,7 @@ void *searchThreadFunc(void * param)
 	return 0;
 }
 
-void run_threads(Set *s, Searcher *srch)
+void run_threads(Set *s, SetSearchInfo *srch)
 {
 	// Create ther search threads. These will process all the images in their
 	// input Q. Each has same number to process rather than a single feed Q as
@@ -183,16 +187,15 @@ void search(char *set, char *file, BOOL useThreads)
 
 	// Searcher is used to hold image to be searched for and the
 	// results of the search
-	srch = malloc(sizeof(Searcher));
+	srch = search_makeSetSearchInfo();
 	if (!srch)
 	{
 		logger(Fatal, "Couldnt create a searcher");
 		return;
 	}
-	memset(srch, 0, sizeof(Searcher));
 	// if using threads, we will need to protect srch with a mutex
 	if (useThreads)
-		srchProtect = mutex_get();
+		srch->srchProtect = mutex_get();
 
 
 	// get image thumbnail & hash etc and put in searcher
@@ -248,6 +251,8 @@ void search(char *set, char *file, BOOL useThreads)
 		if ( found == 0 )
 			logger(Info, "Sorted - , image %u, closeness %.2f <no matching file>", ir->i->ihash, ir->closeness);
 	}
+
+	search_freeSetSearchInfo(srch);
 
 }
 

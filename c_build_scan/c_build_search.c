@@ -40,7 +40,7 @@ int cleanupFreeImage()
 void usage()
 {
 	printf("usage: c_build_search [-c <img collection> <root dir>|-s <img collection> <file to find>][-nt]\n");
-	return;
+	exit(0);
 }
 
 typedef struct _thrData

@@ -41,11 +41,11 @@ Set* set_create(BOOL useThreads)
 		if (useThreads)
 		{
 #ifdef LINUX
-			s->numThreads = get_nprocs_conf();
+			s->numThreads = get_nprocs_conf()*2;
 #else
 			SYSTEM_INFO systemInfo;
 			GetSystemInfo(&systemInfo);
-			s->numThreads = systemInfo.dwNumberOfProcessors;
+			s->numThreads = systemInfo.dwNumberOfProcessors*2;
 #endif
 		}
 	}

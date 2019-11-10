@@ -21,46 +21,50 @@
 
 #include "common.h"
 
-// Set will be created in 's'
-Set* s = NULL;
+SetBuilderInfo* setbuilder = NULL;
 
-BOOL running = TRUE; // signal threads when we are finished
-
-// threadControl
-// used to keep data relevant to a thread. An array 'threads' is
-// created when startting the threads
-struct threadControl
+SetBuilderInfo *setbuild_makeSetBuilderInfo()
 {
-	THREADHANDLE tid;	// it's id
-	int tix;			// it's index (0..numThreads)
-	Set* s;				// pass it the set
-}*threads;
+	SetBuilderInfo* sbi = malloc(sizeof(SetBuilderInfo));
+	if (sbi)
+	{
+		memset(sbi, 0, sizeof(SetBuilderInfo));
+		sbi->running = TRUE;
+		return sbi;
+	}
+	logger(Fatal, "Ran out of memory allocating SetBuilderInfo");
+}
 
-// threadItem
-// used to pass information about to build threads. We have a Q of
-// these, one for each file, the threads read off this Q when ready 
-// for the next file to process. Protected with 'tlock'
-struct threadItem
+void setbuild_freeSetBuilderInfo(SetBuilderInfo*sbi)
 {
-	uint32_t dhash;
-	char ipath[MAX_PATH];
-	struct threadItem* next;
-};
+	free(sbi->s);
+	free(sbi);
+}
 
-// this is the Q of the above. we will place at end and remove from front
-MUTEXHANDLE tlock;	// mutex for thread input q
-struct threadItem* threadListHead = 0;
-struct threadItem* threadListTail = 0;
-int threadListLen = 0;
+struct threadItem *setbuild_makeThreadItem()
+{
+	struct threadItem* ti = malloc(sizeof(struct threadItem));
+	if (ti)
+	{
+		memset(ti, 0, sizeof(struct threadItem));
+		return ti;
+	}
+	logger(Fatal, "Ran out of memory allocating threadItem");
+}
+
+void setbuild_freeThreadItem(struct threadItem* ti)
+{
+	free(ti->ipath);
+	free(ti);
+}
 
 // set_addToThreadQ
 // this is called to add a file to the build thread queue
 void setbuild_addToThreadQ(uint32_t dhash, const char* ipath)
 {
 	// create a threadItem for this file
-	struct threadItem *ti = malloc(sizeof(struct threadItem));
-	memset(ti, 0, sizeof(struct threadItem));
-	strncpy(ti->ipath, ipath,MAX_PATH);
+	struct threadItem* ti = setbuild_makeThreadItem();
+	ti->ipath = strdup(ipath);
 	ti->dhash = dhash;
 
 	// add it to the tail of the thread queue. If Q is too long then
@@ -71,25 +75,25 @@ void setbuild_addToThreadQ(uint32_t dhash, const char* ipath)
 	int inq = 0;
 	while (!placed)
 	{
-		mutex_lock(tlock);
-		if (threadListLen < (s->numThreads*2) )
+		mutex_lock(setbuilder->tlock);
+		if (setbuilder->threadListLen < (setbuilder->s->numThreads*100) )
 		{
-			if (threadListTail != NULL)
-				threadListTail->next = ti;
-			threadListTail = ti;
-			if (threadListHead == NULL)
-				threadListHead = threadListTail;
-			inq = threadListLen++;
+			if (setbuilder->threadListTail != NULL)
+				setbuilder->threadListTail->next = ti;
+			setbuilder->threadListTail = ti;
+			if (setbuilder->threadListHead == NULL)
+				setbuilder->threadListHead = setbuilder->threadListTail;
+			inq = setbuilder->threadListLen++;
 
 			placed = TRUE;
-			mutex_unlock(tlock);
-			logger(Debug, "TRDDIST added %s to Q, size now %d", ipath, inq);
+			mutex_unlock(setbuilder->tlock);
+			//logger(Debug, "TRDDIST added %s to Q, size now %d", ipath, inq);
 
 		}
 		else
 		{
-			mutex_unlock(tlock);
-			util_msleep(10); // quick nap before trying again
+			mutex_unlock(setbuilder->tlock);
+			util_msleep(100); // quick nap before trying again
 		}
 	}
 }
@@ -106,23 +110,23 @@ THREADRETURN setbuild_threadRun(THREADPAR p)
 	while(TRUE)
 	{
 		// Get next item to process from head of Q
-		mutex_lock(tlock);
+		mutex_lock(setbuilder->tlock);
 		// remove from the head
-		struct threadItem* item = threadListHead;
+		struct threadItem* item = setbuilder->threadListHead;
 		if (item != NULL)
 		{
 			// adjust pointers to remove item from Q
-			threadListHead = item->next;
-			threadListLen--;
+			setbuilder->threadListHead = item->next;
+			setbuilder->threadListLen--;
 		}
-		mutex_unlock(tlock);
+		mutex_unlock(setbuilder->tlock);
 
 		// nothing in list, just wait and repeat unless running was set to FALSE 
 		if (item == NULL)
 		{
-			if (!running )
+			if (!setbuilder->running )
 			{
-				logger(Info, "TRD[%d] is finished", tc->tix);
+				logger(Info, "TRD[%d] is finished, processed %d images", tc->tix, tc->numProcessed);
 				return THREADRETURNOK;
 			}
 			util_msleep(10);
@@ -130,15 +134,18 @@ THREADRETURN setbuild_threadRun(THREADPAR p)
 		}
 
 		// process the file & then repeat
+		tc->numProcessed++;
 		SplitPath* sp = util_splitPath(item->ipath);
 
-		ImageInfo* ii = iutil_getImageInfo(s, item->ipath, sp);
+		ImageInfo* ii = iutil_getImageInfo(setbuilder->s, item->ipath, sp);
 		if (ii)
 		{
-			SetItemFile* f = set_addFile(s, item->dhash, ii->crc, sp->fullfile);
-			SetItemImage* sii = set_addImage(s, ii);
+			mutex_lock(setbuilder->rlock);
+			SetItemFile* f = set_addFile(setbuilder->s, item->dhash, ii->crc, sp->fullfile);
+			SetItemImage* sii = set_addImage(setbuilder->s, ii);
+			mutex_unlock(setbuilder->rlock);
 		}
-
+		setbuild_freeThreadItem(item);
 		util_freeSplitPath(sp);
 
 	}
@@ -154,15 +161,17 @@ void setbuild_startthreads()
 	// Start the build procssing threads. 
 
 	// create thread input Q protection lock
-	tlock = mutex_get(); 
+	setbuilder->tlock = mutex_get();
+	setbuilder->rlock = mutex_get();
 
 	// create threadControl items
-	threads = malloc(sizeof(struct threadControl) * s->numThreads);
+	threads = malloc(sizeof(struct threadControl) * setbuilder->s->numThreads);
+	memset(threads, 0, sizeof(struct threadControl) * setbuilder->s->numThreads);
 
 	// sart the threads
-	for (int tx = 0; tx < s->numThreads; tx++)
+	for (int tx = 0; tx < setbuilder->s->numThreads; tx++)
 	{
-		threads[tx].s = s;
+		threads[tx].s = setbuilder->s;
 		threads[tx].tix = tx;
 		threads[tx].tid = thread_start(setbuild_threadRun, &threads[tx]);
 		logger(Info, "TCTRL started thread %d ID is %d", tx, threads[tx].tid);
@@ -177,10 +186,10 @@ void setbuild_waitthreads()
 {
 	logger(Info, "Waiting for threads to close");
 
-	for (int tx = 0; tx < s->numThreads; tx++)
+	for (int tx = 0; tx < setbuilder->s->numThreads; tx++)
 		thread_wait(threads[tx].tid);
 
-	logger(Info, "All closed");
+	logger(Info, "All closed, left=%d", setbuilder->threadListLen);
 
 }
 
@@ -189,9 +198,16 @@ void setbuild_waitthreads()
 // put those into the set
 int setbuild_processImageFile(uint32_t dhash, const char* ipath)
 {
+	static int processed = 0;
+
+	if ( ++processed%1000 == 0 )
+	{
+		logger(Info, "At file %d", processed);		
+	}
+
 	// if using threads, call set_addToThreadQ which will add the file to
 	// the build thread Q
-	if (s->useThreads)
+	if (setbuilder->s->useThreads)
 	{
 		setbuild_addToThreadQ(dhash, ipath);
 		return 0;
@@ -200,11 +216,11 @@ int setbuild_processImageFile(uint32_t dhash, const char* ipath)
 	// otherwise we will just process the file
 	SplitPath* sp = util_splitPath(ipath);
 
-	ImageInfo* ii = iutil_getImageInfo(s, ipath, sp);
+	ImageInfo* ii = iutil_getImageInfo(setbuilder->s, ipath, sp);
 	if (ii)
 	{
-		SetItemFile* f = set_addFile(s, dhash, ii->crc, sp->fullfile);
-		SetItemImage* sii = set_addImage(s, ii);
+		SetItemFile* f = set_addFile(setbuilder->s, dhash, ii->crc, sp->fullfile);
+		SetItemImage* sii = set_addImage(setbuilder->s, ii);
 	}
 
 	util_freeSplitPath(sp); 
@@ -216,10 +232,10 @@ int setbuild_processImageFile(uint32_t dhash, const char* ipath)
 uint32_t setbuild_processDirectory(const char* dpath)
 {
 	char rel[MAX_PATH];
-	set_relativeTo(s, dpath, rel);
+	set_relativeTo(setbuilder->s, dpath, rel);
 	uint32_t dhash = 0;
 	util_crc32(rel, strlen(rel), &dhash);
-	SetItemDir* d = set_addDir(s, rel, dhash);
+	SetItemDir* d = set_addDir(setbuilder->s, rel, dhash);
 
 	return dhash;
 }
@@ -324,6 +340,7 @@ int  setbuild_processEntry(const char* item, const struct stat* info, const int 
 // create - this will create the Image Collection under Set 's'
 void  setbuild_create(char* set, char* dir, BOOL useThreads)
 {
+	setbuilder = setbuild_makeSetBuilderInfo();
 
 	Timer* t = timer_createx();
 
@@ -352,8 +369,8 @@ void  setbuild_create(char* set, char* dir, BOOL useThreads)
 
 	// create the set structure & set 'top'
 	timer_start(t);
-	s = set_create(useThreads);
-	set_setTop(s, pwd);
+	setbuilder->s = set_create(useThreads);
+	set_setTop(setbuilder->s, pwd);
 
 	if (useThreads)
 		setbuild_startthreads();
@@ -372,7 +389,7 @@ void  setbuild_create(char* set, char* dir, BOOL useThreads)
 	if (useThreads)
 	{
 		logger(Info, "TCTRL Files processed, running set to false ");
-		running = FALSE;
+		setbuilder->running = FALSE;
 		setbuild_waitthreads();
 		logger(Info, "TCTRL Threads stopped");
 	}
@@ -381,9 +398,9 @@ void  setbuild_create(char* set, char* dir, BOOL useThreads)
 	timer_stop(t);
 	double createTime = timer_getElapsedTimeInMilliSec(t);
 
-	set_printStats(s);
+	set_printStats(setbuilder->s);
 	timer_start(t);
-	set_save(s, set);
+	set_save(setbuilder->s, set);
 	timer_stop(t);
 	double saveTime = timer_getElapsedTimeInMilliSec(t);
 
