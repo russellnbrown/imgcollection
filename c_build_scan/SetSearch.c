@@ -174,7 +174,18 @@ void run_threads(Set *s, SetSearchInfo *srch)
 	}
 }
 
-// search - searches for the image 'file' in the set 'set'. 
+// search 
+//
+// Rerforms the search of the collection looking for matches to a supplied
+// image.
+// We have option of using threads, if chosen (default) a number of SearchThreadInfo are created, one 
+// for each thread, the load function will populate an image list in the threadinfo object and in addition 
+// to the normal list in the set.
+// If no threads are used the load function will only populate the set image list.
+// Either each thread iterates its own list, or the mainprocess iterates the set list, in either
+// case searchImageCompare is called to do the comparison.
+// After the compare, the results are sorted and closest matches found.
+
 void search(char *set, char *file, BOOL useThreads)
 {
 	// quick checks

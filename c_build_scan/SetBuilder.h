@@ -20,8 +20,10 @@
  //
 
 // threadControl
+//
 // used to keep data relevant to a thread. An array 'threads' is
-// created when startting the threads
+// created when starting the threads
+//
 struct threadControl
 {
 	THREADHANDLE tid;	// it's id
@@ -31,9 +33,11 @@ struct threadControl
 }*threads;
 
 // threadItem
-// used to pass information about to build threads. We have a Q of
+//
+// used to pass information about image file to build threads. We have a Q of
 // these, one for each file, the threads read off this Q when ready 
 // for the next file to process. Protected with 'tlock'
+//
 struct threadItem
 {
 	uint32_t dhash;
@@ -41,17 +45,27 @@ struct threadItem
 	struct threadItem* next;
 };
 
+// SetBuilderInfo
+//
+// Used to hold all info relating to the build
+//
 typedef struct _SetBuilderInfo
 {
-	// Set will be created in 's'
-	Set* s;
-	BOOL running; // signal threads when we are finished
-	// this is the Q of the above. we will place at end and remove from front
-	MUTEXHANDLE tlock;	// mutex for thread input q
-	MUTEXHANDLE rlock;	// mutex for file & image lists
+	Set* s;				// Set will be created in 's'
+	BOOL running;		// signal threads when we are finished
+
+	// thread feeder Q, 
+	// we will place at end and remove from front
 	struct threadItem* threadListHead;
 	struct threadItem* threadListTail;
 	int threadListLen;
+	
+	// mutexes for protecting structures used bt threads. tlock
+	// protects thread feeder Q and rlock protects lists in the 
+	// set
+	MUTEXHANDLE tlock;
+	MUTEXHANDLE rlock;	
+
 }SetBuilderInfo;
 
 SetBuilderInfo* setbuild_makeSetBuilderInfo();

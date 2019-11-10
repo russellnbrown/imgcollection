@@ -24,11 +24,9 @@
 // Searcher is used to hold image we are searching for and the results
 typedef struct _SetSearchInfo
 {
-	// results - used to save search results
-	ImageSearchResult* results;
-	// srchImage - the image to search for
-	ImageInfo* srchImage;
-	MUTEXHANDLE srchProtect;
+	ImageSearchResult* results; // used to save search results
+	ImageInfo* srchImage;		// the image to search for
+	MUTEXHANDLE srchProtect;	// mutex to sync access to search results
 
 }SetSearchInfo;
 
