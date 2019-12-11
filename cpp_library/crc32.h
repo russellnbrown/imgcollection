@@ -1,6 +1,7 @@
 
 
 #pragma once
+
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -54,5 +55,5 @@ std::uint_fast32_t crc(InputIterator first, InputIterator last)
 		~std::accumulate(first, last,
 			~std::uint_fast32_t{ 0 } &std::uint_fast32_t{ 0xFFFFFFFFuL },
 			[](std::uint_fast32_t checksum, std::uint_fast8_t value)
-	{ return table[(checksum ^ value) & 0xFFu] ^ (checksum >> 8); });
+			{ return table[(checksum ^ value) & 0xFFu] ^ (checksum >> 8); });
 }

@@ -1,5 +1,6 @@
+
 /*
- * Copyright (C) 2018 russell brown
+ * Copyright (C) 2019 russell brown
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,20 +17,13 @@
  */
 
 //
-// ImgCollection
+// BuildThreadInfo 
 //
-// These 3 structures form the ImgCollection. 
-// These are saved/loaded to a set of files on disk
+// This is used to keep info on each encoding thread
 //
-
-class ImgCollection
+class icBuildThreadInfo
 {
 public:
-
-
-	list<ImgCollectionDirItem*> dirs;				// simple lists for DirItem & FileItem
-	list<ImgCollectionFileItem*> files;
-	map<int64_t, ImgCollectionImageItem*> images;	// hash table for ImageItem to easilly
-													// lookup & check duplicates etc
-
+	thread		trd;	// the thread
+	int			id;		// thread id
 };

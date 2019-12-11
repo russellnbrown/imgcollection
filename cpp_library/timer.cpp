@@ -1,5 +1,6 @@
+
 /*
- * Copyright (C) 2018 russell brown
+ * Copyright (C) 2019 russell brown
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,21 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//
-// ImgCollection
-//
-// These 3 structures form the ImgCollection. 
-// These are saved/loaded to a set of files on disk
-//
+#include "cpp_library.h"
+#include "cpp_library_internal.h"
 
-class ImgCollection
-{
-public:
-
-
-	list<ImgCollectionDirItem*> dirs;				// simple lists for DirItem & FileItem
-	list<ImgCollectionFileItem*> files;
-	map<int64_t, ImgCollectionImageItem*> images;	// hash table for ImageItem to easilly
-													// lookup & check duplicates etc
-
-};
+list<Timer::timeritem> Timer::items;
+chrono::system_clock::time_point Timer::started;

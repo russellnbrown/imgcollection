@@ -38,10 +38,10 @@ import arenbee.jutils.Timer;
 public class ImgCollectionBuilder extends SimpleFileVisitor<Path>
 {
  
-    public ImgCollectionBuilder(boolean ut)
+    public ImgCollectionBuilder(boolean ut, DBConnectionInfo db)
     {
         useThreads = ut;
-        set = new ImgCollection(ut);
+        set = new ImgCollection(ut, db);
     }
     // The collection we are building
     private ImgCollection set = null;

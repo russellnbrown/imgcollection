@@ -22,7 +22,6 @@ import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import static java.lang.Math.min;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -30,16 +29,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.BiConsumer;
-import java.util.logging.Level;
 import arenbee.jutils.Timer;
 import java.nio.charset.MalformedInputException;
 import java.util.Scanner;
@@ -49,14 +43,19 @@ import java.util.Scanner;
 // image set. 
 public class ImgCollection
 {
-    public ImgCollection(boolean ut)
+ 
+    
+    public ImgCollection(boolean ut, DBConnectionInfo db)
     {
         useThreads = ut;
+        if ( db != null )
+            useDB = db;
     }
     
     // These four items define the ImageCollection. 
     private String top;
     private boolean useThreads = true;
+    private DBConnectionInfo useDB = null;
 
     private final ConcurrentHashMap<Long, ImgCollectionDirItem> dirs = new ConcurrentHashMap<>();
 
@@ -266,6 +265,10 @@ public class ImgCollection
     {
         Timer.stagestart();
 
+        if ( useDB != null )
+        {
+            
+        }
         try
         {
             Path pdir = s.resolve("dirs.txt");

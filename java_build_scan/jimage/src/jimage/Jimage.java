@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// test svn comment
 
 package jimage;
 
+import arenbee.jimageutils.DBConnectionInfo;
 import arenbee.jutils.Timer;
 import arenbee.jimageutils.ImgCollectionBuilder;
 import arenbee.jimageutils.ImgCollectionFileItem;
@@ -33,9 +33,25 @@ import java.util.List;
 public class Jimage
 {
     
+    private String message;
+
+   public void setMessage(String message){
+      this.message  = message;
+   }
+   public void getMessage(){
+      System.out.println("Your Message : " + message);
+   }
+    
     public static void main(String[] args)
     {
         boolean useThreads = true;
+        DBConnectionInfo dbinfo = null;
+        dbinfo = new DBConnectionInfo();
+        dbinfo.host = "localhost";
+        dbinfo.db = "imgcollection";
+        dbinfo.port = 1234;
+        dbinfo.pwd = "imgdb";
+        dbinfo.user = "imgdb";
    
          Logger.Create("JImage", Level.Debug, Level.Info);
         
@@ -46,7 +62,7 @@ public class Jimage
             if ( args[0].equals("-cn") )
                 useThreads = false;
             // We need to create a builder to create our collection
-            ImgCollectionBuilder icbuilder = new ImgCollectionBuilder(useThreads);
+            ImgCollectionBuilder icbuilder = new ImgCollectionBuilder(useThreads, dbinfo);
             Path imageSetPath = Paths.get(args[1]);
             Path directoriesPath = Paths.get(args[2]);
             // create the collection. This will also save to disk
@@ -63,7 +79,7 @@ public class Jimage
             Path fileToSearch = Paths.get(args[2]);
 
             // Create the collection & load from disk
-            ImgCollection st = new ImgCollection(useThreads);
+            ImgCollection st = new ImgCollection(useThreads, null);
             st.Load(imageSetPath);
             
             // Get list of images similar to the search image

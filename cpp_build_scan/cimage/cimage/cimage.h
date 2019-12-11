@@ -20,15 +20,12 @@
 
 
 // this is the only file included in cpp files. 
-// all headers inclided in this file
+// all headers included in this file
 // used by pch in windows
 
 #include <stdio.h>
-
-//#include <windows.h>
 #include <string>
 #include <algorithm>
-//#include <execution>
 #include <list>
 #include <map>
 #include <vector>
