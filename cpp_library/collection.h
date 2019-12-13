@@ -25,7 +25,7 @@
 class CollectionDirItem
 {
 public:
-	CollectionDirItem(int32_t h, string p)
+	CollectionDirItem(HKey h, string p)
 	{
 		path = p;
 		hash = h;
@@ -33,7 +33,7 @@ public:
 	~CollectionDirItem()
 	{
 	}
-	int32_t		hash;		// csc32 of directory path ( used as key by FileItem )
+	HKey		hash;		// csc32 of directory path ( used as key by FileItem )
 	string		path;		// the path ( relative to collection top )
 
 	// toSave - create a string suitable for saving to a dir file
@@ -51,7 +51,7 @@ public:
 		std::istringstream iss(s);
 		std::getline(iss, hash, ',');
 		std::getline(iss, dir, ',');
-		int32_t dhash = strtol(hash.c_str(), nullptr, 10);
+		HKey dhash = strtol(hash.c_str(), nullptr, 10);
 		return  make_unique<CollectionDirItem>(dhash, dir);
 	}
 
@@ -88,14 +88,14 @@ public:
 class CollectionFileItem
 {
 public:
-	CollectionFileItem(int32_t dhash, int32_t crc, string name)
+	CollectionFileItem(HKey dhash, HKey crc, string name)
 	{
 		this->dhash = dhash;
 		this->crc = crc;
 		this->name = name;
 	}
-	int32_t	dhash;			// the key to CollectionDirItems for our directory
-	int32_t	crc;			// crc of the file 
+	HKey	dhash;			// the key to CollectionDirItems for our directory
+	HKey	crc;			// crc of the file 
 	string	name;			// name of the file
 
 	~CollectionFileItem()
@@ -137,8 +137,8 @@ public:
 		std::getline(iss, hash, ',');
 		std::getline(iss, crc, ',');
 		std::getline(iss, name, ',');
-		int32_t dhash = strtol(hash.c_str(), nullptr, 10);
-		int32_t lcrc = strtol(crc.c_str(), nullptr, 10);
+		HKey dhash = strtoll(hash.c_str(), nullptr, 10);
+		HKey lcrc = strtoll(crc.c_str(), nullptr, 10);
 		return make_unique<CollectionFileItem>(dhash, lcrc, name);
 	}
 
@@ -155,21 +155,21 @@ class CollectionImageItem
 public:
 
 	// constructor. // NO ** tmb ** is moved into object. can't be used on return
-	CollectionImageItem(int32_t crc, ThumbVec &tmb)
+	CollectionImageItem(HKey crc, ThumbVec &tmb)
 	{
 		this->crc = crc;
 		this->thumb = tmb;
 
 	}
 
-	CollectionImageItem(int32_t crc, int8_t* tmb)
+	CollectionImageItem(HKey crc, int8_t* tmb)
 	{
 		this->crc = crc;
 		this->thumb.reserve(TNMEM);
 		this->thumb.insert(this->thumb.begin(), tmb, tmb + TNMEM);
 	}
 
-	int32_t			crc;		// the crc of the image file contents
+	HKey			crc;		// the crc of the image file contents
 	ThumbVec		thumb;		// rgb tuples forming a thumbnail of image
 
 	~CollectionImageItem()
@@ -200,7 +200,7 @@ typedef shared_ptr<CollectionImageItem> ImageItemSPtr;
 
 typedef list<DirItemUPtr> DirItemUPtrList;
 typedef list<FileItemUPtr> FileItemUPtrList;
-typedef map<int32_t, ImageItemSPtr> ImageItemSPtrMap;
+typedef map<HKey, ImageItemSPtr> ImageItemSPtrMap;
 typedef vector<ImageItemSPtr> ImageItemSPtrVec;
 
 //

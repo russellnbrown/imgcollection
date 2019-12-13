@@ -23,16 +23,16 @@
 vector<string> extensions{ ".bmp", ".jpg", ".jpeg", ".png", ".gif" };
 
 
-int32_t icUtils::GetHash(string &s)
+HKey icUtils::GetHash(string &s)
 {
 	int32_t xcrc = crc(s.begin(), s.end());
 	return xcrc;
 }
 
 
-int32_t icUtils::GetHash(int8_t *bytes, int len)
+HKey icUtils::GetHash(int8_t *bytes, int len)
 {
-	int32_t xcrc = crc(bytes,bytes+len);
+	HKey xcrc = static_cast<HKey>(crc(bytes,bytes+len));
 	return xcrc;
 }
 

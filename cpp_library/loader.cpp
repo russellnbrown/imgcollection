@@ -117,7 +117,7 @@ void icLoader::loadFiles()
 void icLoader::loadImages()
 {
 	ifstream iimg(setToLoad.string() + "/images.bin", ios::binary);
-	int32_t icrc;
+	int64_t icrc;
 	int8_t* thumb;
 	int stx = 0;
 	thumb = new int8_t[TNMEM];

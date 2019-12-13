@@ -60,6 +60,9 @@ namespace fs = std::filesystem;
 #define MAX_PATH 2048
 #endif
 
+typedef int64_t HKey;
+
+
 // millisecond snooze
 #define MSNOOZE(x) std::this_thread::sleep_for(std::chrono::milliseconds(x))
 

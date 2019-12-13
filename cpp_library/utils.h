@@ -77,8 +77,8 @@ public:
 	enum SearchAlgo { Luma, Mono, Simple, Assembler };
 
 public:
-	static int32_t GetHash(string& path);			// get crc of a file on disk
-	static int32_t GetHash(int8_t* bytes, int len);	// get crc hash of a files bytes
+	static HKey GetHash(string& path);			// get crc of a file on disk
+	static HKey GetHash(int8_t* bytes, int len);	// get crc hash of a files bytes
 	static bool IsImageFile(fs::path fileName);		// does file have an image extension
 	static fs::path Cwd();							// current dir
 	static void Replace(string& source, string const& find, string const& replace);

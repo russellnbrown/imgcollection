@@ -60,7 +60,7 @@ private:
 
 private:
 	bool walkFiles(fs::path dir);							// iterates over files in a directory tree 
-	int32_t pathsplit(const fs::path d, string& dir, 
+	HKey pathsplit(const fs::path d, string& dir,
 		string& file);										// split a file path into its dir & file (if any) componenets
 
 	void processItem(shared_ptr<ImageInfo>&ii);				// process an image file
@@ -68,9 +68,9 @@ private:
 	void waitOnBuildThreads();								// wait for all image processing threads to stop
 	void buildThread(shared_ptr<icBuildThreadInfo>ri);		// image processing thread method
 #ifdef USEDB
-	bool insert_dir(struct st_mysql* con, int32_t dhash, const char* name);
-	bool insert_file(struct st_mysql* con, int32_t dhash, int32_t crc, const char* name);
-	bool insert_thumb(struct st_mysql* con, int32_t key, int8_t *thumb);
+	bool insert_dir(struct st_mysql* con, HKey dhash, const char* name);
+	bool insert_file(struct st_mysql* con, HKey dhash, HKey crc, const char* name);
+	bool insert_thumb(struct st_mysql* con, HKey key, int8_t *thumb);
 	void show_stmt_error(struct st_mysql_stmt* stmt);
 	void finish_with_error(struct st_mysql* con);
 #endif

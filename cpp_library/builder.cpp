@@ -132,7 +132,7 @@ unique_ptr<icCollection> icBuilder::Create(fs::path path)
 
 }
 
-int32_t icBuilder::pathsplit(const fs::path d, string& dirpart, string& filepart)
+HKey icBuilder::pathsplit(const fs::path d, string& dirpart, string& filepart)
 {
 	try
 	{
@@ -179,7 +179,7 @@ bool icBuilder::walkFiles(fs::path dir)
 	string filepart;
 
 	// add 'top' directory to the collection 
-	int32_t dirHash = pathsplit(dir, dirpart, filepart);
+	HKey dirHash = pathsplit(dir, dirpart, filepart);
 	ic->dirs.push_back(make_unique<CollectionDirItem>(dirHash, dirpart));
 	st.incDirs();
 
@@ -191,7 +191,7 @@ bool icBuilder::walkFiles(fs::path dir)
 		string filepart;
 
 		// get crc32 of the directory path
-		int32_t dirHash = pathsplit(de, dirpart, filepart);
+		HKey dirHash = pathsplit(de, dirpart, filepart);
 		if (dirHash == 0)
 		{
 			st.incNameErrors();
@@ -355,7 +355,7 @@ bool icBuilder::Save(unique_ptr<icCollection> &coll, fs::path dir)
 	ofstream oimg(dir.string() + "/images.bin", ios::out | ios::binary);
 	for (auto&& it = coll->imageMap.begin(); it != coll->imageMap.end(); ++it)
 	{
-		int32_t icrc = it->first;
+		int64_t icrc = static_cast<int64_t>(it->first);
 		oimg.write((char*)&icrc, sizeof(icrc));
 		oimg.write((char*)it->second.get()->thumb.data(), TNMEM);
 	}
@@ -372,7 +372,7 @@ bool icBuilder::Save(unique_ptr<icCollection> &coll, fs::path dir)
 //
 // Use binding to speed up database loading
 //
-bool icBuilder::insert_thumb(MYSQL* con, int32_t key, int8_t* thumb)
+bool icBuilder::insert_thumb(MYSQL* con, HKey key, int8_t* thumb)
 {
 
 	const int chunkSize = 500;
@@ -440,7 +440,7 @@ bool icBuilder::insert_thumb(MYSQL* con, int32_t key, int8_t* thumb)
 //
 // Use binding to speed up database loading
 //
-bool icBuilder::insert_file(MYSQL* con, int32_t dhash, int32_t crc, const char* name)
+bool icBuilder::insert_file(MYSQL* con, HKey dhash, HKey crc, const char* name)
 {
 	const int chunkSize = 500;
 	static int storeAt = 0;
@@ -512,7 +512,7 @@ bool icBuilder::insert_file(MYSQL* con, int32_t dhash, int32_t crc, const char* 
 //
 // Use binding to speed up database loading
 //
-bool icBuilder::insert_dir(MYSQL* con, int32_t dhash, const char* name)
+bool icBuilder::insert_dir(MYSQL* con, HKey dhash, const char* name)
 {
 	const int chunkSize = 500;
 	static int storeAt = 0;
