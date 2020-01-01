@@ -24,7 +24,7 @@ SearchThreadInfo::SearchThreadInfo(int x)
 	tix = x;
 }
 
-icSearch::icSearch(unique_ptr<icCollection>& _coll,  icUtils::SearchAlgo algo) : coll(_coll), istype(algo)
+icSearch::icSearch(icCollection *_coll,  icUtils::SearchAlgo algo) : coll(_coll), istype(algo)
 {
 	// this is the image we are looking for
 	searchItem = nullptr;

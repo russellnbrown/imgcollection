@@ -227,4 +227,3 @@ public:
 
 };
 
-typedef unique_ptr<icCollection> CollUPtr;

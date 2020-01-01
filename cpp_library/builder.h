@@ -36,18 +36,18 @@ public:
 
 public:
 
-	CollUPtr Create(fs::path path);			// create the ImgCollection 
+	icCollection *Create(fs::path path);			// create the ImgCollection 
 
 	// load the ImgCollection from database
-	bool Save(CollUPtr& coll, fs::path dir);// save the collection to files
+	bool Save(icCollection* coll, fs::path dir);// save the collection to files
 #ifdef USEDB 
-	bool Save(CollUPtr& coll, string host, int port, string db, string user, string passwd); // save the collection to database
+	bool Save(icCollection* coll, string host, int port, string db, string user, string passwd); // save the collection to database
 #endif
 	static bool Test(string host, int port, string db, string user, string passwd); // test database connection
 
 private:
 
-	CollUPtr ic;											// The ImgCollection
+	icCollection *ic;											// The ImgCollection
 
 	bool running;											// used to stop image processing threads
 	icStats st;												// stats on processing

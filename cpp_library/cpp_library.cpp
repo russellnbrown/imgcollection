@@ -19,6 +19,7 @@
 #include "cpp_library.h"
 #include "cpp_library_internal.h"
 
+
  //
  // checkExists
  //
@@ -135,14 +136,14 @@ int parsehostport(string &hp)
 
 #ifdef USEDB
 
-bool ictestdb(std::string shostport, std::string user, std::string pass, std::string dbase)
+bool icLib::ictestdb(std::string shostport, std::string user, std::string pass, std::string dbase)
 {
 	string host = shostport;
 	int port = parsehostport(host);
 	return icBuilder::Test(host, port, dbase, user, pass );
 }
 
-bool iccreate(std::string shostport, std::string user, std::string pass, std::string dbase, std::string sfiles)
+bool icLib::iccreate(std::string shostport, std::string user, std::string pass, std::string dbase, std::string sfiles)
 {
 	// Initialize the free image library
 
@@ -158,7 +159,7 @@ bool iccreate(std::string shostport, std::string user, std::string pass, std::st
 
 	// Add all files to the Collection
 	Timer::start();
-	unique_ptr<icCollection> coll = sb->Create(sfiles);
+	coll = sb->Create(sfiles);
 	Timer::stop("Scaning");
 
 	// Save the set to db
@@ -169,7 +170,7 @@ bool iccreate(std::string shostport, std::string user, std::string pass, std::st
 	return true;
 }
 
-list<matchingItem*> icsearch(std::string shostport, std::string user, std::string pass, std::string dbase, std::string sfind, std::string algo)
+list<matchingItem*> icLib::icsearch(std::string shostport, std::string user, std::string pass, std::string dbase, std::string sfind, std::string algo)
 {
 	// Initialize the free image library
 
@@ -185,7 +186,7 @@ list<matchingItem*> icsearch(std::string shostport, std::string user, std::strin
 
 	// Add all files to the Collection
 	Timer::start();
-	unique_ptr<icCollection> coll = sb->Load(host, port, dbase, user, pass);
+	coll = sb->Load(host, port, dbase, user, pass);
 	Timer::stop("Loading");
 
 	// Save the set to db
@@ -199,7 +200,7 @@ list<matchingItem*> icsearch(std::string shostport, std::string user, std::strin
 
 
 
-bool iccreate(string sset, string sfiles)
+bool icLib::iccreate(string sset, string sfiles)
 {
 	// Initialize the free image library
 
@@ -217,7 +218,7 @@ bool iccreate(string sset, string sfiles)
 
 	// Add all files to the Collection
 	Timer::start();
-	unique_ptr<icCollection> coll = sb->Create(*files);
+	coll = sb->Create(*files);
 	Timer::stop("Scaning");
 
 	// Save the set to db
@@ -229,7 +230,7 @@ bool iccreate(string sset, string sfiles)
 	return true;
 }
 
-list<matchingItem*> icsearch(std::string set, std::string sfind, std::string algo)
+list<matchingItem*> icLib::icsearch(std::string set, std::string sfind, std::string algo)
 {
 	// Initialize the free image library
 
@@ -242,7 +243,7 @@ list<matchingItem*> icsearch(std::string set, std::string sfind, std::string alg
 	// Add all files to the Collection
 	Timer::start();
 	icLoader l;
-	unique_ptr<icCollection> coll = l.Load(set);
+	coll = l.Load(set);
 	Timer::stop("Loading");
 	Timer::start();
 	icSearch s(coll, getTypeFromStr(algo));
@@ -252,3 +253,30 @@ list<matchingItem*> icsearch(std::string set, std::string sfind, std::string alg
 
 }
 
+
+bool icLib::icload(std::string set)
+{
+	// Initialize the free image library
+
+	FreeImage_Initialise(TRUE);
+	icLoader l;
+	coll = l.Load(set);
+	return true;
+
+}
+
+list<matchingItem*> icLib::icfind(std::string sfind, std::string algo)
+{
+	// Get files & db path & check it exists - return false if not
+	optional<fs::path> find = checkExists(sfind);
+	icSearch s(coll, getTypeFromStr(algo));
+	return std::move(s.Find(*find));
+
+}
+
+bool icLib::icclose()
+{
+	if (coll)
+		delete coll;
+	return true;
+}

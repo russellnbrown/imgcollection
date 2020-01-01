@@ -60,6 +60,7 @@ int main(int argc, char* argv[])
 
 	// parse command line
 	CmdOptions cmd(argc, argv);
+	icLib ci;
 
 	// we can use either a real database or flatfiles to save the image
 	// collection - use one of the following:-
@@ -78,7 +79,7 @@ int main(int argc, char* argv[])
 		optional<string> sset = cmd.getflag("-s");
 		optional<string> sfiles = cmd.getflag("-l");
 		if (( sset && (*sset).length() && sfiles ))
-			iccreate(*sset, *sfiles);
+			ci.iccreate(*sset, *sfiles);
 		else
 			usage("-s option is missing one or more required parameters");
 	}
@@ -96,8 +97,8 @@ int main(int argc, char* argv[])
 		if ((db && sfiles && spass && shost && suser))
 		{
 			// test connection to DB before continuing
-			if (ictestdb(*shost, *suser, *spass, *db))
-				iccreate(*shost, *suser, *spass, *db, *sfiles);
+			if (ci.ictestdb(*shost, *suser, *spass, *db))
+				ci.iccreate(*shost, *suser, *spass, *db, *sfiles);
 		}
 		else
 			usage("-d option is missing one or more required parameters");

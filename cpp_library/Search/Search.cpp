@@ -73,6 +73,8 @@ int main(int argc, char* argv[])
 	cout << "DEBUG version" << endl;
 #endif
 
+	icLib cpp;
+
 	// parse command line
 	CmdOptions cmd(argc, argv);
 
@@ -99,7 +101,7 @@ int main(int argc, char* argv[])
 	{
 		optional<string> sset = cmd.getflag("-s");
 		if ((sset && (*sset).length() && sfind))
-			results = icsearch(*sset, *sfind, algo);
+			results = cpp.icsearch(*sset, *sfind, algo);
 		else
 			usage("-s option is missing one or more required parameters");
 	}
@@ -117,8 +119,8 @@ int main(int argc, char* argv[])
 		if ((db && sfind && spass && shost && suser))
 		{
 			// test connection to DB before continuing
-			if (ictestdb(*shost, *suser, *spass, *db))
-				results = icsearch(*shost, *suser, *spass, *db, *sfind, algo);
+			if (cpp.ictestdb(*shost, *suser, *spass, *db))
+				results = cpp.icsearch(*shost, *suser, *spass, *db, *sfind, algo);
 		}
 		else
 			usage("-d option is missing one or more required parameters");

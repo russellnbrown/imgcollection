@@ -30,11 +30,29 @@ public:
 	std::list<std::string>	files;
 };
 
+class icCollection;
+typedef  icCollection* ICP;
+
+class icLib
+{
+public:
+
+	icCollection *coll;
+
 #ifdef USEDB 
-bool iccreate(std::string hostport, std::string user, std::string pass, std::string dbase, std::string files);
-bool ictestdb(std::string hostport, std::string user, std::string pass, std::string dbase);
-std::list<matchingItem*> icsearch(std::string hostport, std::string user, std::string pass, std::string dbase, std::string find, std::string algo);
+	bool iccreate(std::string hostport, std::string user, std::string pass, std::string dbase, std::string files);
+	bool ictestdb(std::string hostport, std::string user, std::string pass, std::string dbase);
+	std::list<matchingItem*> icsearch(std::string hostport, std::string user, std::string pass, std::string dbase, std::string find, std::string algo);
 #endif
-bool iccreate(std::string set, std::string files);
-std::list<matchingItem*> icsearch(std::string set, std::string find, std::string algo);
+
+	// combind load/find/close
+	std::list<matchingItem*> icsearch(std::string set, std::string find, std::string algo);
+
+	// split load into icload & close into icclose. allowa smultiple calls to find(search)
+	bool iccreate(std::string set, std::string files);
+	bool icload(std::string set);
+	std::list<matchingItem*> icfind(std::string find, std::string algo);
+	bool icclose();
+
+};
 

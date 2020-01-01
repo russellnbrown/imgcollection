@@ -39,7 +39,7 @@ typedef shared_ptr<ImageInfo> ImageInfoSPtr;
 class icSearch
 {
 public:
-	icSearch(CollUPtr& _coll, icUtils::SearchAlgo algo);				// the search class
+	icSearch(icCollection *_coll, icUtils::SearchAlgo algo);				// the search class
 
 public:
 	list<matchingItem*> Find(fs::path file); 
@@ -47,7 +47,7 @@ public:
 
 private:
 	SharedResultList		results;		// all search results ( combine thread results )	
-	CollUPtr&				coll;
+	icCollection			*coll;
 	ImageInfoSPtr			searchItem;		// in searches, the image being searched for
 	int						numThreads;		// number of threads we can use for threaded operations
 	SearchThreadsVec		srchThreads;	// search threads

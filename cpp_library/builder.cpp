@@ -117,9 +117,9 @@ void icBuilder::buildThread(shared_ptr<icBuildThreadInfo>ri)
 // Two ways to use the builder, either Create ( build from files ) or
 // Load ( load an existing set ) 
 // in either case the 'ic' will be filled
-unique_ptr<icCollection> icBuilder::Create(fs::path path)
+icCollection *icBuilder::Create(fs::path path)
 {
-	ic = make_unique<icCollection>();
+	ic = new icCollection();
 
 	ic->top = path;
 	stop = ic->top.string();
@@ -128,7 +128,7 @@ unique_ptr<icCollection> icBuilder::Create(fs::path path)
 	// call file walker with the 'top' directory
 	walkFiles(path);
 
-	return std::move(ic);
+	return ic;
 
 }
 
@@ -329,7 +329,7 @@ void icBuilder::processItem(shared_ptr<ImageInfo>&ii)
 //
 // This saves the Collection as three seperate flat files, dirss, files & images
 //
-bool icBuilder::Save(unique_ptr<icCollection> &coll, fs::path dir)
+bool icBuilder::Save(icCollection *coll, fs::path dir)
 {
 	string dirpart;
 	string filepart;
@@ -631,7 +631,7 @@ bool icBuilder::Test(string host, int port, string db, string user, string passw
 //
 // This saves the ImgCollection to a mysql database
 //
-bool icBuilder::Save(unique_ptr<icCollection> &coll, string host, int port, string db, string user, string passwd)
+bool icBuilder::Save(icCollection *coll, string host, int port, string db, string user, string passwd)
 {
 	string dirpart;
 	string filepart;

@@ -38,14 +38,14 @@ public:
 
 public:
 
-	unique_ptr<icCollection> Load(fs::path path);				// load the ImgCollection from flat files
+	icCollection *Load(fs::path path);				// load the ImgCollection from flat files
 #ifdef USEDB
-	unique_ptr<icCollection> Load(string host, int port, string db, string user, string passwd);
+	icCollection *Load(string host, int port, string db, string user, string passwd);
 #endif
 
 private:
 
-	unique_ptr<icCollection> ic;								// The ImgCollection
+	icCollection *ic;										// The ImgCollection
 
 	mutex llock;											// lock for changing content of set lists
 	list<shared_ptr<SearchResult>> results;					// in searches, the results of comparisons

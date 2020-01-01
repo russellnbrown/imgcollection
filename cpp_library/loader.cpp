@@ -32,6 +32,7 @@
 //
 icLoader::icLoader()
 {
+	ic = nullptr;
 	numThreads = std::thread::hardware_concurrency() * 2;
 	if (numThreads <= 0)
 		numThreads = 2;
@@ -39,7 +40,7 @@ icLoader::icLoader()
 }
 
 icLoader::~icLoader()
-{
+{// dont delete collection, used elsewhere
 	//logger::info("loader object deleted");
 }
 
@@ -48,9 +49,9 @@ icLoader::~icLoader()
 // Two ways to use the loader, either Create ( build from files ) or
 // Load ( load an existing set ) 
 // in either case the 'ic' will be filled
-unique_ptr<icCollection> icLoader::Load(fs::path path)
+icCollection *icLoader::Load(fs::path path)
 {
-	ic = make_unique<icCollection>();
+	ic = new icCollection();
 
 	setToLoad = path;
 	logger::info("Loading with threads");
@@ -64,7 +65,7 @@ unique_ptr<icCollection> icLoader::Load(fs::path path)
 
 	logger::info("Load from flat files, dirs=" + to_string(ic->dirs.size()) + ", files=" + 
 		          to_string(ic->files.size()) + ", images=" + to_string(ic->imageMap.size()) + ", ivec=" + ", images=" + to_string(ic->images.size()));
-	return std::move(ic);
+	return ic;
 
 }
 
@@ -145,9 +146,9 @@ void icLoader::loadImages()
 
 #ifdef USEDB
 
-unique_ptr<icCollection> icLoader::Load(string host, int port, string db, string user, string passwd)
+icCollection *icLoader::Load(string host, int port, string db, string user, string passwd)
 {
-	ic = make_unique<icCollection>();
+	ic = new icCollection();
 
 	MYSQL* con = mysql_init(NULL);
 	if (con == NULL)
