@@ -21,10 +21,18 @@ void clearresults()
 
 CIMAGELIB cimageinit(const char* set)
 {
-	clearresults();
-	icLib* ci  = new icLib();
-	ci->icload(set);
-	return ci;
+	try
+	{
+		clearresults();
+		icLib* ci = new icLib();
+		ci->icload(set);
+		return ci;
+	}
+	catch (std::runtime_error * e)
+	{
+		std::cerr << "problem in init:" << e->what() << std::endl;
+		return nullptr;
+	}
 }
 
 int cimagefree(CIMAGELIB _ci)
@@ -38,10 +46,18 @@ int cimagefree(CIMAGELIB _ci)
 
 int cimagesearch(CIMAGELIB _ci, const char *find, const char *algo)
 {
-	clearresults();
-	results = ((icLib*)_ci)->icfind(find, algo);
-	std::cout << "dllResult count=" << results.size() << std::endl;
-	return (int)results.size();
+	try
+	{
+		clearresults();
+		results = ((icLib*)_ci)->icfind(find, algo);
+		std::cout << "dllResult count=" << results.size() << std::endl;
+		return (int)results.size();
+	}
+	catch (std::runtime_error *e)
+	{
+		std::cerr << "problem in search:" << e->what() << std::endl;
+		return -1;
+	}
 }
 
 

@@ -51,6 +51,7 @@ icLoader::~icLoader()
 // in either case the 'ic' will be filled
 icCollection *icLoader::Load(fs::path path)
 {
+
 	ic = new icCollection();
 
 	setToLoad = path;

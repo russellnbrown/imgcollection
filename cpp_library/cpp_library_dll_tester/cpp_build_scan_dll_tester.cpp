@@ -9,6 +9,11 @@
 int main()
 {
 	CIMAGELIB tag = cimageinit("C:\\TestEnvironments\\img\\clib.db");
+	if (tag == nullptr)
+	{
+		std::cout << "init failed" << std::endl;
+		return -1;
+	}
 	int nresults = cimagesearch(tag, "C:\\TestEnvironments\\img\\tvs\\5\\fred0.jpg", "simple");
 	for (int c = 0; c < nresults; c++)
 	{

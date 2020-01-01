@@ -256,6 +256,9 @@ list<matchingItem*> icLib::icsearch(std::string set, std::string sfind, std::str
 
 bool icLib::icload(std::string set)
 {
+	optional<fs::path> find = checkExists(set);
+	if (!find)
+		throw new runtime_error("Set file dosn't exist");
 	// Initialize the free image library
 
 	FreeImage_Initialise(TRUE);
@@ -269,6 +272,8 @@ list<matchingItem*> icLib::icfind(std::string sfind, std::string algo)
 {
 	// Get files & db path & check it exists - return false if not
 	optional<fs::path> find = checkExists(sfind);
+	if (!find)
+		throw new runtime_error("Search file dosn't exist");
 	icSearch s(coll, getTypeFromStr(algo));
 	return std::move(s.Find(*find));
 
