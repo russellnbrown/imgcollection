@@ -1,0 +1,145 @@
+﻿  void drawPlane2(Plane p)
+        {
+            System.Windows.Controls.Image image = new System.Windows.Controls.Image();
+            image.Height = 150;
+            //Define the URI location of the image
+            BitmapImage myBitmapImage = new BitmapImage();
+            myBitmapImage.BeginInit();
+            myBitmapImage.UriSource = new Uri("pack://application:,,/images/planet.bmp");
+            // To save significant application memory, set the DecodePixelWidth or  
+            // DecodePixelHeight of the BitmapImage value of the image source to the desired 
+            // height or width of the rendered image. If you don't do this, the application will 
+            // cache the image as though it were rendered as its normal size rather then just 
+            // the size that is displayed.
+            // Note: In order to preserve aspect ratio, set DecodePixelWidth
+            // or DecodePixelHeight but not both.
+            //Define the image display properties
+            myBitmapImage.DecodePixelHeight = 150;
+            myBitmapImage.EndInit();
+            image.Source = myBitmapImage;
+            image.Opacity = 0.6;
+            image.Stretch = System.Windows.Media.Stretch.None;
+           
+
+            //The map location to place the image at
+            Location location = new Location() { Latitude = p.Latitude, Longitude = p.Longitude };
+            //Center the image around the location specified
+            PositionOrigin position = PositionOrigin.Center;
+
+            //Add the image to the defined map layer
+            ml[inactiveLayer()].AddChild(image, location, position);
+
+           // ml[inactiveLayer()].Children.Add(circle);
+ 
+        }
+
+        private DrawingVisual CreateTriangle()
+        {
+            var triangle = new DrawingVisual();
+            using (DrawingContext dc = triangle.RenderOpen())
+            {
+                var start = new Point(0, 50);
+
+                var segments = new[]
+                {
+          new LineSegment(new Point(50,0), true),
+          new LineSegment(new Point(50, 100), true)
+       };
+
+                var figure = new PathFigure(start, segments, true);
+                var geo = new PathGeometry(new[] { figure });
+                dc.DrawGeometry(Brushes.Red, null, geo);
+
+                var drawingPen = new Pen(Brushes.Black, 3);
+                dc.DrawLine(drawingPen, new Point(0, 50), new Point(50, 0));
+                dc.DrawLine(drawingPen, new Point(50, 0), new Point(50, 100));
+                dc.DrawLine(drawingPen, new Point(50, 100), new Point(0, 50));
+            }
+
+            return triangle;
+        }
+
+        void drawPlane3(Plane p)
+        {
+
+            int w = 32;
+
+            //var target = new RenderTargetBitmap(100, 100, 100, 100, PixelFormats.Pbgra32);
+            var target = new RenderTargetBitmap(w, w, 0, 0, PixelFormats.Pbgra32);
+            var visual = new DrawingVisual();
+
+            using (var r = visual.RenderOpen())
+            {
+                // r.DrawImage(pl, new Rect(0, 0, pl.Width, pl.Height));
+                r.DrawLine(new System.Windows.Media.Pen(System.Windows.Media.Brushes.Red, 1.0), new System.Windows.Point(0, 0), new System.Windows.Point(0, w));
+                r.DrawLine(new System.Windows.Media.Pen(System.Windows.Media.Brushes.Red, 1.0), new System.Windows.Point(0, w), new System.Windows.Point(w, w));
+                r.DrawLine(new System.Windows.Media.Pen(System.Windows.Media.Brushes.Red, 1.0), new System.Windows.Point(w, w), new System.Windows.Point(w, 0));
+                r.DrawLine(new System.Windows.Media.Pen(System.Windows.Media.Brushes.Red, 1.0), new System.Windows.Point(w, 0), new System.Windows.Point(0,0));
+                r.DrawLine(new System.Windows.Media.Pen(System.Windows.Media.Brushes.Blue, 0.0), new System.Windows.Point(0, 0), new System.Windows.Point(w, w));
+                //r.DrawText(new FormattedText(
+                //    p.HexIdent, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
+                //    new Typeface("Segoe UI"), 24.0, System.Windows.Media.Brushes.Black), new System.Windows.Point(100, 10));
+            }
+
+            target.Render(visual);
+
+            System.Windows.Controls.Image image = new System.Windows.Controls.Image();
+            image.BeginInit();
+            image.Source = target;
+            
+            image.EndInit();
+            image.Opacity = 1;
+            image.Stretch = System.Windows.Media.Stretch.None;
+
+            Location location = new Location() { Latitude = p.Latitude, Longitude = p.Longitude };
+            //Center the image around the location specified
+            PositionOrigin position = PositionOrigin.Center;
+
+            //Add the image to the defined map layer
+            ml[inactiveLayer()].AddChild(image, location, position);
+        }
+
+
+		
+        void drawPlane1(Plane p)
+        {
+            MapPolyline polygon = new MapPolyline();
+            polygon.Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Blue);
+            polygon.Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Green);
+            polygon.StrokeThickness = 5;
+            polygon.Opacity = 0.7;
+            polygon.Locations = new LocationCollection() {
+        new Location(p.Latitude, p.Longitude),
+        new Location(p.Latitude+0.001, p.Longitude+0.001)};
+
+
+
+            ml[inactiveLayer()].Children.Add(polygon);
+        }
+
+
+       BitmapImage pl;
+
+		           try
+            {
+                pl = new BitmapImage();
+                pl.BeginInit();
+                pl.UriSource = new Uri("pack://application:,,/images/planet.bmp");
+                pl.EndInit();
+            }
+            catch (Exception e)
+            {
+                l.Error(e.Message);
+            }
+
+
+
+			            StreamGeometry streamGeometry = new StreamGeometry();
+            using (StreamGeometryContext geometryContext = streamGeometry.Open())
+            {
+                geometryContext.BeginFigure(R16ApBL, true, true);
+                PointCollection points = new PointCollection { R16ApBR, R16ApTR, R16ApTL, R16ApBL };
+                geometryContext.PolyLineTo(points, true, true);
+            }
+            Point pp = new Point(p.Longitude, p.Latitude);
+            bool ins = streamGeometry.FillContains(pp);

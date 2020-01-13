@@ -1,0 +1,42 @@
+﻿<Window x:Class="pplot.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:m="clr-namespace:Microsoft.Maps.MapControl.WPF;assembly=Microsoft.Maps.MapControl.WPF"
+        xmlns:local="clr-namespace:pplot"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+
+        <TabControl>
+            <TabItem Header="Map">
+                <Grid >
+                <m:Map  x:Name="mainmap"  CredentialsProvider="AlkF1YZk5OkMIqs-_P_cLGgaV0bKpNwtiZcPTrQPAABlyudnqkDSsbgiiY7qPMNn" Mode="Road"
+                Center="-33.930, 151.171" ZoomLevel="13" />
+                </Grid>
+            </TabItem>
+            <TabItem Header="List">
+                <ListView Margin="10" Name="planelist">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="HexIdent" Width="80" DisplayMemberBinding="{Binding HexIdent}" />
+                            <GridViewColumn Header="Updates" Width="80" DisplayMemberBinding="{Binding Updates}" />
+                            <GridViewColumn Header="Age" Width="80" DisplayMemberBinding="{Binding Age}" />
+                            <GridViewColumn Header="Callsign" Width="80" DisplayMemberBinding="{Binding Callsign}" />
+                            <GridViewColumn Header="Squawk" Width="80" DisplayMemberBinding="{Binding Squawk}" />
+                            <GridViewColumn Header="Lat" Width="80" DisplayMemberBinding="{Binding Latitude}" />
+                            <GridViewColumn Header="Lon" Width="80" DisplayMemberBinding="{Binding Longitude}" />
+                            <GridViewColumn Header="Altitude" Width="80" DisplayMemberBinding="{Binding Altitude}" />
+                            <GridViewColumn Header="Heading" Width="80" DisplayMemberBinding="{Binding Track}" />
+                            <GridViewColumn Header="Ground" Width="80" DisplayMemberBinding="{Binding IsOnGround}" />
+                            <GridViewColumn Header="Emergency" Width="80" DisplayMemberBinding="{Binding Emergency}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </TabItem>
+            <TabItem Header="Details" />
+        </TabControl>
+
+     </Grid>
+</Window>
