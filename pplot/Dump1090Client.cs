@@ -19,7 +19,7 @@ namespace pplot
 
         internal Dump1090Client(string connectTo)
         {
-            this.connectTo = connectTo;
+            this.connectTo = connectTo;// Application.Current.FindResource("connectTo").ToString(); 
             planesd = new SortedDictionary<string, Plane>();
             if (connectTo.ToLower().StartsWith("sim"))
                 t = new Thread(new ThreadStart(Simulate));

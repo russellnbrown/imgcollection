@@ -44,11 +44,12 @@ namespace pplot
             mainmap.Children.Add(ml[0]);
             mainmap.Children.Add(ml[1]);
 
-            string dump = "192.168.20.17";
-            string sim = "sim";
-            string local = "127.0.0.1";
+ 
 
-            d1090 = new Dump1090Client(dump); 
+            string connectTo = FindResource("connectTo").ToString();
+            d1090 = new Dump1090Client(connectTo);
+
+
 
             System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
             dispatcherTimer.Tick += updateMainList;
