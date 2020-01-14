@@ -59,6 +59,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Airport.cs" />
     <Compile Include="GEO.cs" />
     <Compile Include="Plane.cs" />
     <Compile Include="SBSMessage.cs" />

@@ -30,60 +30,72 @@ namespace pplot
 
          MapLayer[] ml = new MapLayer[2];
 
+        Airport ap;
+
         public MainWindow()
         {
-            instance = this;
-            l.To("pplot.log");
-            planes = new ObservableCollection<Plane>();
-            InitializeComponent();
-            planelist.ItemsSource = planes;
+            try
+            {
+                instance = this;
+                ap = new Airport("C:/Sources/github_svn/imgcollection/trunk/pplot/sydney.xml");
+
+                l.To("pplot.log");
+                planes = new ObservableCollection<Plane>();
+                InitializeComponent();
+                planelist.ItemsSource = planes;
 
 
-            Closing += MainWindow_Closing;
-
- 
-
-            ml[0] = new MapLayer();
-            ml[1] = new MapLayer();
-            mainmap.Children.Add(ml[0]);
-            mainmap.Children.Add(ml[1]);
- 
-            var poly = new MapPolyline();
-            poly.Locations = approach16R;
-            poly.Stroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0));
-            poly.StrokeThickness = 1;
-            mainmap.Children.Add(poly);
-
-            poly = new MapPolyline();
-            poly.Locations = approach16L;
-            poly.Stroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0));
-            poly.StrokeThickness = 1;
-            mainmap.Children.Add(poly);
-
-
-            poly = new MapPolyline();
-            poly.Locations =approach28L;
-            poly.Stroke = new SolidColorBrush(Color.FromArgb(255, 255, 255, 0));
-            poly.StrokeThickness = 1;
-            mainmap.Children.Add(poly);
-
-            poly = new MapPolyline();
-            poly.Locations = approach28R;
-            poly.Stroke = new SolidColorBrush(Color.FromArgb(255, 255, 255, 0));
-            poly.StrokeThickness = 1;
-            mainmap.Children.Add(poly);
-
-  
-
-            string connectTo = FindResource("connectTo").ToString();
-            d1090 = new Dump1090Client(connectTo);
+                Closing += MainWindow_Closing;
 
 
 
-            System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
-            dispatcherTimer.Tick += updateMainList;
-            dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 250);
-            dispatcherTimer.Start();
+                ml[0] = new MapLayer();
+                ml[1] = new MapLayer();
+                mainmap.Children.Add(ml[0]);
+                mainmap.Children.Add(ml[1]);
+
+                var poly = new MapPolyline();
+                poly.Locations = approach16R;
+                poly.Stroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0));
+                poly.StrokeThickness = 1;
+                mainmap.Children.Add(poly);
+
+                poly = new MapPolyline();
+                poly.Locations = approach16L;
+                poly.Stroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0));
+                poly.StrokeThickness = 1;
+                mainmap.Children.Add(poly);
+
+
+                poly = new MapPolyline();
+                poly.Locations = approach28L;
+                poly.Stroke = new SolidColorBrush(Color.FromArgb(255, 255, 255, 0));
+                poly.StrokeThickness = 1;
+                mainmap.Children.Add(poly);
+
+                poly = new MapPolyline();
+                poly.Locations = approach28R;
+                poly.Stroke = new SolidColorBrush(Color.FromArgb(255, 255, 255, 0));
+                poly.StrokeThickness = 1;
+                mainmap.Children.Add(poly);
+
+
+
+                string connectTo = FindResource("connectTo").ToString();
+                d1090 = new Dump1090Client(connectTo);
+
+
+
+                System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
+                dispatcherTimer.Tick += updateMainList;
+                dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 250);
+                dispatcherTimer.Start();
+            }
+            catch(Exception e)
+            {
+                MessageBox.Show(e.Message);
+                Environment.Exit(0);
+            }
         }
 
         private Plane GetLocalPlane(string id)
