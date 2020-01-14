@@ -1,0 +1,14 @@
+<airport name="SYD"> 
+
+   <runway name="16L">
+
+	<approach>
+           <point>-33.872743, 151.170923</point>
+           <point>-33.870177, 151.188261</point>
+           <point>-33.948715, 151.188784</point>
+           <point>-33.948911, 151.187464</point>
+	</approach>
+
+   </runway>
+
+</airport>
