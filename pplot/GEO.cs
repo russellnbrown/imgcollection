@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Maps.MapControl.WPF;
+using System;
 
 
 namespace pplot
@@ -12,27 +13,15 @@ namespace pplot
         // caused overflow problems) 
         static int INF = 10000;
 
-        public class Location
-        {
-            public double longitude;
-            public double latitude;
-
-            public Location(double longitude, double latitude)
-            {
-                this.longitude = longitude;
-                this.latitude = latitude;
-            }
-        };
-
         // Given three colinear points p, q, r, 
         // the function checks if point q lies 
         // on line segment 'pr' 
         private static bool onSegment(Location p, Location q, Location r)
         {
-            if (q.longitude <= Math.Max(p.longitude, r.longitude) &&
-                q.longitude >= Math.Min(p.longitude, r.longitude) &&
-                q.latitude <= Math.Max(p.latitude, r.latitude) &&
-                q.latitude >= Math.Min(p.latitude, r.latitude))
+            if (q.Longitude <= Math.Max(p.Longitude, r.Longitude) &&
+                q.Longitude >= Math.Min(p.Longitude, r.Longitude) &&
+                q.Latitude <= Math.Max(p.Latitude, r.Latitude) &&
+                q.Latitude >= Math.Min(p.Latitude, r.Latitude))
             {
                 return true;
             }
@@ -46,8 +35,8 @@ namespace pplot
         // 2 --> Counterclockwise 
         private static int orientation(Location p, Location q, Location r)
         {
-            int val = (int)((q.latitude - p.latitude) * (r.longitude - q.longitude) -
-                    (q.longitude - p.longitude) * (r.latitude - q.latitude));
+            int val = (int)((q.Latitude - p.Latitude) * (r.Longitude - q.Longitude) -
+                    (q.Longitude - p.Longitude) * (r.Latitude - q.Latitude));
 
             if (val == 0)
             {
@@ -109,23 +98,23 @@ namespace pplot
 
         // Returns true if the point p lies 
         // inside the polygon[] with n vertices 
-        public static bool isInside(Location[] polygon,  Location p)
+        public static bool isInside(LocationCollection polygon, Location p)
         {
             // There must be at least 3 vertices in polygon[] 
-            if (polygon.Length < 3)
+            if (polygon.Count < 3)
             {
                 return false;
             }
 
             // Create a point for line segment from p to infinite 
-            Location extreme = new Location(INF, p.latitude);
+            Location extreme = new Location(INF, p.Latitude);
 
             // Count intersections of the above line 
             // with sides of polygon 
             int count = 0, i = 0;
             do
             {
-                int next = (i + 1) % polygon.Length;
+                int next = (i + 1) % polygon.Count;
 
                 // Check if the line segment from 'p' to 
                 // 'extreme' intersects with the line 
@@ -149,81 +138,8 @@ namespace pplot
             // Return true if count is odd, false otherwise 
             return (count % 2 == 1); // Same as (count%2 == 1) 
         }
-
-        /*
-    // Driver Code 
-    public static void Main(String[] args)
-    {
-        Location[] polygon1 = {new Location(0, 0),
-                            new Location(10, 0),
-                            new Location(10, 10),
-                            new Location(0, 10)};
-        int n = polygon1.Length;
-        Location p = new Location(20, 20);
-        if (isInside(polygon1, n, p))
-        {
-            Console.WriteLine("Yes");
-        }
-        else
-        {
-            Console.WriteLine("No");
-        }
-        p = new Location(5, 5);
-        if (isInside(polygon1, n, p))
-        {
-            Console.WriteLine("Yes");
-        }
-        else
-        {
-            Console.WriteLine("No");
-        }
-        Location[] polygon2 = {new Location(0, 0),
-                            new Location(5, 5),
-                            new Location(5, 0)};
-        p = new Location(3, 3);
-        n = polygon2.Length;
-        if (isInside(polygon2, n, p))
-        {
-            Console.WriteLine("Yes");
-        }
-        else
-        {
-            Console.WriteLine("No");
-        }
-        p = new Location(5, 1);
-        if (isInside(polygon2, n, p))
-        {
-            Console.WriteLine("Yes");
-        }
-        else
-        {
-            Console.WriteLine("No");
-        }
-        p = new Location(8, 1);
-        if (isInside(polygon2, n, p))
-        {
-            Console.WriteLine("Yes");
-        }
-        else
-        {
-            Console.WriteLine("No");
-        }
-        Location[] polygon3 = {new Location(0, 0),
-                            new Location(10, 0),
-                            new Location(10, 10),
-                            new Location(0, 10)};
-        p = new Location(-1, 10);
-        n = polygon3.Length;
-        if (isInside(polygon3, n, p))
-        {
-            Console.WriteLine("Yes");
-        }
-        else
-        {
-            Console.WriteLine("No");
-        }
-    }*/
     }
 }
 
+  
 // This code is contributed by 29AjayKumar 

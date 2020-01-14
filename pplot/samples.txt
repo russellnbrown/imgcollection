@@ -143,3 +143,28 @@
             }
             Point pp = new Point(p.Longitude, p.Latitude);
             bool ins = streamGeometry.FillContains(pp);
+
+
+			
+        Path  makeApproach16R()
+        {
+            Path myPath = new Path();
+            myPath.Stroke = Brushes.Black;
+            myPath.StrokeThickness = 1;
+            StreamGeometry geometry = new StreamGeometry();
+            geometry.FillRule = FillRule.EvenOdd;
+            using (StreamGeometryContext geometryContext = geometry.Open())
+            {
+                geometryContext.BeginFigure(pR16ApBL, true, true);
+                PointCollection points = new PointCollection
+                                             {
+                                                 pR16ApBR,
+                                                 pR16ApTL,
+                                                 pR16ApTR
+                                             };
+                geometryContext.PolyLineTo(points, true, true);
+            }
+            geometry.Freeze();
+            myPath.Data = geometry;
+            return myPath;
+        }

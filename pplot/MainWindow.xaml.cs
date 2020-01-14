@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
+using System.Windows.Shapes;
 
 namespace pplot
 {
@@ -19,6 +19,10 @@ namespace pplot
         public static MainWindow instance;
         public static MainWindow Get() { return instance; }
 
+        private static LocationCollection approach16R = makeApproach16R();
+        private static LocationCollection approach16L = makeApproach16L();
+        private static LocationCollection approach28R = makeApproach28R();
+        private static LocationCollection approach28L = makeApproach28L();
 
         const int removeAge = 20;
         const int insertAge = 15;
@@ -43,8 +47,33 @@ namespace pplot
             ml[1] = new MapLayer();
             mainmap.Children.Add(ml[0]);
             mainmap.Children.Add(ml[1]);
-
  
+            var poly = new MapPolyline();
+            poly.Locations = approach16R;
+            poly.Stroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0));
+            poly.StrokeThickness = 1;
+            mainmap.Children.Add(poly);
+
+            poly = new MapPolyline();
+            poly.Locations = approach16L;
+            poly.Stroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0));
+            poly.StrokeThickness = 1;
+            mainmap.Children.Add(poly);
+
+
+            poly = new MapPolyline();
+            poly.Locations =approach28L;
+            poly.Stroke = new SolidColorBrush(Color.FromArgb(255, 255, 255, 0));
+            poly.StrokeThickness = 1;
+            mainmap.Children.Add(poly);
+
+            poly = new MapPolyline();
+            poly.Locations = approach28R;
+            poly.Stroke = new SolidColorBrush(Color.FromArgb(255, 255, 255, 0));
+            poly.StrokeThickness = 1;
+            mainmap.Children.Add(poly);
+
+  
 
             string connectTo = FindResource("connectTo").ToString();
             d1090 = new Dump1090Client(connectTo);
@@ -85,6 +114,7 @@ namespace pplot
                 cl = 1;
         }
 
+ 
         private void updateMainList(object sender, EventArgs e)
         {
             ml[inactiveLayer()].Children.Clear();
@@ -138,17 +168,14 @@ namespace pplot
 
         }
 
-        static GEO.Location R16ApBL = new GEO.Location(-33.927452, 151.169001);
-        static GEO.Location R16ApBR = new GEO.Location(-33.927274, 151.173292 );
-        static GEO.Location R16ApTL = new GEO.Location(-33.845030, 151.138984 );
-        static GEO.Location R16ApTR = new GEO.Location(-33.838541, 151.157009 );
-
-        GEO.Location[] approach16R = { R16ApBL, R16ApBR, R16ApTL, R16ApTR };
-        bool inside16LApproach(Plane p)
-        {
-            GEO.Location pl = new GEO.Location(p.Latitude, p.Longitude);
-            return GEO.isInside(approach16R,  pl);
  
+
+  
+
+        bool isInsidePoly(Plane p, LocationCollection poly)
+        {
+            Location pl = new Location(p.Latitude, p.Longitude);
+            return GEO.isInside(poly,  pl);
         }
 
 
@@ -171,6 +198,75 @@ namespace pplot
         Typeface normalText = new Typeface("Century");
         Typeface boldText = new Typeface(new FontFamily("Century"), FontStyles.Normal, FontWeights.Bold,  FontStretches.Normal);
         StreamGeometry director = null;
+
+
+        private static LocationCollection  makeApproach16R()
+        {
+ 
+            Location tl = new Location(-33.872743, 151.170923);
+            Location tr = new Location(-33.870177, 151.188261);
+            Location br = new Location(-33.948715, 151.188784);
+            Location bl = new Location(-33.948911, 151.187464);
+
+            var locations = new LocationCollection();
+            locations.Add(tl);
+            locations.Add(tr);
+            locations.Add(br);
+            locations.Add(bl);
+            locations.Add(tl);
+            return locations;
+        }
+
+        private static LocationCollection makeApproach16L()
+        {
+            Location br = new Location(-33.927327, 151.172232);
+            Location bl = new Location(-33.927701, 151.169936);
+
+            Location tl = new Location(-33.844984, 151.138692);
+            Location tr = new Location(-33.842382, 151.155086);
+
+            var locations = new LocationCollection();
+            locations.Add(tl);
+            locations.Add(tr);
+            locations.Add(br);
+            locations.Add(bl);
+            locations.Add(tl);
+            return locations;
+        }
+
+        private static LocationCollection makeApproach28L()
+        {
+
+            Location br = new Location(-34.037789, 151.202623);
+            Location bl = new Location(-34.039909, 151.191358);
+            Location tl = new Location(-33.966965, 151.179666);
+            Location tr = new Location(-33.966573, 151.183056);
+
+            var locations = new LocationCollection();
+            locations.Add(tl);
+            locations.Add(tr);
+            locations.Add(br);
+            locations.Add(bl);
+            locations.Add(tl);
+            return locations;
+
+        }
+
+        private static LocationCollection makeApproach28R()
+        {
+            Location br = new Location(-34.038650, 151.217843);
+            Location bl = new Location(-34.039467, 151.205687);
+            Location tl = new Location(-33.972181, 151.192871);
+            Location tr = new Location(-33.971398, 151.196390);
+
+            var locations = new LocationCollection();
+            locations.Add(tl);
+            locations.Add(tr);
+            locations.Add(br);
+            locations.Add(bl);
+            locations.Add(tl);
+            return locations;
+        }
 
         StreamGeometry MakeDirector(Rect r)
         {
@@ -222,7 +318,8 @@ namespace pplot
 
             string alt = p.Altitude.ToString();
             string hdg = p.Track.ToString();
-            bool inside = inside16LApproach(p);
+
+            bool inside = isInsidePoly(p, approach16L) | isInsidePoly(p, approach16R) | isInsidePoly(p, approach28L) | isInsidePoly(p, approach28R);
 
             string line1 = id;
             string line2 = alt + " " + hdg + " " + inside.ToString();
