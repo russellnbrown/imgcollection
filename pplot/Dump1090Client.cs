@@ -16,15 +16,21 @@ namespace pplot
         private TcpClient client = null;
         private SortedDictionary<String, Plane> planesd;
         private string connectTo;
+        private Airport ap;
 
-        internal Dump1090Client(string connectTo)
+        internal Dump1090Client(Airport ap)
         {
-            this.connectTo = connectTo;// Application.Current.FindResource("connectTo").ToString(); 
-            planesd = new SortedDictionary<string, Plane>();
-            if (connectTo.ToLower().StartsWith("sim"))
+            this.ap = ap;
+            if (ap.useSumulator)
+            {
                 t = new Thread(new ThreadStart(Simulate));
+            }
             else
+            {
+                this.connectTo = ap.dump1090;
                 t = new Thread(new ThreadStart(Connect));
+            }
+            planesd = new SortedDictionary<string, Plane>();
             t.Start();
         }
 
@@ -71,12 +77,12 @@ namespace pplot
             //     TL -33.787301, 151.125339
             //     TR -33.778381, 151.139672
 
-            for (int px = 0; px < 10; px++)
+            foreach(Airport.Simulation s in ap.simTracks)
             {
-                p = GetPlane(String.Format("SIM{0}", px+1));
+                p = GetPlane(s.name);
                 p.Track = 160;
                 p.Altitude = 1000;
-                sims.Add(new SimTrack(p, String.Format("16R{0}", px + 1), px*2000, 30000, R16R4min, R16Rend));
+                sims.Add(new SimTrack(p, s.name, s.delay, s.timespan, s.track[0], s.track[1]));
             }
  
 
@@ -84,7 +90,7 @@ namespace pplot
             {
                 foreach (SimTrack s in sims)
                 {
-                        planesd.Add(s.p.HexIdent, s.p);
+                       // planesd.Add(s.p.HexIdent, s.p);
                 }
             }
             

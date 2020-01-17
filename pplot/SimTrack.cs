@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Maps.MapControl.WPF;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,15 +24,15 @@ namespace pplot
 
         Point sp;
         Point ep;
-        public SimTrack(Plane p, string id, int waitms, int duration,  Point sp, Point ep)
+        public SimTrack(Plane p, string id, int waitms, int duration,  Location _sp, Location _ep)
         {
             this.p = p;
             p.HexIdent = id;
             p.Callsign = id;
             this.id = id;
             this.duration = duration;
-            this.sp = sp;
-            this.ep = ep;
+            this.sp = new Point(_sp.Longitude, _sp.Latitude);
+            this.ep = new Point(_ep.Longitude, _ep.Latitude); ;
             this.waitms = waitms;
             double dy = ep.Y - sp.Y;
             double dx = ep.X - sp.X;

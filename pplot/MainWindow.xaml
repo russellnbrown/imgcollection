@@ -12,8 +12,15 @@
         <TabControl>
             <TabItem Header="Map">
                 <Grid >
-                <m:Map  x:Name="mainmap"  CredentialsProvider="AlkF1YZk5OkMIqs-_P_cLGgaV0bKpNwtiZcPTrQPAABlyudnqkDSsbgiiY7qPMNn" Mode="Road"
-                Center="-33.930, 151.171" ZoomLevel="13" />
+                    <m:Map  x:Name="mainmap"  CredentialsProvider="AlkF1YZk5OkMIqs-_P_cLGgaV0bKpNwtiZcPTrQPAABlyudnqkDSsbgiiY7qPMNn" Mode="Road"
+                Center="-33.930, 151.171" ZoomLevel="13" >
+                        <Canvas Width="10" Height="10" 
+              m:MapLayer.Position="-33.930, 151.171" 
+              m:MapLayer.PositionOrigin="Center" Opacity="0.7" ToolTip="MapCenter">
+                            <Path Data="M 0,0 L 10,0 10,10, 0,10, 0,0" Fill="Red" Stroke="Wheat" StrokeThickness="2" />
+ 
+                        </Canvas>
+                    </m:Map>
                 </Grid>
             </TabItem>
             <TabItem Header="List">

@@ -168,3 +168,84 @@
             myPath.Data = geometry;
             return myPath;
         }
+
+
+		
+        private static LocationCollection  makeApproach16R()
+        {
+ 
+            Location tl = new Location(-33.872743, 151.170923);
+            Location tr = new Location(-33.870177, 151.188261);
+            Location br = new Location(-33.948715, 151.188784);
+            Location bl = new Location(-33.948911, 151.187464);
+
+            var locations = new LocationCollection();
+            locations.Add(tl);
+            locations.Add(tr);
+            locations.Add(br);
+            locations.Add(bl);
+            locations.Add(tl);
+            return locations;
+        }
+
+        private static LocationCollection makeApproach16L()
+        {
+            Location br = new Location(-33.927327, 151.172232);
+            Location bl = new Location(-33.927701, 151.169936);
+
+            Location tl = new Location(-33.844984, 151.138692);
+            Location tr = new Location(-33.842382, 151.155086);
+
+            var locations = new LocationCollection();
+            locations.Add(tl);
+            locations.Add(tr);
+            locations.Add(br);
+            locations.Add(bl);
+            locations.Add(tl);
+            return locations;
+        }
+
+        private static LocationCollection makeApproach28L()
+        {
+
+            Location br = new Location(-34.037789, 151.202623);
+            Location bl = new Location(-34.039909, 151.191358);
+            Location tl = new Location(-33.966965, 151.179666);
+            Location tr = new Location(-33.966573, 151.183056);
+
+            var locations = new LocationCollection();
+            locations.Add(tl);
+            locations.Add(tr);
+            locations.Add(br);
+            locations.Add(bl);
+            locations.Add(tl);
+            return locations;
+
+        }
+
+        private static LocationCollection makeApproach28R()
+        {
+            Location br = new Location(-34.038650, 151.217843);
+            Location bl = new Location(-34.039467, 151.205687);
+            Location tl = new Location(-33.972181, 151.192871);
+            Location tr = new Location(-33.971398, 151.196390);
+
+            var locations = new LocationCollection();
+            locations.Add(tl);
+            locations.Add(tr);
+            locations.Add(br);
+            locations.Add(bl);
+            locations.Add(tl);
+            return locations;
+        }
+
+		                    Pushpin pp = new Pushpin();
+                    pp.Heading = 90;
+                    pp.Location = c.takeoff;
+                    pp.Height = 10;
+                    pp.Width = 10;
+                    pp.ToolTip = "Takeoff point for " + c.Name;
+                    
+                   // mainmap.Children.Add(pp);
+
+
