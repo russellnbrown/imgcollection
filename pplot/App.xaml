@@ -5,6 +5,5 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <sys:String x:Key="airportFile">C:/Sources/githib_svn/imgcollection/trunk/pplot/sydney.dat</sys:String> 
-    </Application.Resources>
+     </Application.Resources>
 </Application>

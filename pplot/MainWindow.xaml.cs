@@ -39,8 +39,10 @@ namespace pplot
             try
             {
                 instance = this;
-
-                string afile =  FindResource("airportFile").ToString();
+                string afile = "airport.dat";
+                if (Environment.GetCommandLineArgs().Length == 2)
+                     afile = Environment.GetCommandLineArgs()[1];
+              
                 ap = new Airport(afile);
 
                 l.To("pplot.log");
@@ -107,6 +109,16 @@ namespace pplot
   
 
                 }
+
+                foreach (var st in  ap.simTracks)
+                {
+                    poly = new MapPolyline();
+                    poly.Locations = st.track;
+                    poly.Stroke = new SolidColorBrush(Color.FromArgb(255, 250, 200, 200));
+                    poly.StrokeThickness = 1;
+                    mainmap.Children.Add(poly);
+                }
+
 
             }
 

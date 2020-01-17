@@ -64,19 +64,6 @@ namespace pplot
             List<SimTrack> sims;
             sims = new List<SimTrack>();
 
-            Point R16R4min = new Point(-33.782107, 151.133291);
-            Point R16Rstart = new Point(-33.929414, 151.171594);
-            Point R16Rend = new Point(-33.966635, 151.181335);
-
-            Point R16L4min = new Point(-33.782353, 151.144985);
-            Point R16Lstart = new Point(-33.949122, 151.188242);
-            Point R16Lend = new Point(-33.971822, 151.194035);
-
-            // 16R BL -33.927452, 151.169001
-            //     BR -33.927274, 151.173292
-            //     TL -33.787301, 151.125339
-            //     TR -33.778381, 151.139672
-
             foreach(Airport.Simulation s in ap.simTracks)
             {
                 p = GetPlane(s.name);
@@ -225,7 +212,7 @@ namespace pplot
                             break;
                         case 2:
                             p.Altitude = ifromStr(m.Altitude);
-                            l.Info("ALT 2 becomes " + m.Altitude);
+                            //l.Info("ALT 2 becomes " + m.Altitude);
                             p.GroundSpeed = m.GroundSpeed;
                             p.Track = ifromStr(m.Track);
                             p.VerticalRat = m.VerticalRat;
@@ -235,7 +222,7 @@ namespace pplot
                             break;
                         case 3:
                             p.Altitude = ifromStr(m.Altitude);
-                            l.Info("ALT 3 becomes " + m.Altitude);
+                            //l.Info("ALT 3 becomes " + m.Altitude);
                             p.Latitude = dfromStr(m.Latitude);
                             p.Longitude = dfromStr(m.Longitude);
                             p.AlertSquawkChange = m.AlertSquawkChange;
@@ -250,7 +237,7 @@ namespace pplot
                             break;
                         case 5:
                             p.Altitude = ifromStr(m.Altitude);
-                            l.Info("ALT 5 becomes " + m.Altitude);
+                            //l.Info("ALT 5 becomes " + m.Altitude);
                             p.AlertSquawkChange = m.AlertSquawkChange;
                             p.SPIIdent = m.SPIIdent;
                             p.IsOnGround = m.IsOnGround;
@@ -259,7 +246,7 @@ namespace pplot
                             if (m.Altitude.Length > 0)
                             {
                                 p.Altitude = ifromStr(m.Altitude);
-                                l.Info("ALT 6 becomes " + m.Altitude);
+                                //l.Info("ALT 6 becomes " + m.Altitude);
                             }
                             p.Squawk = m.Squawk;
                             p.AlertSquawkChange = m.AlertSquawkChange;
@@ -269,7 +256,7 @@ namespace pplot
                             break;
                         case 7:
                             p.Altitude = ifromStr(m.Altitude);
-                            l.Info("ALT 7 becomes " + m.Altitude);
+                            //l.Info("ALT 7 becomes " + m.Altitude);
                             p.IsOnGround = m.IsOnGround;
                             break;
                         case 8:

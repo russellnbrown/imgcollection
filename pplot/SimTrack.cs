@@ -51,10 +51,9 @@ namespace pplot
             {
                 for (pos = sp, step=0; step < nsteps && Dump1090Client.running; pos.X += inc.X, pos.Y += inc.Y, step++)
                 {
-                    p.Latitude = pos.X;
-                    p.Longitude = pos.Y;
+                    p.Longitude = pos.X;
+                    p.Latitude = pos.Y;
                     p.Updated();
-                    //l.Info("At {0} {1}", pos.X, pos.Y);
                     System.Threading.Thread.Sleep(stepDelay);
                 }
                 l.Info("Restart");
