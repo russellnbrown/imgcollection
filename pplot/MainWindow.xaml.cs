@@ -155,10 +155,13 @@ namespace pplot
  
         private void updateMainList(object sender, EventArgs e)
         {
+            // remove all planes from inactive layer
             ml[inactiveLayer()].Children.Clear();
 
+            // set if change in list itself
             bool updateList = false;
 
+            // add non stale planes from the dump list
             lock (d1090.Planesd)
             {
                 foreach (Plane p in d1090.Planesd.Values)
@@ -170,7 +173,7 @@ namespace pplot
                         {
                             lp = new Plane();
                             planes.Add(lp);
-                            updateList = true;
+                            updateList = true; // if we don't know about it, indicate list needs updating
 
                         }
                         lp.UpdateFrom(p);
@@ -178,6 +181,7 @@ namespace pplot
                 }
             }
 
+            // remove old planes
             bool removed = true;
             while (removed)
             {
@@ -194,12 +198,17 @@ namespace pplot
                 }
             }
 
+            checkApproaches();
+
+            // refresh screen
             if (updateList)
                 planelist.ItemsSource = planes;
             planelist.Items.Refresh();
 
+            // draw planes on inactive layer
             drawPlanes();
 
+            // switch layers to revel new positions
             ml[activeLayer()].Visibility = Visibility.Hidden;
             ml[inactiveLayer()].Visibility = Visibility.Visible;
             toggleLayer();
@@ -207,13 +216,29 @@ namespace pplot
         }
 
  
-
+        private void checkApproaches()
+        {
+            foreach(var p in planes)
+            {
+                p.Approaching = null;
+                foreach(var rw in ap.runways)
+                {
+                    foreach(var cf in rw.config )
+                    {
+                        if (isInsidePoly(p, cf.approach))
+                        {
+                            p.Approaching = cf;
+                            p.ApproachDistance = GEO.distanceBetween(p.Location, cf.takeoff);
+                        }
+                    }
+                }
+            }
+        }
   
 
         bool isInsidePoly(Plane p, LocationCollection poly)
         {
-            Location pl = new Location(p.Latitude, p.Longitude);
-            return GEO.isInside(poly,  pl);
+            return GEO.isInside(poly,  p.Location);
         }
 
 
@@ -244,9 +269,11 @@ namespace pplot
 
         StreamGeometry MakeDirector(Rect r)
         {
-            Point point1 = new Point(r.Left, r.Bottom);
-            Point point2 = new Point((r.Right - r.Left)/2, 0);
-            Point point3 = new Point(r.Right, r.Bottom);
+            int hw = 6;
+            int hh = 8;
+            Point point3 = new Point(-hw, -hh);
+            Point point2 = new Point(0, hh);
+            Point point1 = new Point(hw,-hh);
             StreamGeometry streamGeometry = new StreamGeometry();
             using (StreamGeometryContext geometryContext = streamGeometry.Open())
             {
@@ -261,7 +288,7 @@ namespace pplot
             return streamGeometry;
         }
 
-
+    
         void PlaceDot(Location location, Color color, string ttx)
         {
             Ellipse dot = new Ellipse();
@@ -323,7 +350,7 @@ namespace pplot
             bool inside = false;// isInsidePoly(p, approach16L) | isInsidePoly(p, approach16R) | isInsidePoly(p, approach28L) | isInsidePoly(p, approach28R);
 
             string line1 = id;
-            string line2 = alt + " " + hdg + " " + inside.ToString();
+            string line2 = p.Approaching == null ? "" : (p.Approaching.Name + " " + p.ApproachDistance.ToString());// alt + " " + hdg + " " + inside.ToString();
 
 
             Rect fbound = new Rect(0, 0, w, h);
@@ -332,20 +359,20 @@ namespace pplot
 
             using (var r = visual.RenderOpen())
             {
-                r.DrawRectangle(fbkg, grayPen, fbound);
+                //r.DrawRectangle(fbkg, grayPen, fbound);
                 r.DrawRectangle(rbkg, grayPen, rbound);
 
                 r.DrawRectangle(planeBrush, planePen, pbound);              
-                //r.DrawText(new FormattedText(line1, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, boldText, 12.0, Brushes.Black), new Point(cw+dw+pd, 0));
-               // r.DrawText(new FormattedText(line2, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, normalText, 12.0, Brushes.Black), new Point(cw+dw+pd, 15));
+                r.DrawText(new FormattedText(line1, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, boldText, 12.0, Brushes.Black), new Point(cw+dw+pd, 0));
+                r.DrawText(new FormattedText(line2, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, normalText, 12.0, Brushes.Black), new Point(cw+dw+pd, 15));
                 
-                /*RotateTransform rt = new RotateTransform(p.Track, dw / 2, dh / 2);
-                TranslateTransform tt = new TranslateTransform(cw+pd,5);
+                RotateTransform rt = new RotateTransform(180+p.Track, 0 , 0);
+                TranslateTransform tt = new TranslateTransform(cw,ch);
                 TransformGroup myTransformGroup = new TransformGroup();
                 myTransformGroup.Children.Add(rt);
                 myTransformGroup.Children.Add(tt);
                 director.Transform = myTransformGroup;
-                r.DrawGeometry(Brushes.LightGray, new Pen(Brushes.DarkBlue, 1) , director);*/
+                r.DrawGeometry(Brushes.LightGray, new Pen(Brushes.DarkBlue, 1) , director);
             }
 
             target.Render(visual);

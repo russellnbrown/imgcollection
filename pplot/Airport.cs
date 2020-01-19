@@ -71,11 +71,12 @@ namespace pplot
                         {
                             rwc.approach.Add(new Location(Double.Parse(parts[p]), Double.Parse(parts[p + 1])));
                         }
+                        rwc.approach.Add(rwc.approach[0]);
                     }
                     if (parts[0] == "LINEUP")  // LINEUP,-33.964278, 151.179773
                     {
                         for (int p = 1; p < parts.Length - 1; p += 2)
-                        {
+                        { 
                             rwc.lineups.Add(new Location(Double.Parse(parts[p]), Double.Parse(parts[p + 1])));
                         }
                     }

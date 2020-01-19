@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Maps.MapControl.WPF;
+using System;
 
 namespace pplot
 {
@@ -15,8 +16,9 @@ namespace pplot
         private string callsign;
         private int altitude = 0;
         private int track = 0;
-        private double latitude;
-        private double longitude;
+       // private double latitude;
+       // private double longitude;
+        private Location location = new Location();
         private string squawk;
         private string emergency;
         private string isOnGround;
@@ -29,14 +31,16 @@ namespace pplot
         private string aircraftType;
         private string route;
         private int age = 0;
+        private Airport.RunwayConfiguration approaching = null;
+        private int approachDistance = 0;
 
         public string AircraftID { get => aircraftID; set => aircraftID = value; }
         public string HexIdent { get => hexIdent; set => hexIdent = value; }
         public string FlightID { get => flightID; set => flightID = value; }
         public string Callsign { get => callsign; set => callsign = value; }
         public int Altitude { get => altitude; set => altitude = value; }
-        public double Latitude { get => latitude; set => latitude = value; }
-        public double Longitude { get => longitude; set => longitude = value; }
+        public double Latitude { get => location.Latitude; set => location.Latitude = value; }
+        public double Longitude { get => location.Longitude; set => location.Longitude = value; }
         public string Squawk { get => squawk; set => squawk = value; }
         public string Emergency { get => emergency; set => emergency = value; }
         public int Track { get => track; set => track = value; }
@@ -50,6 +54,9 @@ namespace pplot
         public string VerticalRat { get => verticalRat; set => verticalRat = value; }
         public string AircraftType { get => aircraftType; set => aircraftType = value; }
         public string Route { get => route; set => route = value; }
+        internal Airport.RunwayConfiguration Approaching { get => approaching; set => approaching = value; }
+        public int ApproachDistance { get => approachDistance; set => approachDistance = value; }
+        public Location Location { get => location; set => location = value; }
 
         public void Updated()
         {
@@ -71,8 +78,7 @@ namespace pplot
             callsign = p.Callsign;
             altitude = p.Altitude;
             track = p.Track;
-            latitude = p.Latitude;
-            longitude = p.Longitude;
+            location = p.Location;
             squawk = p.Squawk;
             emergency = p.Emergency;
             isOnGround = p.IsOnGround;

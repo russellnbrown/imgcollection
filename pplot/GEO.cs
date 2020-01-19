@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maps.MapControl.WPF;
 using System;
-
+using System.Device.Location;
 
 namespace pplot
 {
@@ -96,47 +96,41 @@ namespace pplot
             return false;
         }
 
-        // Returns true if the point p lies 
-        // inside the polygon[] with n vertices 
-        public static bool isInside(LocationCollection polygon, Location p)
+
+        public static bool isInside(LocationCollection pol, Location p)
         {
-            // There must be at least 3 vertices in polygon[] 
-            if (polygon.Count < 3)
+            // https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html
+            //int pnpoly(int nvert, float* vertx, float* verty, float testx, float testy)
+            //{
+            //    int i, j, c = 0;
+            //    for (i = 0, j = nvert - 1; i < nvert; j = i++)
+            //    {
+            //        if (((verty[i] > testy) != (verty[j] > testy)) &&
+            //         (testx < (vertx[j] - vertx[i]) * (testy - verty[i]) / (verty[j] - verty[i]) + vertx[i]))
+            //            c = !c;
+            //    }
+            //    return c;
+            //}
+
+            int i, j;
+            bool c = false;
+            for (i = 0, j = pol.Count - 1; i < pol.Count; j = i++)
             {
-                return false;
+                if (((pol[i].Latitude > p.Latitude) != (pol[j].Latitude > p.Latitude)) &&
+                 (p.Longitude < (pol[j].Longitude - pol[i].Longitude) * (p.Latitude - pol[i].Latitude) / (pol[j].Latitude - pol[i].Latitude) + pol[i].Longitude))
+                    c = !c;
             }
+            return c;
+        }
 
-            // Create a point for line segment from p to infinite 
-            Location extreme = new Location(INF, p.Latitude);
+     
 
-            // Count intersections of the above line 
-            // with sides of polygon 
-            int count = 0, i = 0;
-            do
-            {
-                int next = (i + 1) % polygon.Count;
+        internal static int distanceBetween(Location p1, Location p2)
+        {
+            GeoCoordinate gp1 = new GeoCoordinate(p1.Latitude, p1.Longitude);
+            GeoCoordinate gp2 = new GeoCoordinate(p2.Latitude, p2.Longitude);
 
-                // Check if the line segment from 'p' to 
-                // 'extreme' intersects with the line 
-                // segment from 'polygon[i]' to 'polygon[next]' 
-                if (doIntersect(polygon[i],
-                                polygon[next], p, extreme))
-                {
-                    // If the point 'p' is colinear with line 
-                    // segment 'i-next', then check if it lies 
-                    // on segment. If it lies, return true, otherwise false 
-                    if (orientation(polygon[i], p, polygon[next]) == 0)
-                    {
-                        return onSegment(polygon[i], p,
-                                        polygon[next]);
-                    }
-                    count++;
-                }
-                i = next;
-            } while (i != 0);
-
-            // Return true if count is odd, false otherwise 
-            return (count % 2 == 1); // Same as (count%2 == 1) 
+            return (int)gp1.GetDistanceTo(gp2);
         }
     }
 }
