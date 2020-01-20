@@ -48,6 +48,7 @@ namespace pplot
                 l.To("pplot.log");
                 planes = new ObservableCollection<Plane>();
                 InitializeComponent();
+                createDataSection();
                 planelist.ItemsSource = planes;
 
 
@@ -80,7 +81,34 @@ namespace pplot
             }
         }
 
+        private void createDataSection()
+        {
+            Button b1 = new Button();
+            b1.Content = "B1";
+            Button b2 = new Button();
+            b2.Content = "B2";
+
+            ColumnDefinition col0 = new ColumnDefinition();
+            dataGrid.ColumnDefinitions.Add(col0);
+
+            RowDefinition row0 = new RowDefinition();
+            RowDefinition row1 = new RowDefinition();
  
+            dataGrid.RowDefinitions.Add(row0);
+            dataGrid.RowDefinitions.Add(row1);
+
+            dataGrid.RowDefinitions[0].Height = new GridLength(1, GridUnitType.Star);
+            dataGrid.RowDefinitions[1].Height = new GridLength(200);
+
+            Grid.SetRow(b1, 0);
+            Grid.SetRow(b2, 1);
+            Grid.SetColumn(b1, 0);
+            Grid.SetColumn(b2, 0);
+            dataGrid.Children.Add(b1);
+            dataGrid.Children.Add(b2);
+
+        }
+
         private void drawAirport(Airport ap)
         {
             MapPolyline poly;
@@ -250,7 +278,7 @@ namespace pplot
             }
         }
 
-      
+
         Pen normalPen = new Pen(Brushes.Blue, 1.0);
         Pen emergencyPen = new Pen(Brushes.Red, 1.0);
         Pen planePen = new Pen(Brushes.OrangeRed, 1.0);
