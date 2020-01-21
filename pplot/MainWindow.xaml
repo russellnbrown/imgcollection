@@ -6,28 +6,24 @@
         xmlns:m="clr-namespace:Microsoft.Maps.MapControl.WPF;assembly=Microsoft.Maps.MapControl.WPF"
         xmlns:local="clr-namespace:pplot"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="750" Width="1000">
     <Grid>
 
         <TabControl>
             <TabItem Header="Map">
-                <Grid Name="mapGrid">
+                <Grid Name="mainMapGrid">
+                    
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="200" />
+                        <ColumnDefinition Width="10" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <m:Map Grid.Column="0" Grid.Row="0" x:Name="mainmap"  CredentialsProvider="AlkF1YZk5OkMIqs-_P_cLGgaV0bKpNwtiZcPTrQPAABlyudnqkDSsbgiiY7qPMNn" Mode="Road"
-                Center="-33.930, 151.171" ZoomLevel="13" >
-                        <Canvas Width="10" Height="10" 
-              m:MapLayer.Position="-33.930, 151.171" 
-              m:MapLayer.PositionOrigin="Center" Opacity="0.7" ToolTip="MapCenter">
-                            <Path Data="M 0,0 L 10,0 10,10, 0,10, 0,0" Fill="Red" Stroke="Wheat" StrokeThickness="2" />
+                    
+                    <Grid Name="mapGrid" Grid.Column="0" Grid.Row="0">
 
-                        </Canvas>
-                    </m:Map>
+                    </Grid>
                     <Grid Name="dataGrid" Grid.Column="1" Grid.Row="0">
  
                     </Grid>

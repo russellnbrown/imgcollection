@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Windows.Controls;
 
 namespace pplot
 {
@@ -12,6 +13,7 @@ namespace pplot
         public string dump1090 = "";
         public List<Runway> runways = new List<Runway>();
         public Boolean useSumulator = false;
+        public List<DisplayRunway> displays = new List<DisplayRunway>();
 
         public class Simulation
         {
@@ -35,6 +37,17 @@ namespace pplot
             public LocationCollection layout = new LocationCollection();
             public List<RunwayConfiguration> config = new List<RunwayConfiguration>();
         }
+
+        public class DisplayRunway
+        {
+            public string Name;
+            public Runway runway;
+            public RunwayConfiguration config;
+            public Canvas map;
+            public int MarkDistance;
+            public int NumMarks;
+        }
+
         public Airport(string path)
         {
             if (!File.Exists(path))
@@ -92,6 +105,15 @@ namespace pplot
                         dump1090 = parts[1];
                     }
 
+                    if (parts[0] == "DISPLAYRUNWAY") //DISPLAYRUNWAY,16R
+                    {
+                        DisplayRunway dr = new DisplayRunway();
+                        dr.Name = parts[1];
+                        dr.MarkDistance = Int32.Parse(parts[2]);
+                        dr.NumMarks = Int32.Parse(parts[3]);
+                        displays.Add(dr);
+                    }
+
                     if (parts[0] == "SIMULATOR") //SIMULATOR,ON
                     {
                         useSumulator = Boolean.Parse(parts[1]);
@@ -106,6 +128,20 @@ namespace pplot
                         s.track.Add(new Location(Double.Parse(parts[5]), Double.Parse(parts[6])));
                         s.track.Add(new Location(Double.Parse(parts[7]), Double.Parse(parts[8])));
                         simTracks.Add(s);
+                    }
+                }
+            }
+            foreach(DisplayRunway dr in displays)
+            {
+                foreach(Runway r in runways)
+                {
+                    foreach (RunwayConfiguration c in r.config)
+                    {
+                        if (c.Name == dr.Name)
+                        {
+                            dr.config = c;
+                            dr.runway = r;
+                        }
                     }
                 }
             }

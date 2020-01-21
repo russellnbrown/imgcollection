@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maps.MapControl.WPF;
+using Microsoft.Maps.MapControl.WPF.Core;
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -30,7 +31,7 @@ namespace pplot
         int cl = 0;
 
          MapLayer[] ml = new MapLayer[2];
-
+        Microsoft.Maps.MapControl.WPF.Map mainmap;
 
         private Airport ap;
 
@@ -48,6 +49,7 @@ namespace pplot
                 l.To("pplot.log");
                 planes = new ObservableCollection<Plane>();
                 InitializeComponent();
+                createMapSection();
                 createDataSection();
                 planelist.ItemsSource = planes;
 
@@ -81,31 +83,73 @@ namespace pplot
             }
         }
 
+
+        private void createMapSection()
+        {
+            mapGrid.ColumnDefinitions.Add(new ColumnDefinition());
+            mapGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+            mapGrid.RowDefinitions.Add(new RowDefinition());
+            mapGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+
+            mainmap = new Map();
+            mainmap.Center = new Location(-33.930, 151.171);
+            mainmap.ZoomLevel = 13;
+            mainmap.CredentialsProvider = new ApplicationIdCredentialsProvider("AlkF1YZk5OkMIqs-_P_cLGgaV0bKpNwtiZcPTrQPAABlyudnqkDSsbgiiY7qPMNn");
+            mainmap.Mode = new RoadMode();
+
+            Grid.SetRow(mainmap, 0);
+            Grid.SetColumn(mainmap, 0);
+
+            mapGrid.Children.Add(mainmap);
+
+        }
+
         private void createDataSection()
         {
-            Button b1 = new Button();
-            b1.Content = "B1";
-            Button b2 = new Button();
-            b2.Content = "B2";
+            int ncols = ap.displays.Count;
+            mainMapGrid.ColumnDefinitions[1].Width = new GridLength(ncols * 200);
 
-            ColumnDefinition col0 = new ColumnDefinition();
-            dataGrid.ColumnDefinitions.Add(col0);
+            for (int c = 0; c < ncols; c++)
+            {
+                dataGrid.ColumnDefinitions.Add(new ColumnDefinition());
+                
+            }
 
             RowDefinition row0 = new RowDefinition();
             RowDefinition row1 = new RowDefinition();
- 
+
             dataGrid.RowDefinitions.Add(row0);
             dataGrid.RowDefinitions.Add(row1);
 
             dataGrid.RowDefinitions[0].Height = new GridLength(1, GridUnitType.Star);
             dataGrid.RowDefinitions[1].Height = new GridLength(200);
 
-            Grid.SetRow(b1, 0);
-            Grid.SetRow(b2, 1);
-            Grid.SetColumn(b1, 0);
-            Grid.SetColumn(b2, 0);
-            dataGrid.Children.Add(b1);
-            dataGrid.Children.Add(b2);
+            for (int c = 0; c < ncols; c++)
+            {
+                ap.displays[c].map = new Canvas();
+
+                //ap.displays[c].map = new Map();
+                //ap.displays[c].map.Center = new Location(-33.930, 151.171);
+                //ap.displays[c].map.ZoomLevel = 13;
+               // ap.displays[c].map.CredentialsProvider = new ApplicationIdCredentialsProvider("AlkF1YZk5OkMIqs-_P_cLGgaV0bKpNwtiZcPTrQPAABlyudnqkDSsbgiiY7qPMNn");
+                //ap.displays[c].map.Mode = new RoadMode();
+                //ap.displays[c].map.Heading = ap.displays[c].orient;
+
+                Grid.SetRow(ap.displays[c].map, 0);
+                Grid.SetColumn(ap.displays[c].map, 0);
+
+                Button b2 = new Button();
+                b2.Content = "B2";
+
+
+                Grid.SetRow(ap.displays[c].map, 0);
+                Grid.SetRow(b2, 1);
+                Grid.SetColumn(ap.displays[c].map, c);
+                Grid.SetColumn(b2, c);
+
+                dataGrid.Children.Add(ap.displays[c].map);
+                dataGrid.Children.Add(b2);
+            }
 
         }
 
@@ -235,6 +279,7 @@ namespace pplot
 
             // draw planes on inactive layer
             drawPlanes();
+            drawApproaches();
 
             // switch layers to revel new positions
             ml[activeLayer()].Visibility = Visibility.Hidden;
@@ -243,7 +288,81 @@ namespace pplot
 
         }
 
- 
+
+        private void drawApproaches()
+        {
+            foreach(var ap in ap.displays)
+            {
+                drawDisplay(ap);
+            }
+        }
+
+        private void drawDisplay(Airport.DisplayRunway rw)
+        {
+            rw.map.Children.Clear();
+            rw.map.BeginInit();
+            double pad = 20;
+            double w = rw.map.ActualWidth;
+            double mid = w / 2;
+            double h = rw.map.ActualHeight;
+            double rwtop = pad;
+            double rwbottom = h - pad;
+            double length = rwtop - rwbottom;
+            double markSize = length / rw.NumMarks;
+            double pixelSize = Math.Abs(length / (rw.NumMarks * rw.MarkDistance)); 
+            double markDist = length / rw.NumMarks;
+
+            Line centerLine = new Line();
+            centerLine.Stroke = System.Windows.Media.Brushes.LightSteelBlue;
+            centerLine.X1 = mid;
+            centerLine.Y1 = rwtop;
+            centerLine.X2 = mid;
+            centerLine.Y2 = rwbottom;
+            centerLine.StrokeThickness = 2;
+            rw.map.Children.Add(centerLine);
+
+            for (int mx=1; mx<= rw.NumMarks; mx++)
+            {
+                double ypos = rwbottom + mx * markDist;
+                Line marker = new Line();
+                marker.Stroke = System.Windows.Media.Brushes.DarkRed;
+                marker.X1 = mid;
+                marker.Y1 = ypos;
+                marker.X2 = mid+pad;
+                marker.Y2 = ypos;
+                marker.StrokeThickness = 1;
+                rw.map.Children.Add(marker);
+                string txt = (mx * rw.MarkDistance).ToString()+"M";
+                TextBlock tb = new TextBlock();
+                tb.Text = txt;
+                tb.Foreground = new SolidColorBrush(Colors.DarkGoldenrod);
+                Canvas.SetLeft(tb, mid + 3);
+                Canvas.SetTop(tb, ypos);
+                rw.map.Children.Add(tb);
+
+            }
+
+            foreach(Plane p in planes)
+            {
+                if (p.Approaching==null || p.Approaching.Name != rw.Name)
+                    continue;
+
+                double dist = p.ApproachDistance;
+                double pdist = dist * pixelSize;
+
+                TextBlock tb = new TextBlock();
+                tb.Text = p.Callsign;
+                tb.Foreground = new SolidColorBrush(Colors.White);
+                tb.Background = new SolidColorBrush(Colors.DarkBlue);
+
+                tb.Opacity = 1;
+                Canvas.SetLeft(tb, mid - 40);
+                Canvas.SetTop(tb, rwbottom - pdist);
+                rw.map.Children.Add(tb);
+            }
+            rw.map.EndInit();
+        }
+
         private void checkApproaches()
         {
             foreach(var p in planes)
