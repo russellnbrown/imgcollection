@@ -301,6 +301,7 @@ namespace pplot
         {
             rw.map.Children.Clear();
             rw.map.BeginInit();
+
             double pad = 20;
             double w = rw.map.ActualWidth;
             double mid = w / 2;
