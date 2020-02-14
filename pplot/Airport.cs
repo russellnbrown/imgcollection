@@ -14,6 +14,7 @@ namespace pplot
         public List<Runway> runways = new List<Runway>();
         public Boolean useSumulator = false;
         public List<DisplayRunway> displays = new List<DisplayRunway>();
+        public SortedDictionary<String, Zone> zones = new SortedDictionary<string, Zone>();
 
         public class Simulation
         {
@@ -28,6 +29,15 @@ namespace pplot
         public class Zone
         {
             public LocationCollection area = new LocationCollection();
+
+            public string Name { get; internal set; }
+
+            internal bool isInside(Plane p)
+            {
+                throw new NotImplementedException();
+            }
+
+  
         }
         public class RunwayConfiguration
         {
@@ -83,13 +93,19 @@ namespace pplot
                         rwc.Name = parts[1];
                         rw.config.Add(rwc);
                     }
-                    if (parts[0] == "APPROACH" )  //APPROACH,-33.872743, 151.170923,-33.870177, 151.188261,-33.948715, 151.188784,-33.948911, 151.187464
+                    if (parts[0] == "ZONE")  //ZONE,APPROACH16R,-33.930498, 151.172299, -33.930596, 151.171483,-33.844984,151.138692,   -33.842382,151.155086
                     {
-                        for(int p=1; p<parts.Length-1;p+=2)
+                        Zone z = new Zone();
+                        z.Name = parts[1];
+                        for (int p = 2; p < parts.Length - 1; p += 2)
                         {
-                            rwc.approach.Add(new Location(Double.Parse(parts[p]), Double.Parse(parts[p + 1])));
+                            z.area.Add(new Location(Double.Parse(parts[p]), Double.Parse(parts[p + 1])));
                         }
-                        rwc.approach.Add(rwc.approach[0]);
+                        zones.Add(z.Name,z);
+                    }
+                    if (parts[0] == "APPROACH" )  //APPROACH,ZONENAME
+                    {
+                        rwc.approach = zones[parts[1]];
                     }
                     if (parts[0] == "LINEUP")  // LINEUP,-33.964278, 151.179773
                     {
@@ -152,5 +168,7 @@ namespace pplot
             }
  
         }
+
+ 
     }
 }

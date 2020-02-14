@@ -168,7 +168,7 @@ namespace pplot
                 foreach(var c in rw.config)
                 {
                     poly = new MapPolyline();
-                    poly.Locations = c.approach;
+                    poly.Locations = c.approach.area;
                     poly.Stroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 255));
                     poly.StrokeThickness = 1;
                     mainmap.Children.Add(poly);
@@ -373,7 +373,7 @@ namespace pplot
                 {
                     foreach(var cf in rw.config )
                     {
-                        if (isInsidePoly(p, cf.approach))
+                        if (cf.approach.isInside(p))
                         {
                             p.Approaching = cf;
                             p.ApproachDistance = GEO.distanceBetween(p.Location, cf.takeoff);
