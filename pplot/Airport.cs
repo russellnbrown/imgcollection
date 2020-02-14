@@ -25,9 +25,14 @@ namespace pplot
         }
         public List<Simulation> simTracks = new List<Simulation>();
 
+        public class Zone
+        {
+            public LocationCollection area = new LocationCollection();
+        }
         public class RunwayConfiguration
         {
-            public LocationCollection approach = new LocationCollection();
+            //public LocationCollection approach = new LocationCollection();
+            public Zone approach;
             public string Name = "";
             public LocationCollection lineups = new LocationCollection();
             public Location takeoff;
