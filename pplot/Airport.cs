@@ -34,7 +34,7 @@ namespace pplot
 
             internal bool isInside(Plane p)
             {
-                throw new NotImplementedException();
+                return GEO.isInside(area, p.Location);
             }
 
   

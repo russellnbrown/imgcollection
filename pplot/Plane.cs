@@ -57,6 +57,7 @@ namespace pplot
         internal Airport.RunwayConfiguration Approaching { get => approaching; set => approaching = value; }
         public int ApproachDistance { get => approachDistance; set => approachDistance = value; }
         public Location Location { get => location; set => location = value; }
+        public bool Stale { get; internal set; }
 
         public void Updated()
         {
