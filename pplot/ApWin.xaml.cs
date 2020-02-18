@@ -13,25 +13,22 @@ using System.Speech.Synthesis;
 namespace pplot
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for ApWin.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class ApWin : Window
     {
         private Dump1090Client d1090;
         private ObservableCollection<Plane> planes;
-        public static MainWindow instance;
-        public static MainWindow Get() { return instance; }
+        public static ApWin instance;
+        public static ApWin Get() { return instance; }
 
-      //  private static LocationCollection approach16R = approach16L.
-      //  private static LocationCollection approach16L = makeApproach16L();
-      //  private static LocationCollection approach28R = makeApproach28R();
-      //  private static LocationCollection approach28L = makeApproach28L();
+
 
         const int removeAge = 20;
         const int insertAge = 15;
         int cl = 0;
 
-         MapLayer[] ml = new MapLayer[2];
+        MapLayer[] ml = new MapLayer[2];
         Microsoft.Maps.MapControl.WPF.Map mainmap;
 
         private Airport ap;
@@ -53,15 +50,15 @@ namespace pplot
 
         public ObservableCollection<Plane> Planes { get => planes; set => planes = value; }
 
-        public MainWindow()
+        public ApWin()
         {
             try
             {
                 instance = this;
                 string afile = "airport.dat";
                 if (Environment.GetCommandLineArgs().Length == 2)
-                     afile = Environment.GetCommandLineArgs()[1];
-              
+                    afile = Environment.GetCommandLineArgs()[1];
+
                 ap = new Airport(afile);
 
                 l.To("pplot.log");
@@ -80,7 +77,7 @@ namespace pplot
 
 
                 drawAirport(ap);
-               
+
                 d1090 = new Dump1090Client(ap);
 
                 System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
@@ -88,17 +85,17 @@ namespace pplot
                 dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 250);
                 dispatcherTimer.Start();
 
-                
+
 
                 // Configure the audio output.   
                 synth.SetOutputToDefaultAudioDevice();
 
-            
+
 
 
                 //AddMessage(Color.FromRgb(255,0,0), "test") ;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 MessageBox.Show(e.Message);
                 Environment.Exit(0);
@@ -109,7 +106,7 @@ namespace pplot
 
         private void createMessageSection(Panel m)
         {
-           // m.Background = new SolidColorBrush(Color.FromRgb(200, 200, 100));
+            // m.Background = new SolidColorBrush(Color.FromRgb(200, 200, 100));
 
             msgLst = new ListView();
             m.Children.Add(msgLst);
@@ -126,8 +123,8 @@ namespace pplot
             lvi.Foreground = new SolidColorBrush(c);
             lvi.Background = new SolidColorBrush(Colors.OldLace);
 
-            msgLst.Items.Insert(0,lvi);
-    
+            msgLst.Items.Insert(0, lvi);
+
         }
 
         private void PlayMessage(string s)
@@ -183,14 +180,14 @@ namespace pplot
 
 
                 Grid.SetRow(ap.displays[c].aprCanv, 0);
-                Grid.SetColumn(ap.displays[c].aprCanv, 0); 
+                Grid.SetColumn(ap.displays[c].aprCanv, 0);
                 dg.Children.Add(ap.displays[c].aprCanv);
             }
             d.Children.Add(dg);
 
         }
 
- 
+
 
         private void createDepSection(Panel d)
         {
@@ -237,7 +234,7 @@ namespace pplot
                 poly.StrokeThickness = 3;
                 mainmap.Children.Add(poly);
 
-                foreach(var c in rw.config)
+                foreach (var c in rw.config)
                 {
                     poly = new MapPolyline();
                     poly.Locations = c.approach.area;
@@ -245,16 +242,16 @@ namespace pplot
                     poly.StrokeThickness = 1;
                     mainmap.Children.Add(poly);
 
-                    foreach(var l in c.lineups)
+                    foreach (var l in c.lineups)
                     {
                         PlaceDot(l, Color.FromRgb(0, 255, 0), "Lineup for " + c.Name);
                     }
-                    PlaceDot(c.takeoff, Color.FromRgb(255,0,0), "Takeoff point for " + c.Name);
-  
+                    PlaceDot(c.takeoff, Color.FromRgb(255, 0, 0), "Takeoff point for " + c.Name);
+
 
                 }
 
-                foreach (var st in  ap.simTracks)
+                foreach (var st in ap.simTracks)
                 {
                     poly = new MapPolyline();
                     poly.Locations = st.track;
@@ -296,7 +293,7 @@ namespace pplot
                 cl = 1;
         }
 
- 
+
         private void updateMainList(object sender, EventArgs e)
         {
             // remove all planes from inactive layer
@@ -375,23 +372,23 @@ namespace pplot
         {
             foreach (Plane p in Planes)
             {
-                foreach(Airport.Zone z in ap.zones.Values)
+                foreach (Airport.Zone z in ap.zones.Values)
                 {
-                    if ( p.Stale )
+                    if (p.Stale)
                     {
-                        foreach(String zname in p.InZones)
+                        foreach (String zname in p.InZones)
                         {
                             p.removeZone(zname);
                         }
                         continue;
                     }
                     bool inZone = z.isInside(p);
-                    if ( inZone )
+                    if (inZone)
                     {
                         if (!p.isInZone(z.Name))
-                            p.addZone(z.Name);                               
+                            p.addZone(z.Name);
                     }
-                    else 
+                    else
                     {
                         if (p.isInZone(z.Name))
                             p.removeZone(z.Name);
@@ -403,7 +400,7 @@ namespace pplot
 
         private void drawApproaches()
         {
-            foreach(var ap in ap.displays)
+            foreach (var ap in ap.displays)
             {
                 drawDisplay(ap);
             }
@@ -411,12 +408,12 @@ namespace pplot
 
         private void checkApproaches()
         {
-            foreach(var p in Planes)
+            foreach (var p in Planes)
             {
                 p.Approaching = null;
-                foreach(var rw in ap.runways)
+                foreach (var rw in ap.runways)
                 {
-                    foreach(var cf in rw.config )
+                    foreach (var cf in rw.config)
                     {
                         if (cf.approach.isInside(p))
                         {
@@ -427,147 +424,8 @@ namespace pplot
                 }
             }
         }
-  
 
 
-        void drawPlanes()
-        {
-            foreach (Plane p in Planes)
-            {
-                drawPlane4(p);
-            }
-        }
-
-
- 
-
-        StreamGeometry MakeDirector(Rect r)
-        {
-            int hw = 6;
-            int hh = 8;
-            Point point3 = new Point(-hw, -hh);
-            Point point2 = new Point(0, hh);
-            Point point1 = new Point(hw,-hh);
-            StreamGeometry streamGeometry = new StreamGeometry();
-            using (StreamGeometryContext geometryContext = streamGeometry.Open())
-            {
-                geometryContext.BeginFigure(point1, true, true);
-                PointCollection points = new PointCollection
-                                             {
-                                                 point2,
-                                                 point3
-                                             };
-                geometryContext.PolyLineTo(points, true, true);
-            }
-            return streamGeometry;
-        }
-
-    
-        void PlaceDot(Location location, Color color, string ttx)
-        {
-            Ellipse dot = new Ellipse();
-            dot.Fill = new SolidColorBrush(color);
-            double radius = 5.0;
-            dot.Width = radius * 2;
-            dot.Height = radius * 2;
-            ToolTip tt = new ToolTip();
-            tt.Content = ttx;
-            dot.ToolTip = tt;
-
-            Point p0 = mainmap.LocationToViewportPoint(location);
-            Point p1 = new Point(p0.X - radius, p0.Y - radius);
-            Location loc = mainmap.ViewportPointToLocation(p1);
-            MapLayer.SetPosition(dot, loc);
-            mainmap.Children.Add(dot);
-        }
-
-
-        void drawPlane4(Plane p)
-        {
-
-            int w = 150;
-            int h = 32;
-            int cw = w / 2;
-            int ch = h / 2;
-            int pd = 5;
-            int lb = 20;
-            int dw = 8;
-            int dh = 12;
-            int ps = 4;
-
-            fbkg.Opacity = 0.1;
-            rbkg.Opacity = 0.5;
-            planeBrush.Opacity = 1;
-
-
-            if (director == null)
-                director = MakeDirector(new Rect(0,0,dw,dh));
-
-            Pen dc = normalPen;
-            if (p.Emergency != null && p.Emergency.Length > 0)
-                dc = emergencyPen;
-
-            var target = new RenderTargetBitmap(w, h, 0, 0, PixelFormats.Pbgra32);
-            var visual = new DrawingVisual();
-
-            string id = "0x"+p.HexIdent;
-            if (p.Callsign != null && p.Callsign.Length > 0)
-                id = p.Callsign;
- 
-            string type = "TTBD";
-            if (p.AircraftType != null && p.AircraftType.Length > 0)
-                type = p.AircraftType;
-
-            string alt = p.Altitude.ToString();
-            string hdg = p.Track.ToString();
-
-            bool inside = false;// isInsidePoly(p, approach16L) | isInsidePoly(p, approach16R) | isInsidePoly(p, approach28L) | isInsidePoly(p, approach28R);
-
-            string line1 = id;
-            string line2 = p.Approaching == null ? "" : (p.Approaching.Name + " " + p.ApproachDistance.ToString());// alt + " " + hdg + " " + inside.ToString();
-
-
-            Rect fbound = new Rect(0, 0, w, h);
-            Rect rbound = new Rect(cw - dw - pd, 0, cw + dw + pd, h);
-            Rect pbound = new Rect(cw-ps/2,ch-ps/2,ps,ps);
-
-            using (var r = visual.RenderOpen())
-            {
-                //r.DrawRectangle(fbkg, grayPen, fbound);
-                r.DrawRectangle(rbkg, grayPen, rbound);
-
-                r.DrawRectangle(planeBrush, planePen, pbound);              
-                r.DrawText(new FormattedText(line1, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, boldText, 12.0, Brushes.Black), new Point(cw+dw+pd, 0));
-                r.DrawText(new FormattedText(line2, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, normalText, 12.0, Brushes.Black), new Point(cw+dw+pd, 15));
-                
-                RotateTransform rt = new RotateTransform(180+p.Track, 0 , 0);
-                TranslateTransform tt = new TranslateTransform(cw,ch);
-                TransformGroup myTransformGroup = new TransformGroup();
-                myTransformGroup.Children.Add(rt);
-                myTransformGroup.Children.Add(tt);
-                director.Transform = myTransformGroup;
-                r.DrawGeometry(Brushes.LightGray, new Pen(Brushes.DarkBlue, 1) , director);
-            }
-
-            target.Render(visual);
-
-            System.Windows.Controls.Image image = new System.Windows.Controls.Image();
-            image.BeginInit();
-            image.Source = target;
-            image.EndInit();
-            image.Opacity = 1;
-            image.Stretch = System.Windows.Media.Stretch.None;
-
-            Location location = new Location() { Latitude = p.Latitude, Longitude = p.Longitude };
-            //Center the image around the location specified
-            PositionOrigin position = PositionOrigin.Center;
-
-            //Add the image to the defined map layer
-            ml[inactiveLayer()].AddChild(image, location, position);
-
-
-
-        }
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -577,10 +435,10 @@ namespace pplot
         internal void planeEntersZone(Plane p, string v)
         {
             string msg = p.Callsign + " entering zone " + v;
-         
+
             AddMessage(Colors.Orange, msg, true);
             PlayMessage(msg);
-         }
+        }
 
         internal void planeLeavesZone(Plane p, string v)
         {

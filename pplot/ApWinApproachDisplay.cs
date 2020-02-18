@@ -13,9 +13,9 @@ using System.Speech.Synthesis;
 namespace pplot
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for ApWin.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class ApWin : Window
     {
 
         private void drawDisplay(Airport.DisplayRunway rw)

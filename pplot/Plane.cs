@@ -103,14 +103,14 @@ namespace pplot
             if ( inZones.Contains(v) )
             {
                 inZones.Remove(v);
-                MainWindow.Get().planeLeavesZone(this, v);
+                ApWin.Get().planeLeavesZone(this, v);
             }
         }
 
         internal void addZone(string z)
         {
             InZones.Add(z);
-            MainWindow.Get().planeEntersZone(this, z);
+            ApWin.Get().planeEntersZone(this, z);
         }
 
         internal bool isInZone(string z)
