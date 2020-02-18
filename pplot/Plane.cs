@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maps.MapControl.WPF;
 using System;
+using System.Collections.Generic;
 
 namespace pplot
 {
@@ -58,6 +59,9 @@ namespace pplot
         public int ApproachDistance { get => approachDistance; set => approachDistance = value; }
         public Location Location { get => location; set => location = value; }
         public bool Stale { get; internal set; }
+        public List<string> InZones { get => inZones; set => inZones = value; }
+
+        private List<String> inZones = new List<string>();
 
         public void Updated()
         {
@@ -93,5 +97,27 @@ namespace pplot
             route = p.Route;
             age = (int)((DateTime.Now - p.lastUpdate).TotalSeconds);
         }
+
+        internal void removeZone(string v)
+        {
+            if ( inZones.Contains(v) )
+            {
+                inZones.Remove(v);
+                MainWindow.Get().planeLeavesZone(this, v);
+            }
+        }
+
+        internal void addZone(string z)
+        {
+            InZones.Add(z);
+            MainWindow.Get().planeEntersZone(this, z);
+        }
+
+        internal bool isInZone(string z)
+        {
+            return InZones.Contains(z);
+        }
+
+  
     }
 }

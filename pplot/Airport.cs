@@ -58,7 +58,8 @@ namespace pplot
             public string Name;
             public Runway runway;
             public RunwayConfiguration config;
-            public Canvas map;
+            public Canvas aprCanv;
+            public Canvas depCanv;
             public int MarkDistance;
             public int NumMarks;
         }

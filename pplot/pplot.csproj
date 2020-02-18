@@ -13,6 +13,8 @@
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -42,6 +44,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Device" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Speech" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -61,11 +64,12 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Airport.cs" />
+    <Compile Include="ApWinApproachDisplay.cs" />
     <Compile Include="GEO.cs" />
     <Compile Include="Plane.cs" />
     <Compile Include="SBSMessage.cs" />
     <Compile Include="SimTrack.cs" />
-    <Page Include="MainWindow.xaml">
+    <Page Include="ApWin.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -75,8 +79,8 @@
     </Compile>
     <Compile Include="Dump1090Client.cs" />
     <Compile Include="Log.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <Compile Include="ApWin.xaml.cs">
+      <DependentUpon>ApWin.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
