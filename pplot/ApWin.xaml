@@ -15,18 +15,18 @@
                     
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="400" />
+                        <ColumnDefinition Width="200" />
+                        <ColumnDefinition Width="200" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
-                        <RowDefinition MinHeight="200" Height="*" />
-                        <RowDefinition MinHeight="200" Height="*" />
-                        <RowDefinition Height="200" />
+                        <RowDefinition MinHeight="200" MaxHeight="400" Height="*" />
+                        <RowDefinition MinHeight="400" Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Grid Name="mapGrid" Grid.Column="0" Grid.Row="0" Grid.RowSpan="3"></Grid>
-                    <Grid Name="msgGrid" Grid.Column="1" Grid.Row="0"></Grid>
-                    <Grid Name="aprGrid" Grid.Column="1" Grid.Row="1"></Grid>
-                    <Grid Name="depGrid" Grid.Column="1" Grid.Row="3"></Grid>
+                    <Grid Name="mapGrid" Grid.Column="0" Grid.Row="0" Grid.RowSpan="2"></Grid>
+                    <Grid Name="msgGrid" Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="2"></Grid>
+                    <Grid Name="rwGrid1" Grid.Column="1" Grid.Row="1"></Grid>
+                    <Grid Name="rwGrid2" Grid.Column="2" Grid.Row="1"></Grid>
                 </Grid>
             </TabItem>
             

@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Speech.Synthesis;
+using System.Speech.AudioFormat;
 
 namespace pplot
 {
@@ -66,8 +67,8 @@ namespace pplot
                 InitializeComponent();
                 createMapSection(mapGrid);
                 createMessageSection(msgGrid);
-                createAprSection(aprGrid);
-                createDepSection(depGrid);
+                createRwSection(rwGrid1, ap.runways[0].config[0]);
+                createRwSection(rwGrid2, ap.runways[0].config[1]);
                 planelist.ItemsSource = Planes;
 
 
@@ -77,6 +78,7 @@ namespace pplot
 
 
                 drawAirport(ap);
+
 
                 d1090 = new Dump1090Client(ap);
 
@@ -92,8 +94,6 @@ namespace pplot
 
 
 
-
-                //AddMessage(Color.FromRgb(255,0,0), "test") ;
             }
             catch (Exception e)
             {
@@ -106,7 +106,7 @@ namespace pplot
 
         private void createMessageSection(Panel m)
         {
-            // m.Background = new SolidColorBrush(Color.FromRgb(200, 200, 100));
+            m.Background = new SolidColorBrush(Colors.OldLace);
 
             msgLst = new ListView();
             m.Children.Add(msgLst);
@@ -121,7 +121,11 @@ namespace pplot
             ListViewItem lvi = new ListViewItem();
             lvi.Content = m;
             lvi.Foreground = new SolidColorBrush(c);
-            lvi.Background = new SolidColorBrush(Colors.OldLace);
+            lvi.Background = new SolidColorBrush(Colors.FloralWhite);
+            if (alert)
+            {
+                lvi.FontWeight = FontWeights.Bold;
+            }
 
             msgLst.Items.Insert(0, lvi);
 
@@ -154,7 +158,7 @@ namespace pplot
 
         }
 
-        private void createAprSection(Panel d)
+        private void createRwSection(Panel d, Airport.RunwayConfiguration rw)
         {
             int ncols = ap.displays.Count;
             Grid dg = new Grid();
@@ -188,7 +192,7 @@ namespace pplot
         }
 
 
-
+        /*
         private void createDepSection(Panel d)
         {
             int ncols = ap.displays.Count;
@@ -222,6 +226,33 @@ namespace pplot
 
         }
 
+        private void drawZones(Airport ap)
+        {
+            MapPolyline poly;
+            foreach (var z in ap.zones)
+            {
+                poly = new MapPolyline();
+                poly.Locations = z.Value.area;
+                poly.Stroke = new SolidColorBrush(Color.FromRgb(0, 0, 0255));
+                poly.StrokeThickness = 2;
+                mainmap.Children.Add(poly);
+            }
+        }
+        */
+
+        private void drawTracks(Airport ap)
+        {
+            MapPolyline poly;
+            foreach (var st in ap.simTracks)
+            {
+                poly = new MapPolyline();
+                poly.Locations = st.track;
+                poly.Stroke = new SolidColorBrush(Color.FromArgb(255, 250, 200, 200));
+                poly.StrokeThickness = 1;
+                mainmap.Children.Add(poly);
+            }
+        }
+
         private void drawAirport(Airport ap)
         {
             MapPolyline poly;
@@ -236,11 +267,6 @@ namespace pplot
 
                 foreach (var c in rw.config)
                 {
-                    poly = new MapPolyline();
-                    poly.Locations = c.approach.area;
-                    poly.Stroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 255));
-                    poly.StrokeThickness = 1;
-                    mainmap.Children.Add(poly);
 
                     foreach (var l in c.lineups)
                     {
@@ -251,20 +277,34 @@ namespace pplot
 
                 }
 
-                foreach (var st in ap.simTracks)
-                {
-                    poly = new MapPolyline();
-                    poly.Locations = st.track;
-                    poly.Stroke = new SolidColorBrush(Color.FromArgb(255, 250, 200, 200));
-                    poly.StrokeThickness = 1;
-                    mainmap.Children.Add(poly);
-                }
+
 
 
             }
 
+            drawTracks(ap);
+            drawZones(ap);
 
         }
+
+
+        private void drawZones(Airport ap)
+        {
+            MapPolyline poly;
+
+            foreach (var rw in ap.zones)
+            {
+                poly = new MapPolyline();
+                poly.Locations = rw.Value.area;
+                poly.Stroke = new SolidColorBrush(Color.FromRgb(0, 0, 255));
+                poly.StrokeThickness = 2;
+                mainmap.Children.Add(poly);
+
+
+
+            }
+        }
+
         private Plane GetLocalPlane(string id)
         {
             foreach (Plane p in Planes)
@@ -372,28 +412,41 @@ namespace pplot
         {
             foreach (Plane p in Planes)
             {
-                foreach (Airport.Zone z in ap.zones.Values)
+                bool toDo = true;
+                while (toDo)
                 {
-                    if (p.Stale)
+                    toDo = false;
+                    foreach (Airport.Zone z in ap.zones.Values)
                     {
-                        foreach (String zname in p.InZones)
+                        if (p.Stale)
                         {
-                            p.removeZone(zname);
+                            foreach (Airport.Zone zname in p.InZones)
+                            {
+                                p.removeZone(zname);
+                            }
+                            continue;
                         }
-                        continue;
-                    }
-                    bool inZone = z.isInside(p);
-                    if (inZone)
-                    {
-                        if (!p.isInZone(z.Name))
-                            p.addZone(z.Name);
-                    }
-                    else
-                    {
-                        if (p.isInZone(z.Name))
-                            p.removeZone(z.Name);
-                    }
+                        bool inZone = z.isInside(p);
+                        if (inZone)
+                        {
+                            if (!p.isInZone(z))
+                            {
+                                p.addZone(z);
+                                toDo = true;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (p.isInZone(z))
+                            {
+                                p.removeZone(z);
+                                toDo = true;
+                                break;
+                            }
+                        }
 
+                    }
                 }
             }
         }
@@ -432,17 +485,24 @@ namespace pplot
             d1090.Stop();
         }
 
-        internal void planeEntersZone(Plane p, string v)
+        private string augmentString(string s, Plane p)
         {
-            string msg = p.Callsign + " entering zone " + v;
+            string aug = s.Replace("<callsign>", p.Callsign);
+            return aug;
+        }
 
-            AddMessage(Colors.Orange, msg, true);
+        internal void planeEntersZone(Plane p, Airport.Zone z)
+        {
+            string msg = augmentString(z.VoiceEnter, p);
+            AddMessage(Colors.Red, msg, true);
             PlayMessage(msg);
         }
 
-        internal void planeLeavesZone(Plane p, string v)
+        internal void planeLeavesZone(Plane p, Airport.Zone z)
         {
-            AddMessage(Colors.Beige, p.Callsign + " leaving zone " + v, false);
+
+            string msg = augmentString(z.VoiceLeave, p);
+            AddMessage(Colors.DarkGray, msg, false);
         }
 
     }

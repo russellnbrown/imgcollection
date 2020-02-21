@@ -59,9 +59,9 @@ namespace pplot
         public int ApproachDistance { get => approachDistance; set => approachDistance = value; }
         public Location Location { get => location; set => location = value; }
         public bool Stale { get; internal set; }
-        public List<string> InZones { get => inZones; set => inZones = value; }
+        public List<Airport.Zone> InZones { get => inZones; set => inZones = value; }
 
-        private List<String> inZones = new List<string>();
+        private List<Airport.Zone> inZones = new List<Airport.Zone>();
 
         public void Updated()
         {
@@ -98,22 +98,26 @@ namespace pplot
             age = (int)((DateTime.Now - p.lastUpdate).TotalSeconds);
         }
 
-        internal void removeZone(string v)
+        internal void removeZone(Airport.Zone z)
         {
-            if ( inZones.Contains(v) )
+            foreach (var zx in inZones)
             {
-                inZones.Remove(v);
-                ApWin.Get().planeLeavesZone(this, v);
+                if (zx.Name == z.Name)
+                {
+                    inZones.Remove(z);
+                    ApWin.Get().planeLeavesZone(this, z);
+                    return;
+                }
             }
         }
 
-        internal void addZone(string z)
+        internal void addZone(Airport.Zone z)
         {
             InZones.Add(z);
             ApWin.Get().planeEntersZone(this, z);
         }
 
-        internal bool isInZone(string z)
+        internal bool isInZone(Airport.Zone z)
         {
             return InZones.Contains(z);
         }

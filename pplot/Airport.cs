@@ -7,7 +7,7 @@ using System.Windows.Controls;
 namespace pplot
 {
 
-    class Airport
+    public class Airport
     {
         public string Name = "";
         public string dump1090 = "";
@@ -31,6 +31,8 @@ namespace pplot
             public LocationCollection area = new LocationCollection();
 
             public string Name { get; internal set; }
+            public string VoiceEnter { get; internal set; }
+            public string VoiceLeave { get; internal set; }
 
             internal bool isInside(Plane p)
             {
@@ -94,11 +96,13 @@ namespace pplot
                         rwc.Name = parts[1];
                         rw.config.Add(rwc);
                     }
-                    if (parts[0] == "ZONE")  //ZONE,APPROACH16R,-33.930498, 151.172299, -33.930596, 151.171483,-33.844984,151.138692,   -33.842382,151.155086
+                    if (parts[0] == "ZONE")  //ZONE,voice,voice,APPROACH16R,-33.930498, 151.172299, -33.930596, 151.171483,-33.844984,151.138692,   -33.842382,151.155086
                     {
                         Zone z = new Zone();
                         z.Name = parts[1];
-                        for (int p = 2; p < parts.Length - 1; p += 2)
+                        z.VoiceEnter = parts[2];
+                        z.VoiceLeave = parts[3];
+                        for (int p = 4; p < parts.Length - 1; p += 2)
                         {
                             z.area.Add(new Location(Double.Parse(parts[p]), Double.Parse(parts[p + 1])));
                         }
