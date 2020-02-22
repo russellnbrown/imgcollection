@@ -80,6 +80,7 @@ namespace pplot
 
                 while ((line = sr.ReadLine())!=null)
                 {
+                    line = line.Trim();
                     string[] parts = line.Split(seps);
                     if ( parts[0] == "NAME") // NAME,SYD
                         Name = parts[1];

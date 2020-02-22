@@ -17,9 +17,11 @@ namespace pplot
         private SortedDictionary<String, Plane> planesd;
         private string connectTo;
         private Airport ap;
+        private StreamWriter rawData;
 
         internal Dump1090Client(Airport ap)
         {
+            rawData = new StreamWriter("rawdata.log", true);
             this.ap = ap;
             if (ap.useSumulator)
             {
@@ -52,6 +54,7 @@ namespace pplot
 
         public void Stop()
         {
+            rawData.Close();
             running = false;
             if (client != null)
                 client.Close();
@@ -118,6 +121,7 @@ namespace pplot
                                 if (!client.Connected)
                                     break;
                                 string rx =  tr.ReadLine();
+                                rawData.WriteLine(rx); rawData.Flush();
                                 l.Info("Raw:" + rx);
                                // if (bytesRead == 0)
                                //     break;

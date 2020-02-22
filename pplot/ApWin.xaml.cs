@@ -10,6 +10,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Speech.Synthesis;
 using System.Speech.AudioFormat;
+using System.Collections.Generic;
 
 namespace pplot
 {
@@ -22,7 +23,7 @@ namespace pplot
         private ObservableCollection<Plane> planes;
         public static ApWin instance;
         public static ApWin Get() { return instance; }
-
+        
 
 
         const int removeAge = 20;
@@ -56,6 +57,8 @@ namespace pplot
             try
             {
                 instance = this;
+                OpenSky.Get.Init();
+
                 string afile = "airport.dat";
                 if (Environment.GetCommandLineArgs().Length == 2)
                     afile = Environment.GetCommandLineArgs()[1];
@@ -106,33 +109,66 @@ namespace pplot
 
         private void createMessageSection(Panel m)
         {
-            m.Background = new SolidColorBrush(Colors.OldLace);
-
-            msgLst = new ListView();
-            m.Children.Add(msgLst);
+            MessagesControl msg = new MessagesControl();
+            m.Children.Add(msg);
         }
 
-        private void AddMessage(String m)
+        public class Message
         {
-            AddMessage(Colors.White, m, false);
+            public Message(String m, bool a, Color c)
+            {
+                msg = m;
+                alert = a;
+                colour = c;
+            }
+            public String msg;
+            public bool alert;
+            public Color colour;
         }
+
+        public List<Message> messages = new List<Message>();
+
+        public int GetMessageCount()
+        {
+            int lm = 0;
+            lock(messages)
+            {
+                lm = messages.Count;
+            }
+            return lm;
+        }
+        public Message GetMessage(int x)
+        {
+            Message m = null;
+            lock(messages)
+            {
+                m = messages[x];
+            }
+            return m;
+        }
+
         private void AddMessage(Color c, String m, bool alert)
         {
-            ListViewItem lvi = new ListViewItem();
-            lvi.Content = m;
-            lvi.Foreground = new SolidColorBrush(c);
-            lvi.Background = new SolidColorBrush(Colors.FloralWhite);
-            if (alert)
+            lock (messages)
             {
-                lvi.FontWeight = FontWeights.Bold;
+                messages.Add(new Message(m, alert, c));
             }
+           
+        }
 
-            msgLst.Items.Insert(0, lvi);
-
+        private string augmentStringCarrier(string s)
+        {
+            s = s.Replace("JST", "jetstar");
+            s = s.Replace("VOZ", "virgin");
+            s = s.Replace("RXA", "rex");
+            s = s.Replace("QFA", "qantas");
+            s = s.Replace("QLK", "qantas link");
+            return s;
         }
 
         private void PlayMessage(string s)
         {
+            s = augmentStringCarrier(s);
             // Speak a string.  
             synth.SpeakAsync(s);
         }
@@ -159,6 +195,15 @@ namespace pplot
         }
 
         private void createRwSection(Panel d, Airport.RunwayConfiguration rw)
+        {
+            Grid dg = new Grid();
+            dg.Background = new SolidColorBrush(Color.FromRgb(180, 180, 250));
+            RunwayControl rwc = new RunwayControl(rw);
+            dg.Children.Add(rwc);
+            d.Children.Add(dg);
+
+        }
+        private void createRwXXSection(Panel d, Airport.RunwayConfiguration rw)
         {
             int ncols = ap.displays.Count;
             Grid dg = new Grid();
@@ -423,6 +468,8 @@ namespace pplot
                             foreach (Airport.Zone zname in p.InZones)
                             {
                                 p.removeZone(zname);
+                                toDo = true;
+                                break;
                             }
                             continue;
                         }
@@ -455,7 +502,7 @@ namespace pplot
         {
             foreach (var ap in ap.displays)
             {
-                drawDisplay(ap);
+               // drawDisplay(ap);
             }
         }
 
@@ -500,9 +547,11 @@ namespace pplot
 
         internal void planeLeavesZone(Plane p, Airport.Zone z)
         {
-
-            string msg = augmentString(z.VoiceLeave, p);
-            AddMessage(Colors.DarkGray, msg, false);
+            if (z.VoiceLeave.Length > 0)
+            {
+                string msg = augmentString(z.VoiceLeave, p);
+                AddMessage(Colors.Black, msg, false);
+            }
         }
 
     }
