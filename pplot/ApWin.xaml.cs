@@ -57,6 +57,8 @@ namespace pplot
             try
             {
                 instance = this;
+                l.To("pplot.log");
+
                 OpenSky.Get.Init();
 
                 string afile = "airport.dat";
@@ -65,7 +67,7 @@ namespace pplot
 
                 ap = new Airport(afile);
 
-                l.To("pplot.log");
+                
                 Planes = new ObservableCollection<Plane>();
                 InitializeComponent();
                 createMapSection(mapGrid);
@@ -399,6 +401,18 @@ namespace pplot
                         {
                             lp = new Plane();
                             Planes.Add(lp);
+                            if (OpenSky.Get.aircraftInfo.ContainsKey(p.HexIdent))
+                            {
+                                OpenSky.AircraftInfo ax = OpenSky.Get.aircraftInfo[p.HexIdent];
+                                if (ax != null)
+                                {
+                                    lp.Reg = ax.Reg;
+                                    lp.Typ = ax.Typ;
+                                    lp.Cpy = ax.Cpy;
+                                }
+                            }
+ 
+                         
                             updateList = true; // if we don't know about it, indicate list needs updating
 
                         }

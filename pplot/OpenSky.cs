@@ -18,34 +18,43 @@ namespace pplot
 
         public void Init()
         {
-            using (StreamReader sr = new StreamReader("data/aircraftDatabase.csv"))
+            try
             {
-                char[] seps = { ',' };
-                string line = sr.ReadLine();
-                line = sr.ReadLine();
-                while (line!=null && line.Length > 0)
+                using (StreamReader sr = new StreamReader("data/aircraftDatabase.csv"))
                 {
-                    try
-                    {
-                        string[] parts = line.Split(seps);
-                        if (parts.Length == 27 && parts[0].Length > 0)
-                        {
-                            AircraftInfo ai = new AircraftInfo();
-                            ai.Hex = parts[0].ToUpper().Replace("\"", "");
-                            ai.Reg = parts[1].ToUpper().Replace("\"", "");
-                            ai.Typ = parts[4].ToUpper().Replace("\"", "");
-                            ai.Cpy = parts[10].ToUpper().Replace("\"", "");
-
-                            aircraftInfo.Add(ai.Hex, ai);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        l.Info(e.Message);
-                    }
+                    char[] seps = { ',' };
+                    string line = sr.ReadLine();
                     line = sr.ReadLine();
+                    while (line != null && line.Length > 0)
+                    {
+                        try
+                        {
+                            string[] parts = line.Split(seps);
+                            if (parts.Length == 27 && parts[0].Length > 0)
+                            {
+                                AircraftInfo ai = new AircraftInfo();
+                                ai.Hex = parts[0].ToUpper().Replace("\"", "");
+                                ai.Reg = parts[1].ToUpper().Replace("\"", "");
+                                ai.Typ = parts[4].ToUpper().Replace("\"", "");
+                                ai.Cpy = parts[10].ToUpper().Replace("\"", "");
+                                if ( ai.Hex.Length > 0 && !aircraftInfo.ContainsKey(ai.Hex))
+                                    aircraftInfo.Add(ai.Hex, ai);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            l.Info(e.Message);
+                        }
+                        line = sr.ReadLine();
+                    }
                 }
             }
+            catch(Exception e)
+            {
+                l.Info(e.Message);
+            }
+            AircraftInfo ax = aircraftInfo["7C1466"];
+            l.Info(ax.ToString());
         }
 
         public static OpenSky Get
@@ -60,6 +69,11 @@ namespace pplot
             public string Reg = "";
             public string Typ = "";
             public string Cpy = "";
+
+            public override string ToString()
+            {
+                return String.Format("AI({0} {1} {2} {3})", Hex, Reg, Typ, Cpy);
+            }
         }
     }
 

@@ -74,7 +74,7 @@ namespace pplot
         void drawPlane(Plane p)
         {
 
-            int w = 150;
+            int w = 200;
             int h = 32;
             int cw = w / 2;
             int ch = h / 2;
@@ -104,15 +104,16 @@ namespace pplot
                 id = p.Callsign;
 
             string type = "TTBD";
-            if (p.AircraftType != null && p.AircraftType.Length > 0)
-                type = p.AircraftType;
+            if (p.Typ != null && p.Typ.Length > 0)
+                type = p.Typ;
 
             string alt = p.Altitude.ToString();
             string hdg = p.Track.ToString();
 
             bool inside = false;// isInsidePoly(p, approach16L) | isInsidePoly(p, approach16R) | isInsidePoly(p, approach28L) | isInsidePoly(p, approach28R);
 
-            string line1 = id;
+            string line1 = id + "  " + type + " " + alt;
+            string line3 = type + " " + alt;
             string line2 = p.Approaching == null ? "" : (p.Approaching.Name + " " + p.ApproachDistance.ToString());// alt + " " + hdg + " " + inside.ToString();
 
 
@@ -128,6 +129,7 @@ namespace pplot
                 r.DrawRectangle(planeBrush, planePen, pbound);
                 r.DrawText(new FormattedText(line1, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, boldText, 12.0, Brushes.Black), new Point(cw + dw + pd, 0));
                 r.DrawText(new FormattedText(line2, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, normalText, 12.0, Brushes.Black), new Point(cw + dw + pd, 15));
+                r.DrawText(new FormattedText(line3, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, normalText, 12.0, Brushes.Black), new Point(cw + dw + pd, 30));
 
                 RotateTransform rt = new RotateTransform(180 + p.Track, 0, 0);
                 TranslateTransform tt = new TranslateTransform(cw, ch);

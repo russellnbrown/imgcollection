@@ -31,10 +31,16 @@ namespace pplot
         private string verticalRat;
         private string aircraftType;
         private string route;
+        private string reg = "";
+        private string typ = "";
+        private string cpy = "";
         private int age = 0;
         private Airport.RunwayConfiguration approaching = null;
         private int approachDistance = 0;
 
+        public string Reg { get => reg; set => reg = value; }
+        public string Typ { get => typ; set => typ = value; }
+        public string Cpy { get => cpy; set => cpy = value; }
         public string AircraftID { get => aircraftID; set => aircraftID = value; }
         public string HexIdent { get => hexIdent; set => hexIdent = value; }
         public string FlightID { get => flightID; set => flightID = value; }
@@ -93,7 +99,7 @@ namespace pplot
             sPIIdent = p.SPIIdent;
             groundSpeed = p.GroundSpeed;
             verticalRat = p.VerticalRat;
-            aircraftType = p.AircraftType;
+            //aircraftType = p.AircraftType;
             route = p.Route;
             age = (int)((DateTime.Now - p.lastUpdate).TotalSeconds);
         }
