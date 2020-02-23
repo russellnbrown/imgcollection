@@ -1,9 +1,0 @@
-﻿<Application x:Class="pplot.App"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:pplot"
-             xmlns:sys="clr-namespace:System;assembly=mscorlib"
-             StartupUri="ApWin.xaml">
-    <Application.Resources>
-     </Application.Resources>
-</Application>
