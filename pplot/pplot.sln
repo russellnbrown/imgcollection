@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pplot", "pplot.csproj", "{3
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{04E0BE3C-ED83-45F8-8E24-584B2E1DA213}"
 EndProject
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "OpenSkyGet", "..\OpenSkyGet\OpenSkyGet.pyproj", "{153CBD9C-8661-46D5-98C5-2BEEB946A77F}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "OpenSkyGet", "OpenSkyGet\OpenSkyGet.pyproj", "{153CBD9C-8661-46D5-98C5-2BEEB946A77F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
