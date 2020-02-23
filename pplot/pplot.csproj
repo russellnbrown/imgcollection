@@ -87,6 +87,7 @@
       <DependentUpon>MessagesControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="OpenSky.cs" />
+    <Compile Include="OpenSkyClient.cs" />
     <Compile Include="Plane.cs" />
     <Compile Include="RunwayControl.xaml.cs">
       <DependentUpon>RunwayControl.xaml</DependentUpon>
