@@ -50,7 +50,7 @@ public:
 
 public:
 
-	void Create(fs::path path);				// create the ImgCollection 
+	void Create(fs::path top, fs::path path);// create the ImgCollection 
 	bool Save(fs::path dir);				// save the ImgCollection to file set
 
 private:

@@ -22,14 +22,18 @@
 // usage 
 //
 // called when someting wrong with command line arguments, missing files etc.
+// -sn set.db file_5.png asm z
+// -c set.db C:\TestEnvironments\img
 //
 void usage()
 {
-	logger::raw("usage: cimage [-c <ic> <files>|-s <ic> <search>|-h] [-nt] [-cm <cmethod>]");
+	logger::raw("usage: cimage [-c <top> <ic> <files>|-a <ic> <files>|-s <ic> <search>|-h] [-nt] [-cm <cmethod>]");
 	logger::raw("where:");
 	logger::raw("-c        : create database (with threads)");
+	logger::raw("-a        : append to database (with threads)");
 	logger::raw("-s        : search database (with list threading)");
 	logger::raw("-nt       : don't use threading");
+	logger::raw("<top>     : top location");
 	logger::raw("<ic>      : image colletion location");
 	logger::raw("<files>   : images to add");
 	logger::raw("<search>  : image to search for");
@@ -154,13 +158,15 @@ int main(int argc, char *argv[])
 		// Get files & db path & check it exists - exits of not
 		fs::path files = checkFiles(sfiles);
 		fs::path set = checkSet(sset, true);
+		fs::path top = argv[4];
+
 
 		// create a builder. This will form the ImgCollection in memory
 		ImgCollectionBuilder *sb = new ImgCollectionBuilder(ctype);
 
 		// Add all files to ther ImgCollection
 		Timer::start();
-		sb->Create(files);
+		sb->Create(top,files);
 		Timer::stop("Scaning");
 
 		// Save the set to db

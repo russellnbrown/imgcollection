@@ -118,9 +118,9 @@ void ImgCollectionBuilder::imgProcessingThread(RunThreadInfo *ri)
 // Two ways to use the builder, either Create ( build from files ) or
 // Load ( load an existing set ) 
 // in either case the 'ic' will be filled
-void ImgCollectionBuilder::Create(fs::path path)
+void ImgCollectionBuilder::Create(fs::path top, fs::path path)
 {
-	top = path;
+	//top = path;
 	stop = top.string();
 	ImgUtils::Replace(stop, "\\", "/");
 
