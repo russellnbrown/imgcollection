@@ -41,6 +41,14 @@ namespace WpfCoreTester
             ExplorerTab explorerTab = new ExplorerTab();
             explorerTabItem.Content = explorerTab;
             theMainTabControl.Items.Add(explorerTabItem);
+
+            TabItem searchTabItem = new TabItem();
+            searchTabItem.Header = "Search";
+            SearchTab searchTab = new SearchTab();
+            searchTabItem.Content = searchTab;
+            theMainTabControl.Items.Add(searchTabItem);
+
+
         }
     }
 
