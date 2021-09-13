@@ -1,0 +1,10 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/WpfCoreTester/obj
+/WpfCoreTester/bin/Debug/net5.0-windows
+/WpfCoreTester/.vs/WpfCoreTester/v16
+/WpfCoreTester/.vs/WpfCoreTester/DesignTimeBuild
+/cpp_build_scan/.vs/cimage/v16
+/cpp_build_scan/UpgradeLog.htm
