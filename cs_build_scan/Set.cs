@@ -38,6 +38,7 @@ namespace cs_build_scan
         private SortedDictionary<UInt32, ImgEntry> images = 
             new SortedDictionary<UInt32, ImgEntry>();           // unique images 
         internal SortedDictionary<UInt32, ImgEntry> GetImages() { return images;  }
+        internal HashSet<string> fileMap = new HashSet<String>();
 
         // processors is a list of image processing threads
         private List<ImgProcessor> processors = new List<ImgProcessor>();
@@ -133,6 +134,11 @@ namespace cs_build_scan
             }
         }
 
+        private string fileUx(ref uint dh, ref string fn)
+        {
+            return dh.ToString() + "_" + fn;
+        }
+
         // LoadFile - this is used by image processing threads, if created, to deposit results into
         // set - it needs to be synchronized to prevent files and images becoming corrupted. 
         // Alternitivly it may just be called by main thread if threading not enabled
@@ -146,6 +152,8 @@ namespace cs_build_scan
 
             // now add file entry to files list
             files.Add(fe);
+            fileMap.Add(fileUx(ref fe.dhash,ref fe.name));
+            l.Info("ADDMAP " + fe.dhash + " " + fe.name);
             // and the imgentry to the images map ( ignore if duplicate )
             if (!images.ContainsKey(ie.crc))
                 images.Add(ie.crc, ie);
@@ -216,23 +224,21 @@ namespace cs_build_scan
         // Initialize
         // basic initialization, check set location  exists and store it. Start 
         // any image processing threads
-        public bool Initialize(string path)
+        public bool Initialize(string scanTop, string path)
         {
-            
-            if (!Directory.Exists(path))
-            {
-                try
-                {
-                    Directory.CreateDirectory(path);
-                    l.Info("Create set directory " + path);
-                }
-                catch (Exception e)
-                {
-                    l.Error("Could not create set directory " + path + " : " + e.Message);
-                    return false;
-                }
+            try 
+            {            
+                Directory.CreateDirectory(path);
+                l.Info("Create set directory " + path);
             }
+            catch (Exception e)
+            {
+                l.Error("Could not create set directory " + path + " : " + e.Message);
+                    return false;
+            }
+        
             location = path;
+            top = scanTop;
 
             // nothing else to do if not using threads
             if (!useThreads)
@@ -268,8 +274,15 @@ namespace cs_build_scan
         // Add a file to the set - get thumb & crc etc and create relevant 
         // file & img entries and  add to list/map
         internal void AddFile(FileInfo f)
-        {
+       {
             ImgFileInfo ifi = new ImgFileInfo(this, f);
+            l.Info("CHECKMAP " + ifi.dhash + " " + ifi.name);
+
+            if (fileMap.Contains(fileUx(ref ifi.dhash, ref ifi.name)))
+                return;
+
+            
+
             if ( !useThreads )
             {
                 ifi.MakeHashes();
@@ -414,8 +427,14 @@ namespace cs_build_scan
                             UInt32 dhash = UInt32.Parse(parts[0]);
                             UInt32 crc = UInt32.Parse(parts[1]);
                             FileEntry fe = new FileEntry(dhash, crc, parts[2]);
+                            l.Info("LOADTOMAP " + dhash + " " + parts[2]);
+                            fileMap.Add(fileUx(ref dhash, ref parts[2]));
                             files.Add(fe);
+                            if (parts[2] == "_w850.jpg")
+                                l.Info("last read");
                         }
+                        else
+                            l.Info("BAD LINE");
                     }
                 }
 

@@ -24,23 +24,47 @@ namespace cs_build_scan
     class Builder
     {
         Set set = null;
-        
+        string dirPath;
 
-        public Builder(string setPath, string dirPath, bool useThreads)
+
+
+        public Builder(string scanTop, string setPath, string dirPath)
         {
-            set = new Set(useThreads);
-
             Stopwatch stopwatch = new Stopwatch();
+
+            setPath = Path.GetFullPath(setPath);
+            dirPath = Path.GetFullPath(dirPath);
+            this.dirPath = Path.GetFullPath(dirPath);
+
             // check files directory exists
-            if ( !Directory.Exists(dirPath) )
+            if (!Directory.Exists(dirPath))
                 l.Fatal("Directory " + dirPath + " dosn't exist");
-            // Open the DB set
-            if (!set.Initialize(setPath) )
-                l.Fatal("Could not create " + setPath);
+
+            set = new Set(false);
+
+            if ( scanTop == null ) // Append
+            {
+                if (!Directory.Exists(setPath))
+                    l.Fatal("Set dosnt exist " + setPath);
+                if (!set.Load(setPath))
+                    l.Fatal("Set does not exist: ", setPath);
+                scanTop = set.GetTop();
+            }
+            else
+            {
+                if (!Directory.Exists(scanTop))
+                    l.Fatal("Scan Top " + scanTop + " dosn't exist");
+                scanTop = Path.GetFullPath(scanTop);
+                if (Directory.Exists(setPath))
+                    l.Fatal("Set already exists " + setPath);
+                if (!set.Initialize(scanTop, setPath))
+                    l.Fatal("Could not create " + setPath);
+            }
+
+
 
 
             stopwatch.Start();
-            set.SetTop(dirPath);
             build();
             stopwatch.Stop();
             long buildms = stopwatch.ElapsedMilliseconds;
@@ -54,26 +78,28 @@ namespace cs_build_scan
             l.Info("\tbuild - " + buildms);
             l.Info("\tsave - " + savems);
 
+
         }
+
 
 
         private void build()
         {
-            DirectoryInfo dtop = new DirectoryInfo(set.GetTop());
+            DirectoryInfo dtop = new DirectoryInfo(dirPath);
             walk(dtop);
             set.StopAnyProcessingThreads();
         }
 
         private int processDirectory(DirectoryInfo d)
         {
-            //l.Info("DIR: " + d.Name  );
+            l.Info("DIR: " + d.Name  );
             set.AddDir(d);
             return 0;
         }
 
         private void processFile(FileInfo f)
         {
-            //l.Info("FILE:" + f.FullName);
+            l.Info("FILE:" + f.FullName);
             set.AddFile(f);
         }
 

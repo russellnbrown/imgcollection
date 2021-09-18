@@ -23,7 +23,7 @@ namespace cs_build_scan
     {
         private static void usage()
         {
-            Console.WriteLine("usage: cs_build_scan [-c <set> <file path>|-s <set> <file path>]");
+            Console.WriteLine("usage: cs_build_scan [-c <scan top path> <set> <file path>|-s <set> <file path>]");
         }
 
         static void Main(string[] args)
@@ -32,8 +32,10 @@ namespace cs_build_scan
             l.To("cs_build_scan.log");
 
             // check args to see what to do
-            if (args.Length == 3 && args[0].Substring(0, 2) == "-c")
-                new Builder(args[1], args[2], args[0]=="-cn" ? false : true);
+            if (args.Length == 4 && args[0] == "-c")
+                new Builder(args[1], args[2], args[3]);
+            else if (args.Length == 3 && args[0].Substring(0, 2) == "-a")
+                new Builder(null, args[1], args[2]);
             else if (args.Length == 3 && args[0] == "-s")
                 new Search(args[1], args[2], args[0] == "-cn" ? false : true);
             else
