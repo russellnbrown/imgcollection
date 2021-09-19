@@ -38,7 +38,9 @@ namespace cs_build_scan
         private SortedDictionary<UInt32, ImgEntry> images = 
             new SortedDictionary<UInt32, ImgEntry>();           // unique images 
         internal SortedDictionary<UInt32, ImgEntry> GetImages() { return images;  }
-        internal HashSet<string> fileMap = new HashSet<String>();
+        internal HashSet<string> fileMap = null;
+        internal HashSet<UInt32> dirMap = null;
+
 
         // processors is a list of image processing threads
         private List<ImgProcessor> processors = new List<ImgProcessor>();
@@ -152,7 +154,8 @@ namespace cs_build_scan
 
             // now add file entry to files list
             files.Add(fe);
-            fileMap.Add(fileUx(ref fe.dhash,ref fe.name));
+            if ( fileMap != null )
+                fileMap.Add(fileUx(ref fe.dhash,ref fe.name));
             l.Info("ADDMAP " + fe.dhash + " " + fe.name);
             // and the imgentry to the images map ( ignore if duplicate )
             if (!images.ContainsKey(ie.crc))
@@ -278,10 +281,8 @@ namespace cs_build_scan
             ImgFileInfo ifi = new ImgFileInfo(this, f);
             l.Info("CHECKMAP " + ifi.dhash + " " + ifi.name);
 
-            if (fileMap.Contains(fileUx(ref ifi.dhash, ref ifi.name)))
-                return;
-
-            
+            if (fileMap!=null && fileMap.Contains(fileUx(ref ifi.dhash, ref ifi.name)))
+                    return;
 
             if ( !useThreads )
             {
@@ -312,6 +313,8 @@ namespace cs_build_scan
             UInt32 dhash = Utils.GetHash(rpath);
             DirEntry de = new DirEntry(rpath, dhash);
             // add to list
+            if (dirMap != null && dirMap.Contains(dhash))
+                return;
             dirs.Add(de);
         }
 
@@ -395,6 +398,9 @@ namespace cs_build_scan
             string imgPath = Path.Combine(setName, "images.bin");
             Char[] seps = { ',' };
             string line;
+            fileMap = new HashSet<string>();
+            dirMap = new HashSet<UInt32>();
+            location = setName;
 
             try
             {
@@ -411,6 +417,7 @@ namespace cs_build_scan
                         {
                             UInt32 dhash = UInt32.Parse(parts[0]);
                             DirEntry fe = new DirEntry(parts[1], dhash);
+                            dirMap.Add(dhash);
                             dirs.Add(fe);
                         }
                     }

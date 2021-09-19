@@ -7,6 +7,11 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-            
+        <TextBox HorizontalAlignment="Left" Margin="34,27,0,0" Name="relativeTo" TextWrapping="Wrap" VerticalAlignment="Top" Width="283"/>
+        <TextBox HorizontalAlignment="Left" Margin="34,65,0,0" x:Name="scanSet" TextWrapping="Wrap" VerticalAlignment="Top" Width="283"/>
+        <TextBox HorizontalAlignment="Left" Margin="34,103,0,0" x:Name="scanLocation" TextWrapping="Wrap" VerticalAlignment="Top" Width="283"/>
+        <Button Content="Scan" Name="scanBtn" HorizontalAlignment="Left" Margin="34,169,0,0" VerticalAlignment="Top" Click="scanBtn_Click"/>
+        <Button Content="Append" Name="appendBtn" HorizontalAlignment="Left" Margin="97,169,0,0" VerticalAlignment="Top" Click="appendBtn_Click"/>
+
     </Grid>
 </UserControl>

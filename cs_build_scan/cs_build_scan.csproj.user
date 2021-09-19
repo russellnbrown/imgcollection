@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>-a ssets\small_cs.db iroot</StartArguments>
-    <StartWorkingDirectory>C:\TestEnvironments\wpfcore</StartWorkingDirectory>
+    <StartArguments>-a sets2\small_cs.db img2</StartArguments>
+    <StartWorkingDirectory>C:\TestEnvironments</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <StartArguments>-s setceelarge.db testfiles/100/file_1000.jpg_exactcopy.jpg</StartArguments>

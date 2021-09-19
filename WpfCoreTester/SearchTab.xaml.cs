@@ -23,6 +23,22 @@ namespace WpfCoreTester
         public SearchTab()
         {
             InitializeComponent();
+
+            relativeTo.Text = "/media/veracrypt1";
+            scanSet.Text = "/media/veracrypt1/stuff/scans/scan1";
+            scanLocation.Text = "/media/veracrypt1/stuff/scansTest";
+
+            //new Search(args[1], args[2], args[0] == "-cn" ? false : true);
+        }
+
+        private void scanBtn_Click(object sender, RoutedEventArgs e)
+        {
+            new Builder(relativeTo.Text,scanSet.Text, scanLocation.Text);
+        }
+
+        private void appendBtn_Click(object sender, RoutedEventArgs e)
+        {
+           // new Builder(null, args[1], args[2]);
         }
     }
 }
