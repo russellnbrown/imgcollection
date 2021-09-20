@@ -39,8 +39,13 @@ namespace Scanner
             this.setLocation = new System.Windows.Forms.TextBox();
             this.relativeTo = new System.Windows.Forms.TextBox();
             this.createBtn = new System.Windows.Forms.Button();
+            this.scanGB = new System.Windows.Forms.GroupBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.scanThisBtn = new System.Windows.Forms.Button();
+            this.scanThis = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.scanGB.SuspendLayout();
             this.SuspendLayout();
             // 
             // openExistingBtn
@@ -142,11 +147,50 @@ namespace Scanner
             this.createBtn.UseVisualStyleBackColor = true;
             this.createBtn.Click += new System.EventHandler(this.OnCreateNew);
             // 
+            // scanGB
+            // 
+            this.scanGB.Controls.Add(this.label1);
+            this.scanGB.Controls.Add(this.scanThisBtn);
+            this.scanGB.Controls.Add(this.scanThis);
+            this.scanGB.Location = new System.Drawing.Point(12, 273);
+            this.scanGB.Name = "scanGB";
+            this.scanGB.Size = new System.Drawing.Size(574, 350);
+            this.scanGB.TabIndex = 3;
+            this.scanGB.TabStop = false;
+            this.scanGB.Text = "Scanner";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(11, 25);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(35, 15);
+            this.label1.TabIndex = 19;
+            this.label1.Text = "Scan:";
+            // 
+            // scanThisBtn
+            // 
+            this.scanThisBtn.Location = new System.Drawing.Point(460, 21);
+            this.scanThisBtn.Name = "scanThisBtn";
+            this.scanThisBtn.Size = new System.Drawing.Size(95, 23);
+            this.scanThisBtn.TabIndex = 18;
+            this.scanThisBtn.Text = "...";
+            this.scanThisBtn.UseVisualStyleBackColor = true;
+            this.scanThisBtn.Click += new System.EventHandler(this.OnScanThis);
+            // 
+            // scanThis
+            // 
+            this.scanThis.Location = new System.Drawing.Point(92, 22);
+            this.scanThis.Name = "scanThis";
+            this.scanThis.Size = new System.Drawing.Size(362, 23);
+            this.scanThis.TabIndex = 17;
+            // 
             // InitialSelection
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(598, 272);
+            this.ClientSize = new System.Drawing.Size(598, 635);
+            this.Controls.Add(this.scanGB);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Name = "InitialSelection";
@@ -154,6 +198,8 @@ namespace Scanner
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            this.scanGB.ResumeLayout(false);
+            this.scanGB.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -170,5 +216,9 @@ namespace Scanner
         private System.Windows.Forms.Button openExisting;
         private System.Windows.Forms.TextBox setLocation;
         private System.Windows.Forms.TextBox relativeTo;
+        private System.Windows.Forms.GroupBox scanGB;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button scanThisBtn;
+        private System.Windows.Forms.TextBox scanThis;
     }
 }

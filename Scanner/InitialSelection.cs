@@ -24,7 +24,9 @@ namespace Scanner
   
         private void OnCreateNew(object sender, EventArgs e)
         {
-            MessageBox.Show("Create New");
+            set = new Builder();
+            set.CreateNew(relativeTo.Text, setLocation.Text);
+            CheckForScanThis();
         }
 
         private void CheckReadyForCreate()
@@ -80,8 +82,21 @@ namespace Scanner
                 MessageBox.Show("Open " + existing);
                 set = new Builder();
                 set.OpenExisting(fb.SelectedPath);
+                CheckForScanThis();
+            }
+
+        }
+
+        private void CheckForScanThis()
+        {
+            if ( set != null && !set.error )
+            {
 
             }
+        }
+
+        private void OnScanThis(object sender, EventArgs e)
+        {
 
         }
     }
