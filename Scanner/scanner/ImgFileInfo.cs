@@ -33,6 +33,7 @@ namespace Scanner
         public byte[] bytes;
         public byte[] tmb;
         public UInt32 dhash;
+        public UInt32 fhash;
         public Int64 len;
 
         public ImgFileInfo(Set s, FileInfo f)
@@ -43,6 +44,7 @@ namespace Scanner
             {
                 string dpart = s.RelativeToTop(f.DirectoryName);
                 dhash = Utils.GetHash(dpart);
+                fhash = Utils.GetHash(f.Name);
             }
             else
                 dhash = 0;
@@ -50,6 +52,8 @@ namespace Scanner
             path = f.FullName;
             name = f.Name;
             len = f.Length;
+
+
 
         }
 
@@ -88,6 +92,11 @@ namespace Scanner
                 tmb[px+0] = tmb[px+2];
                 tmb[px+2] = t;
             }
+        }
+
+        public override string ToString()
+        {
+            return String.Format("IMI[nam:{0} dhash{1} fhash{2} crc{3}", name, dhash, fhash, crc);
         }
 
         void IDisposable.Dispose()

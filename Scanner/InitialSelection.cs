@@ -6,8 +6,10 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static Scanner.Builder;
 
 namespace Scanner
 {
@@ -17,8 +19,23 @@ namespace Scanner
 
         public InitialSelection()
         {
+            l.To("is.log");
             InitializeComponent();
+
+            if (Properties.Settings.Default.SetLocation != null)
+                setLocation.Text = Properties.Settings.Default.SetLocation;
+            if (Properties.Settings.Default.RelativeTo != null)
+                relativeTo.Text = Properties.Settings.Default.RelativeTo;
+            if (Properties.Settings.Default.ScanThis != null)
+                scanThis.Text = Properties.Settings.Default.ScanThis;
+
             CheckReadyForCreate();
+
+
+            monitorTimer.Interval = 100;
+            monitorTimer.Tick += new EventHandler(OnMonitorTimer);
+            monitorTimer.Start();
+
         }
 
   
@@ -26,7 +43,35 @@ namespace Scanner
         {
             set = new Builder();
             set.CreateNew(relativeTo.Text, setLocation.Text);
+            UpdateStates();
             CheckForScanThis();
+        }
+
+        private void UpdateStates()
+        {
+            if (set == null)
+            {
+                scannerStatus.Text = "-";
+                directoryCountTB.Text = "-";
+                fileCountTB.Text = "-";
+                imageCountTB.Text = "-";
+                dupDirTB.Text = "-";
+                dupFilesTB.Text = "-";
+                return;
+            }
+
+            if ( !set.isBusy && startBtn.Enabled == false )
+            {
+                CheckForStart();
+            }
+            scannerStatus.Text = set.status;
+            directoryCountTB.Text = set.DirectoriesProcessed.ToString();
+            fileCountTB.Text = set.FilesProcessed.ToString();
+            imageCountTB.Text = set.ImagesProcessed.ToString();
+            dupDirTB.Text = set.DirectoriesIgnored.ToString();
+            dupFilesTB.Text = set.FilesIgnored.ToString();
+            curDirTB.Text = set.CurrentDir;
+            curFileTB.Text = set.CurrentFile;
         }
 
         private void CheckReadyForCreate()
@@ -37,7 +82,13 @@ namespace Scanner
                 createBtn.Enabled = false;
         }
 
-  
+        private void CheckForStart()
+        {
+            if (scanThis.Text.Length > 0)
+                startBtn.Enabled = true;
+            else
+                startBtn.Enabled = false;
+        }
 
         private void OnSetSetLocation(object sender, EventArgs e)
         {
@@ -53,6 +104,7 @@ namespace Scanner
                 }
                 setLocation.Text = setPath;
                 CheckReadyForCreate();
+                UpdateStates();
             }
         }
 
@@ -91,12 +143,64 @@ namespace Scanner
         {
             if ( set != null && !set.error )
             {
+                scanThis.Enabled = true;
+                scanThisBtn.Enabled = true;
+                createBtn.Enabled = false;
+                openExistingBtn.Enabled = false;
+                openExisting.Enabled = false;
+
+                CheckForStart();
 
             }
         }
 
         private void OnScanThis(object sender, EventArgs e)
         {
+            FolderBrowserDialog fb = new FolderBrowserDialog();
+
+            if (fb.ShowDialog() == DialogResult.OK)
+            {
+                scanThis.Text = fb.SelectedPath;
+            }
+
+            CheckForStart();
+        }
+
+        public void Start()
+        {
+            new Thread(() =>
+            {
+                Thread.CurrentThread.IsBackground = true;
+                Run();
+            }).Start();
+        }
+
+        private void Run()
+        {
+            set.StartScan(scanThis.Text);
+        }
+
+        private void OnMonitorTimer(object sender, EventArgs args)
+        {
+            UpdateStates();
+        }
+
+        private void OnStart(object sender, EventArgs e)
+        {
+            if ( !scanThis.Text.StartsWith(relativeTo.Text) )
+            {
+                MessageBox.Show("Scan this not below relative location");
+                return;
+            }
+            startBtn.Enabled = false;
+
+            Properties.Settings.Default.SetLocation = setLocation.Text;
+            Properties.Settings.Default.RelativeTo = relativeTo.Text;
+            Properties.Settings.Default.ScanThis = scanThis.Text;
+            Properties.Settings.Default.Save();
+
+            Start();
+
 
         }
     }

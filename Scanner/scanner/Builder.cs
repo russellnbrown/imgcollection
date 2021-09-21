@@ -16,8 +16,10 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Scanner
 {
@@ -27,14 +29,24 @@ namespace Scanner
         public string relativeTo = "";
         public string scanFrom = "";
         public string setPath = "";
+ 
+        public int errorCount = 0;
         public bool isBusy = false;
         public string status = "Not Initialized";
         public bool error = false;
 
-        public string GetCurrnetState()
-        {
-            return status;
-        }
+
+ 
+
+        public int DirectoriesProcessed { get => set.NumDirs; }
+        public int DirectoriesIgnored { get => set.DupDirs;  }
+        public int FilesProcessed { get => set.NumFiles; }
+        public int FilesIgnored { get => set.DupFiles; }
+        public int ImagesProcessed { get => set.NumImages; }
+        public int ImagesIgnored { get => set.NumImages; }
+        public string CurrentDir;
+        public string CurrentFile;
+
         public bool IsError()
         {
             return error;
@@ -54,7 +66,11 @@ namespace Scanner
         {
             isBusy = false;
             error = true;
-            status = e;
+            errorCount++;
+            lock (status)
+            {
+                status = e;
+            }
             l.Error(e);
             return false;
         }
@@ -71,7 +87,10 @@ namespace Scanner
         {
             error = false;
             isBusy = false;
-            status = e;
+            lock (status)
+            {
+                status = e;
+            }
             l.Info(e);
             return true;
         }
@@ -89,6 +108,9 @@ namespace Scanner
                 return setError("Load Error");
 
             relativeTo = set.GetTop();
+
+ 
+
             return setFinal("Loaded " + setPath);
         }
 
@@ -112,6 +134,7 @@ namespace Scanner
 
             public bool StartScan(string scanPos)
             {
+ 
                 this.scanFrom = Path.GetFullPath(scanPos);
                 Stopwatch stopwatch = new Stopwatch();
 
@@ -145,16 +168,30 @@ namespace Scanner
             setFinal("Finished");
         }
 
-        private int processDirectory(DirectoryInfo d)
+        private UInt32 processDirectory(DirectoryInfo d)
         {
+            
             l.Info("DIR: " + d.Name  );
-            set.AddDir(d);
-            return 0;
+            CurrentDir = d.Name;
+            return set.AddDir(d);
+        }
+
+        private List<string> allowedExt = new List<string>() { ".jpg", ".png", ".jfif" };
+
+ 
+        private bool isImageFile(string fn)
+        {
+            fn = fn.ToLower();
+            return allowedExt.Contains(fn);
         }
 
         private void processFile(FileInfo f)
         {
+            if (!isImageFile(f.Extension))
+                return;
+            
             l.Info("FILE:" + f.FullName);
+            CurrentFile = f.Name;
             set.AddFile(f);
         }
 
@@ -164,22 +201,26 @@ namespace Scanner
             System.IO.DirectoryInfo[] subDirs = null;
 
             setStatus("In " + root.FullName);
-            int dhash = processDirectory(root);
+            UInt32 dhash = processDirectory(root); // if dhash == 0 there have been no mods to this dir ( but maybe sub dirs )
+
             try
             {
 
                 // First, process all the files directly under this folder
-                files = root.GetFiles("*.*");
-
-                if (files != null)
+                if (dhash > 0)
                 {
+                    l.Info("Processing files in " + root.FullName);
+                    files = root.GetFiles("*.*");
                     foreach (System.IO.FileInfo fi in files)
                         processFile(fi);
-
-                    subDirs = root.GetDirectories();
-                    foreach (System.IO.DirectoryInfo dirInfo in subDirs)
-                        walk(dirInfo);
                 }
+                else
+                    l.Info("Ignoring files in " + root.FullName);
+
+                subDirs = root.GetDirectories();
+                foreach (System.IO.DirectoryInfo dirInfo in subDirs)
+                    walk(dirInfo);
+
             }
             catch (UnauthorizedAccessException e)
             {

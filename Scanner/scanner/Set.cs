@@ -33,13 +33,12 @@ namespace Scanner
 
         // the following constitute the 'set' 
         private string top = "";                                // top path to which all others are relative
-        private List<DirEntry> dirs = new List<DirEntry>();     // directories ( relative to top )
-        private List<FileEntry> files = new List<FileEntry>();  // files
-        private SortedDictionary<UInt32, ImgEntry> images = 
-            new SortedDictionary<UInt32, ImgEntry>();           // unique images 
+        
+        private SortedDictionary<UInt32, DirEntry> dirs = new SortedDictionary<UInt32, DirEntry>();   // directories ( relative to top ) index by dir name hash
+        private SortedDictionary<UInt64, FileEntry> files = new SortedDictionary<UInt64,FileEntry>();  // files index by dir name hash + file name hash
+        private SortedDictionary<UInt32, ImgEntry> images = new SortedDictionary<UInt32, ImgEntry>(); // unique images  indec by image crc
+
         internal SortedDictionary<UInt32, ImgEntry> GetImages() { return images;  }
-        internal HashSet<string> fileMap = null;
-        internal HashSet<UInt32> dirMap = null;
 
 
         // processors is a list of image processing threads
@@ -47,7 +46,16 @@ namespace Scanner
         // singleton for easy access
         private static Set instance = null;
         public static Set Get { get => instance;  }
- 
+
+        public int NumFiles { get => files.Count; }
+        public int NumDirs { get => dirs.Count; }
+        public int NumImages { get => images.Count;  }
+        public int DupDirs = 0;
+        public int DupFiles = 0;
+        public int DupImg = 0;
+        public string CurrentDir = "";
+
+
         //
         // ImgProcessor - implement file loading, crc calc & thumbnail creation
         // in in threads to maximize throughput. Set.processors is a list of these
@@ -127,7 +135,7 @@ namespace Scanner
                     // Call Set.LoadFile to return crc & thumb and have it entered into set
                     // 'LoadFile' is synchronized to prevent multiple threads from acessing
                     // set structures at the same time
-                    Set.Get.LoadFile(ifi, pnum);
+                    Set.Get.LoadFileResult(ifi, pnum);
 
                     // now set ifi to null to indicate we can accept another file
                     ifi = null;
@@ -136,32 +144,39 @@ namespace Scanner
             }
         }
 
-        private string fileUx(ref uint dh, ref string fn)
+        private UInt64 fileIx( UInt32 dh,  UInt32 fn)
         {
-            return dh.ToString() + "_" + fn;
+            UInt64 rv = ((UInt64)dh << 32) | fn;
+            return rv;
         }
 
         // LoadFile - this is used by image processing threads, if created, to deposit results into
         // set - it needs to be synchronized to prevent files and images becoming corrupted. 
         // Alternitivly it may just be called by main thread if threading not enabled
         [MethodImpl(MethodImplOptions.Synchronized)]
-        internal void LoadFile(ImgFileInfo ifi, int p)
+        internal void LoadFileResult(ImgFileInfo ifi, int pmun)
         {
 
-            FileEntry fe = new FileEntry(ifi.dhash, ifi.crc, ifi.name);
+           
             ImgEntry ie = new ImgEntry(ifi.crc, ifi.tmb);
-            //l.Info("File {0} added by thread {1}", ifi.name, p);
 
             // now add file entry to files list
-            files.Add(fe);
-            if ( fileMap != null )
-                fileMap.Add(fileUx(ref fe.dhash,ref fe.name));
-            l.Info("ADDMAP " + fe.dhash + " " + fe.name);
+            UInt64 dfhash = fileIx(ifi.dhash, ifi.fhash);
+            if ( !files.ContainsKey(dfhash) )
+            {
+                l.Warn("ADDRESULT - No file place for result " + ifi);
+                return;
+            }
+            files[dfhash].crc = ifi.crc;
+
+            l.Info("ADDRESULT - Adding " + ifi);
             // and the imgentry to the images map ( ignore if duplicate )
             if (!images.ContainsKey(ie.crc))
                 images.Add(ie.crc, ie);
             else
-                l.Info("Duplicate image: " + ie);
+            {
+                DupImg++;               
+            }
         }
 
         // DirEntry - Holds data relevant to a directory
@@ -169,10 +184,12 @@ namespace Scanner
         {
             public UInt32 dhash;    // CRC32 of directory path ( key used in fileent )
             public string path;     // The path ( relative to top )
-            public DirEntry(string _path, UInt32 _dhash)
+            public DateTime lastModded;
+            public DirEntry(string _path, UInt32 _dhash, DateTime _lastModded)
             {
                 dhash = _dhash;
                 path = _path;
+                lastModded = _lastModded;
             }
             public override string ToString()
             {
@@ -184,18 +201,20 @@ namespace Scanner
         public class FileEntry
         {
             public UInt32 dhash;    // key to find relevant directory
+            public UInt32 fhash;    // key to find relevant file ( with above )
             public UInt32 crc;      // key to find relecant image
             public string name;     // file name 
-            public FileEntry(UInt32 _dhash, UInt32 _crc, string _name)
+            public FileEntry(UInt32 _dhash, UInt32 _fhash, UInt32 _crc, string _name)
             {
                 dhash = _dhash;
+                fhash = _fhash;
                 crc = _crc;
                 name = _name;
             }
  
             public override string ToString()
             {
-                return String.Format("File[ dhash:{0}, name:{1}, crc:{2}]", dhash, name, crc);
+                return String.Format("File[ dhash:{0}, fhash{1}: name:{2}, crc:{3}]", dhash, fhash, name, crc);
             }
         }
 
@@ -279,17 +298,26 @@ namespace Scanner
         internal void AddFile(FileInfo f)
        {
             ImgFileInfo ifi = new ImgFileInfo(this, f);
-            l.Info("CHECKMAP " + ifi.dhash + " " + ifi.name);
 
-            if (fileMap!=null && fileMap.Contains(fileUx(ref ifi.dhash, ref ifi.name)))
-                    return;
+            UInt64 dfhash = fileIx(ifi.dhash, ifi.fhash);
+
+            if ( files.ContainsKey(dfhash) )
+            {
+                l.Warn("ADDFILE - Duplicate file, ignore " + ifi);
+                DupFiles++;
+                return;
+            }
+
+            FileEntry fe = new FileEntry(ifi.dhash, ifi.fhash, ifi.crc, ifi.name);
+            files.Add(dfhash, fe);
 
             if ( !useThreads )
             {
                 ifi.MakeHashes();
                 // mahe the thumb
                 ifi.MakeThumb();
-                LoadFile(ifi, 0);
+                l.Warn("ADDFILE - adding " + ifi + " : " + fe);
+                LoadFileResult(ifi, 0);
                 return;
             }
             while (true)
@@ -305,18 +333,35 @@ namespace Scanner
 
         // AddDir
         // Create a direntry for a directory & add to dir list
-        internal void AddDir(DirectoryInfo d)
+        internal UInt32 AddDir(DirectoryInfo d)
         {
             // Get directories path relevant to top
             string rpath = RelativeToTop(d.FullName);
             // and the CRC32 for use as key to file list
             UInt32 dhash = Utils.GetHash(rpath);
-            DirEntry de = new DirEntry(rpath, dhash);
-            // add to list
-            if (dirMap != null && dirMap.Contains(dhash))
-                return;
-            dirs.Add(de);
+
+            l.Info("ADDDIR " + d.FullName);
+
+            if ( dirs.ContainsKey(dhash) )
+            {
+                if (dirs[dhash].lastModded == d.LastWriteTime)
+                {
+                    l.Info("ADDDIR, already there and unmodified " + d.FullName + ", hash:" + dhash);
+                    return 0; // existing and unmodified
+                }
+                dirs[dhash].lastModded = d.LastWriteTime;
+                l.Info("ADDDIR, already there but modified " + d.FullName + ", hash:" + dhash);
+                CurrentDir = rpath;
+                return dhash;
+            }
+
+            DirEntry de = new DirEntry(rpath, dhash,d.LastWriteTime);
+            CurrentDir = rpath;
+            l.Info("ADDDIR, new dir " + d.FullName + ", hash:" + dhash);
+            dirs.Add(dhash, de);
+            return dhash;
         }
+
 
         // GetTop
         // return path of set to which all dirs are relative to
@@ -342,10 +387,10 @@ namespace Scanner
         {
             l.Info("Set dump, top: " + top);
             l.Info("Directories:");
-            foreach (DirEntry de in dirs)
+            foreach (DirEntry de in dirs.Values)
                 l.Info("\tDir: " + de.ToString());
             l.Info("Files:");
-            foreach (FileEntry fe in files)
+            foreach (FileEntry fe in files.Values)
                 l.Info("\tFile: " + fe.ToString());
             l.Info("Images:");
             foreach (ImgEntry ie in images.Values)
@@ -363,15 +408,15 @@ namespace Scanner
             using (StreamWriter sw = new StreamWriter(Path.Combine(location, "dirs.txt")))
             {
                 sw.WriteLine(top);
-                foreach (DirEntry de in dirs)
-                    sw.WriteLine(String.Format("{0},{1}", de.dhash, de.path));
+                foreach (DirEntry de in dirs.Values)
+                    sw.WriteLine(String.Format("{0},{1},{2}", de.dhash, de.path,de.lastModded.ToString()));
             }
 
             // the fileent list
             using (StreamWriter sw = new StreamWriter(Path.Combine(location, "files.txt")))
             {
-                foreach (FileEntry fe in files)
-                    sw.WriteLine(String.Format("{0},{1},{2}", fe.dhash, fe.crc, fe.name));
+                foreach (FileEntry fe in files.Values)
+                    sw.WriteLine(String.Format("{0},{1},{2},{3}", fe.dhash, fe.fhash, fe.crc, fe.name));
             }
 
             // the imgentry map ( save in binary for speed )
@@ -384,8 +429,6 @@ namespace Scanner
                     sw.Write(ie.thumb);
                 }
             }
-
-
         }
 
         // Load
@@ -398,8 +441,7 @@ namespace Scanner
             string imgPath = Path.Combine(setName, "images.bin");
             Char[] seps = { ',' };
             string line;
-            fileMap = new HashSet<string>();
-            dirMap = new HashSet<UInt32>();
+
             location = setName;
 
             try
@@ -413,12 +455,11 @@ namespace Scanner
                     {
                         // all other lines are key/path for the directoreis
                         string[] parts = line.Split(seps);
-                        if (parts.Length == 2)
+                        if (parts.Length == 3)
                         {
                             UInt32 dhash = UInt32.Parse(parts[0]);
-                            DirEntry fe = new DirEntry(parts[1], dhash);
-                            dirMap.Add(dhash);
-                            dirs.Add(fe);
+                            DirEntry fe = new DirEntry(parts[1], dhash, DateTime.Parse(parts[2]));
+                            dirs.Add(dhash, fe);
                         }
                     }
                 }
@@ -429,19 +470,17 @@ namespace Scanner
                     {
                         // line is a csv of directory key, image key & name
                         string[] parts = line.Split(seps);
-                        if (parts.Length == 3)
+                        if (parts.Length == 4)
                         {
                             UInt32 dhash = UInt32.Parse(parts[0]);
-                            UInt32 crc = UInt32.Parse(parts[1]);
-                            FileEntry fe = new FileEntry(dhash, crc, parts[2]);
-                            l.Info("LOADTOMAP " + dhash + " " + parts[2]);
-                            fileMap.Add(fileUx(ref dhash, ref parts[2]));
-                            files.Add(fe);
-                            if (parts[2] == "_w850.jpg")
-                                l.Info("last read");
+                            UInt32 fhash = UInt32.Parse(parts[1]);
+                            UInt32 crc = UInt32.Parse(parts[2]);
+                            FileEntry fe = new FileEntry(dhash, fhash, crc, parts[3]);
+                            l.Info("LOADTOMAP " + dhash + " " + parts[3]);
+                            UInt64 dfhash = fileIx( dhash, fhash);
+                            files.Add(dfhash, fe);
                         }
-                        else
-                            l.Info("BAD LINE");
+  
                     }
                 }
 
@@ -477,7 +516,7 @@ namespace Scanner
         {
             List<FileEntry> matches = null;
 
-            foreach(FileEntry fe in files)
+            foreach(FileEntry fe in files.Values)
             {
                 if ( fe.crc == ihash )
                 {
