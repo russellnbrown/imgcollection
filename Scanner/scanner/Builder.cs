@@ -34,9 +34,10 @@ namespace Scanner
         public bool isBusy = false;
         public string status = "Not Initialized";
         public bool error = false;
+        public bool useThreads = true;
 
 
- 
+
 
         public int DirectoriesProcessed { get => set.NumDirs; }
         public int DirectoriesIgnored { get => set.DupDirs;  }
@@ -59,7 +60,7 @@ namespace Scanner
 
         public Builder()
         {
-            set = new Set(false);
+            set = new Set(useThreads);
         }
 
         private bool setError(string e)
