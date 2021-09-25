@@ -127,15 +127,22 @@ namespace Scanner
                     // ifi is set, we have a file to work with
                     //l.Info("Thread {0} is processing {1}", pnum, ifi.name);
                     // read data & make crc32
-                    ifi.MakeHashes();
-                    // mahe the thumb
-                    ifi.MakeThumb();
-                    filecount++;
+                    try
+                    {
+                        ifi.MakeHashes();
+                        // mahe the thumb
+                        ifi.MakeThumb();
+                        filecount++;
 
-                    // Call Set.LoadFile to return crc & thumb and have it entered into set
-                    // 'LoadFile' is synchronized to prevent multiple threads from acessing
-                    // set structures at the same time
-                    Set.Get.LoadFileResult(ifi, pnum);
+                        // Call Set.LoadFile to return crc & thumb and have it entered into set
+                        // 'LoadFile' is synchronized to prevent multiple threads from acessing
+                        // set structures at the same time
+                        Set.Get.LoadFileResult(ifi, pnum);
+                    }
+                    catch(Exception e)
+                    {
+                        l.Error("Procedding(thread)" + ifi);
+                    }
 
                     // now set ifi to null to indicate we can accept another file
                     ifi = null;
@@ -313,11 +320,18 @@ namespace Scanner
 
             if ( !useThreads )
             {
-                ifi.MakeHashes();
-                // mahe the thumb
-                ifi.MakeThumb();
-                l.Warn("ADDFILE - adding " + ifi + " : " + fe);
-                LoadFileResult(ifi, 0);
+                try
+                {
+                    ifi.MakeHashes();
+                    // mahe the thumb
+                    ifi.MakeThumb();
+                    l.Warn("ADDFILE - adding " + ifi + " : " + fe);
+                    LoadFileResult(ifi, 0);
+                }
+                catch(Exception e)
+                {
+                    l.Error("Processing " + ifi);
+                }
                 return;
             }
             while (true)
