@@ -20,6 +20,7 @@ namespace WpfCoreTester
     /// </summary>
     public partial class ExplorerTab : UserControl
     {
+   
         public ExplorerTab()
         {
             InitializeComponent();

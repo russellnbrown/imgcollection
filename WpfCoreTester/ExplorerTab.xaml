@@ -7,24 +7,36 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <DockPanel>
-            <DockPanel Name="browserDP" Background="Aquamarine" DockPanel.Dock="Left" MinWidth="200" >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="2*" />
+        </Grid.ColumnDefinitions>
 
 
 
 
-            </DockPanel>
-            <DockPanel Name="rightDP" Background="Azure"  >
 
-                <DockPanel Name="iconsDP" DockPanel.Dock="Left" Width="200" Background="Beige" >
-
-                </DockPanel>
-
-                <DockPanel Name="imageDP"  Background="Pink" >
-
-                </DockPanel>
-
-            </DockPanel>
+        <DockPanel Grid.Column="0" Background="Transparent"  MinWidth="200" >
+            <Grid  Name="browserDP"></Grid>
         </DockPanel>
+        
+        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
+
+        <DockPanel Grid.Column="2"  Background="Azure" MinWidth="200"  >
+            <WrapPanel Name="ItemWP" >
+                
+            </WrapPanel>
+        </DockPanel>
+        
+        <GridSplitter Grid.Column="3" Width="5" HorizontalAlignment="Stretch" />
+        
+        <DockPanel Grid.Column="4"   Background="Beige" MinWidth="200"  >
+            <Grid Name="iconsDP"  ></Grid>
+        </DockPanel>
+
+
     </Grid>
 </UserControl>

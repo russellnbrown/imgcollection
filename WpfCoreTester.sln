@@ -9,7 +9,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cs_build_scan", "cs_build_s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cs_viewer", "cs_viewer\cs_viewer\cs_viewer.csproj", "{F78129DF-54FD-47CD-8A83-74AF4BEA092B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scanner", "Scanner\Scanner.csproj", "{89D6EA0A-FD2C-4CC7-B598-FC083F8ABDF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scanner", "Scanner\Scanner.csproj", "{89D6EA0A-FD2C-4CC7-B598-FC083F8ABDF2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WpfCoreTester", "WpfCoreTester\WpfCoreTester.csproj", "{33334392-C656-4BF9-9053-B94E087A15FD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,6 +31,10 @@ Global
 		{89D6EA0A-FD2C-4CC7-B598-FC083F8ABDF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89D6EA0A-FD2C-4CC7-B598-FC083F8ABDF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{89D6EA0A-FD2C-4CC7-B598-FC083F8ABDF2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33334392-C656-4BF9-9053-B94E087A15FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33334392-C656-4BF9-9053-B94E087A15FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33334392-C656-4BF9-9053-B94E087A15FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33334392-C656-4BF9-9053-B94E087A15FD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

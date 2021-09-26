@@ -33,7 +33,7 @@ namespace WpfCoreTester
 
         private void scanBtn_Click(object sender, RoutedEventArgs e)
         {
-            new Builder(relativeTo.Text,scanSet.Text, scanLocation.Text);
+         //   new Builder(relativeTo.Text,scanSet.Text, scanLocation.Text);
         }
 
         private void appendBtn_Click(object sender, RoutedEventArgs e)
