@@ -26,9 +26,7 @@
         <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
 
         <DockPanel Grid.Column="2"  Background="Azure" MinWidth="200"  >
-            <WrapPanel Name="ItemWP" >
-                
-            </WrapPanel>
+            <Grid  Name="fileDP"></Grid>
         </DockPanel>
         
         <GridSplitter Grid.Column="3" Width="5" HorizontalAlignment="Stretch" />

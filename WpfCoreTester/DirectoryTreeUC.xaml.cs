@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,6 +22,7 @@ namespace WpfCoreTester
     /// </summary>
     public partial class DirectoryTreeUC : UserControl
     {
+        Logger log = LogManager.GetCurrentClassLogger();
         public DirectoryTreeUC()
         {
             InitializeComponent();
@@ -33,6 +35,7 @@ namespace WpfCoreTester
             foreach (var drive in drives)
             {
                 this.treeView.Items.Add(this.GetItem(drive));
+                log.Info("Load top level drive " + drive.Name);
             }
         }
 
@@ -59,7 +62,14 @@ namespace WpfCoreTester
             };
             this.AddDummy(item);
             item.Expanded += new RoutedEventHandler(item_Expanded);
+            item.Selected += Item_Selected;// new RoutedEventHandler(Item_Selected);
             return item;
+        }
+
+        private void Item_Selected(object sender, RoutedEventArgs e)
+        {
+            var item = (TreeViewItem)sender;
+            this.ExploreFiles2(item);
         }
 
         private void AddDummy(TreeViewItem item)
@@ -94,28 +104,35 @@ namespace WpfCoreTester
 
         private void ExploreDirectories(TreeViewItem item)
         {
-            var directoryInfo = (DirectoryInfo)null;
-            if (item.Tag is DriveInfo)
+            try
             {
-                directoryInfo = ((DriveInfo)item.Tag).RootDirectory;
-            }
-            else if (item.Tag is DirectoryInfo)
-            {
-                directoryInfo = (DirectoryInfo)item.Tag;
-            }
-            else if (item.Tag is FileInfo)
-            {
-                directoryInfo = ((FileInfo)item.Tag).Directory;
-            }
-            if (object.ReferenceEquals(directoryInfo, null)) return;
-            foreach (var directory in directoryInfo.GetDirectories())
-            {
-                var isHidden = (directory.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
-                var isSystem = (directory.Attributes & FileAttributes.System) == FileAttributes.System;
-                if (!isHidden && !isSystem)
+                var directoryInfo = (DirectoryInfo)null;
+                if (item.Tag is DriveInfo)
                 {
-                    item.Items.Add(this.GetItem(directory));
+                    directoryInfo = ((DriveInfo)item.Tag).RootDirectory;
                 }
+                else if (item.Tag is DirectoryInfo)
+                {
+                    directoryInfo = (DirectoryInfo)item.Tag;
+                }
+                else if (item.Tag is FileInfo)
+                {
+                    directoryInfo = ((FileInfo)item.Tag).Directory;
+                }
+                if (object.ReferenceEquals(directoryInfo, null)) return;
+                foreach (var directory in directoryInfo.GetDirectories())
+                {
+                    var isHidden = (directory.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
+                    var isSystem = (directory.Attributes & FileAttributes.System) == FileAttributes.System;
+                    if (!isHidden && !isSystem)
+                    {
+                        item.Items.Add(this.GetItem(directory));
+                    }
+                }
+            }
+            catch
+            {
+
             }
         }
 
@@ -142,9 +159,45 @@ namespace WpfCoreTester
                 if (!isHidden && !isSystem)
                 {
                     item.Items.Add(this.GetItem(file));
+                    log.Info("File is " + file.Name);
                 }
             }
         }
+
+        private void ExploreFiles2(TreeViewItem item)
+        {
+            var directoryInfo = (DirectoryInfo)null;
+            if (item.Tag is DriveInfo)
+            {
+                directoryInfo = ((DriveInfo)item.Tag).RootDirectory;
+            }
+            else if (item.Tag is DirectoryInfo)
+            {
+                directoryInfo = (DirectoryInfo)item.Tag;
+            }
+            else if (item.Tag is FileInfo)
+            {
+                directoryInfo = ((FileInfo)item.Tag).Directory;
+            }
+            if (object.ReferenceEquals(directoryInfo, null)) return;
+            log.Info("DTC Selected folder " + directoryInfo.FullName);
+            FileViewUC.Get.BeginUpdate();
+            foreach (var file in directoryInfo.GetFiles())
+            {
+                var isHidden = (file.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
+                var isSystem = (file.Attributes & FileAttributes.System) == FileAttributes.System;
+                var isImage = Helpers.isImage(file);
+                if (!isHidden && !isSystem && isImage)
+                {
+                    log.Info("DTC Add" + file.Name);
+                    FileViewUC.Get.AddFile(file);
+                }
+                else
+                    log.Info("DTC Ignore" + file.Name);
+            }
+            FileViewUC.Get.EndUpdate();
+        }
+
 
         void item_Expanded(object sender, RoutedEventArgs e)
         {
@@ -154,7 +207,7 @@ namespace WpfCoreTester
                 this.Cursor = Cursors.Wait;
                 this.RemoveDummy(item);
                 this.ExploreDirectories(item);
-                this.ExploreFiles(item);
+               // this.ExploreFiles(item);
                 this.Cursor = Cursors.Arrow;
             }
         }

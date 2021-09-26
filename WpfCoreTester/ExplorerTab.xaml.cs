@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,11 +21,12 @@ namespace WpfCoreTester
     /// </summary>
     public partial class ExplorerTab : UserControl
     {
-   
+        Logger log = LogManager.GetCurrentClassLogger();
         public ExplorerTab()
         {
             InitializeComponent();
             browserDP.Children.Add(new DirectoryTreeUC());
+            fileDP.Children.Add(new FileViewUC());
         }
     }
 }

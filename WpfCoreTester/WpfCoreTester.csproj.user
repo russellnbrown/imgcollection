@@ -13,6 +13,9 @@
     <Compile Update="ExplorerTab.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="FileViewUC.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="SearchTab.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -22,6 +25,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="ExplorerTab.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="FileViewUC.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="MainWindow.xaml">
