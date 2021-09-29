@@ -7,13 +7,28 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="images\diskdrive.png" />
+    <None Remove="images\folder.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="NLog" Version="4.7.11" />
+    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ScannerLib\ScannerLib.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="images\diskdrive.png" />
+    <Resource Include="images\folder.png" />
   </ItemGroup>
 
 </Project>

@@ -57,7 +57,7 @@ namespace Scanner
 
         }
 
-        internal void MakeHashes()
+        public void MakeHashes()
         {
             FileInfo f = new FileInfo(path);
             var fo = f.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -68,7 +68,7 @@ namespace Scanner
             tmb = null;
         }
 
-        internal void MakeThumb()
+        public void MakeThumb()
         {
             tmb = new byte[Settings.TNMEM];
             //Byte []ttmb = new byte[Settings.TNMEM];

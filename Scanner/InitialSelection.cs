@@ -131,9 +131,18 @@ namespace Scanner
                     return;
                 }
                 string existing = fb.SelectedPath;
-                MessageBox.Show("Open " + existing);
-                set = new Builder();
-                set.OpenExisting(fb.SelectedPath);
+
+                if (set!=null)
+                {
+                    MessageBox.Show("Add " + existing);
+                    set.AddExisting(fb.SelectedPath);
+                }
+                else
+                {
+                    MessageBox.Show("Open " + existing);
+                    set = new Builder();
+                    set.OpenExisting(fb.SelectedPath);
+                }
                 CheckForScanThis();
             }
 

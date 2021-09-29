@@ -38,7 +38,7 @@ namespace Scanner
         private SortedDictionary<UInt64, FileEntry> files = new SortedDictionary<UInt64,FileEntry>();  // files index by dir name hash + file name hash
         private SortedDictionary<UInt32, ImgEntry> images = new SortedDictionary<UInt32, ImgEntry>(); // unique images  indec by image crc
 
-        internal SortedDictionary<UInt32, ImgEntry> GetImages() { return images;  }
+        public SortedDictionary<UInt32, ImgEntry> GetImages() { return images;  }
 
 
         // processors is a list of image processing threads
@@ -161,7 +161,7 @@ namespace Scanner
         // set - it needs to be synchronized to prevent files and images becoming corrupted. 
         // Alternitivly it may just be called by main thread if threading not enabled
         [MethodImpl(MethodImplOptions.Synchronized)]
-        internal void LoadFileResult(ImgFileInfo ifi, int pmun)
+        public void LoadFileResult(ImgFileInfo ifi, int pmun)
         {
 
            
@@ -244,7 +244,7 @@ namespace Scanner
 
         // Set constructor
         // set instance singleton to allow easy access via 'Get'
-        internal Set(bool useThreads)
+        public Set(bool useThreads)
         {
             instance = this;
             this.useThreads = useThreads;
@@ -290,7 +290,7 @@ namespace Scanner
 
         // RelativeToTop 
         // Takes an absolute path and returns the part reletive to top 
-        internal string RelativeToTop(string path)
+        public string RelativeToTop(string path)
         {
             string spath = Utils.StandardizePath(path); // make sure in unix format
             spath = spath.Substring(top.Length); // remove the top from the path
@@ -302,7 +302,7 @@ namespace Scanner
         // AddFile
         // Add a file to the set - get thumb & crc etc and create relevant 
         // file & img entries and  add to list/map
-        internal void AddFile(FileInfo f)
+        public void AddFile(FileInfo f)
        {
             ImgFileInfo ifi = new ImgFileInfo(this, f);
 
@@ -347,7 +347,7 @@ namespace Scanner
 
         // AddDir
         // Create a direntry for a directory & add to dir list
-        internal UInt32 AddDir(DirectoryInfo d)
+        public UInt32 AddDir(DirectoryInfo d)
         {
             // Get directories path relevant to top
             string rpath = RelativeToTop(d.FullName);
@@ -379,7 +379,7 @@ namespace Scanner
 
         // GetTop
         // return path of set to which all dirs are relative to
-        internal string GetTop()
+        public string GetTop()
         {
             return top;
         }
@@ -387,7 +387,7 @@ namespace Scanner
 
         // SetTop
         // save the set top directory
-        internal void SetTop(string dirPath)
+        public void SetTop(string dirPath)
         {
             // get abs path
             string apath = Path.GetFullPath(dirPath);
@@ -445,10 +445,101 @@ namespace Scanner
             }
         }
 
-        // Load
-        // Loads the set from disk  ( can't use serialization as format must be common to all
-        // languages ) 
-        internal bool Load(string setName)
+        //
+        // Add
+        public bool Add(string setName)
+        {
+            string filePath = Path.Combine(setName, "files.txt");
+            string dirPath = Path.Combine(setName, "dirs.txt");
+            string imgPath = Path.Combine(setName, "images.bin");
+            Char[] seps = { ',' };
+            string line;
+
+            //location = setName;
+
+            try
+            {
+                // dirs.txt contaiins the directories and top
+                using (StreamReader sw = new StreamReader(dirPath))
+                {
+                    // top is in first line
+                    string mytop = sw.ReadLine();
+                    if ( mytop != top )
+                    {
+                        l.Error("Top dosnt match");
+                        return false;
+                    }
+                    while ((line = sw.ReadLine()) != null)
+                    {
+                        // all other lines are key/path for the directoreis
+                        string[] parts = line.Split(seps);
+                        if (parts.Length == 3)
+                        {
+                            UInt32 dhash = UInt32.Parse(parts[0]);
+                            if (!dirs.ContainsKey(dhash))
+                            {
+                                DirEntry fe = new DirEntry(parts[1], dhash, DateTime.Parse(parts[2]));
+                                dirs.Add(dhash, fe);
+                            }
+                            else
+                                l.Debug("Dup dir " + line);
+                        }
+                    }
+                }
+                // files.txt containf the files, create a fileentry for each 
+                using (StreamReader sw = new StreamReader(filePath))
+                {
+                    while ((line = sw.ReadLine()) != null)
+                    {
+                        // line is a csv of directory key, image key & name
+                        string[] parts = line.Split(seps);
+                        if (parts.Length == 4)
+                        {
+                            UInt32 dhash = UInt32.Parse(parts[0]);
+                            UInt32 fhash = UInt32.Parse(parts[1]);
+                            UInt32 crc = UInt32.Parse(parts[2]);
+                            FileEntry fe = new FileEntry(dhash, fhash, crc, parts[3]);
+                            l.Info("LOADTOMAP " + dhash + " " + parts[3]);
+                            UInt64 dfhash = fileIx(dhash, fhash);
+                            if (!files.ContainsKey(dfhash))
+                                files.Add(dfhash, fe);
+                            else
+                                l.Debug("Dup file " + line);
+                        }
+
+                    }
+                }
+
+                // images.bin contains the image keys & thumbnails
+                using (BinaryReader reader = new BinaryReader(File.Open(imgPath, FileMode.Open)))
+                {
+                    while (reader.BaseStream.Position != reader.BaseStream.Length)
+                    {
+                        // read key & thumb and create a imgentrt
+                        Int64 crc = reader.ReadInt64();
+                        byte[] ba = reader.ReadBytes(Settings.TNMEM);
+                        //Console.WriteLine(String.Format("CRC: {0} RGB: {1:X} {2:X} {3:X} \n", crc, ba[0] & 0xFF, ba[1] & 0xFF, ba[2] & 0xFF));
+                        ImgEntry ie = new ImgEntry((UInt32)crc, ba);
+                        // add add to the map ( no need to check for dups at the cant be any )
+                        if (!images.ContainsKey(ie.crc))
+                            images.Add(ie.crc, ie);
+                        else
+                            l.Debug("Dup Image " + ie.crc);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                l.Error("Error ", e.Message, " reading set");
+                return false;
+            }
+
+            l.Info("Read set {0}, Dirs: {1}, Files: {2}, Images: {3} ", setName, dirs.Count, files.Count, images.Count);
+            return true;
+        }
+
+
+        public bool Load(string setName)
         {
             string filePath = Path.Combine(setName, "files.txt");
             string dirPath = Path.Combine(setName, "dirs.txt");

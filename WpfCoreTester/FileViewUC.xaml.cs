@@ -48,9 +48,34 @@ namespace WpfCoreTester
             if (!Helpers.isImage(f))
                 return;
 
-            wp.Children.Add(new Button() { Content = f.Name });
+
+            Image imgTemp = new Image();
+
+
+            BitmapImage myBitmapImage = new BitmapImage();
+            {
+                myBitmapImage.BeginInit();
+                myBitmapImage.UriSource = new Uri(f.FullName);
+                myBitmapImage.DecodePixelWidth = 64;
+                myBitmapImage.DecodePixelHeight = 64;
+                myBitmapImage.EndInit();
+
+
+                imgTemp.Source = myBitmapImage;
+            }
+//            imgTemp.Height = imgTemp.Width = 100;
+            imgTemp.MouseLeftButtonDown += imgTemp_MouseLeftButtonDown;
+            //Button b = new Button();
+            
+            wp.Children.Add(imgTemp);
+
+         //   wp.Children.Add(new Button() { Content = f.Name });
             log.Info("FVUC Add " + f.FullName);
         }
 
+        private void imgTemp_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Console.WriteLine("Selected " + ((Image)sender).Source);
+        }
     }
 }

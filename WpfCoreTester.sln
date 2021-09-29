@@ -13,6 +13,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scanner", "Scanner\Scanner.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WpfCoreTester", "WpfCoreTester\WpfCoreTester.csproj", "{33334392-C656-4BF9-9053-B94E087A15FD}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "imgcli", "imgcli\imgcli.csproj", "{3E55F3F0-78FB-402D-8159-3540F025DD37}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScannerLib", "ScannerLib\ScannerLib.csproj", "{61035301-71FF-48FE-AD52-0DB264935959}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +39,14 @@ Global
 		{33334392-C656-4BF9-9053-B94E087A15FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{33334392-C656-4BF9-9053-B94E087A15FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{33334392-C656-4BF9-9053-B94E087A15FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E55F3F0-78FB-402D-8159-3540F025DD37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E55F3F0-78FB-402D-8159-3540F025DD37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E55F3F0-78FB-402D-8159-3540F025DD37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E55F3F0-78FB-402D-8159-3540F025DD37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61035301-71FF-48FE-AD52-0DB264935959}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61035301-71FF-48FE-AD52-0DB264935959}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61035301-71FF-48FE-AD52-0DB264935959}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61035301-71FF-48FE-AD52-0DB264935959}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

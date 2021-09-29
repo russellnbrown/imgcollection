@@ -32,7 +32,9 @@
         <GridSplitter Grid.Column="3" Width="5" HorizontalAlignment="Stretch" />
         
         <DockPanel Grid.Column="4"   Background="Beige" MinWidth="200"  >
-            <Grid Name="iconsDP"  ></Grid>
+            <Grid Name="iconsDP"  >  
+                
+            </Grid>
         </DockPanel>
 
 

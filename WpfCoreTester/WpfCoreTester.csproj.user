@@ -7,10 +7,10 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="DirectoryTreeUC.xaml.cs">
+    <Compile Update="ExplorerTab.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="ExplorerTab.xaml.cs">
+    <Compile Update="ExplorerTree.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="FileViewUC.xaml.cs">
@@ -21,10 +21,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="DirectoryTreeUC.xaml">
+    <Page Update="ExplorerTab.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="ExplorerTab.xaml">
+    <Page Update="ExplorerTree.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="FileViewUC.xaml">
