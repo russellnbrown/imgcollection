@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="images\diskdrive.png" />
+    <None Remove="images\folder.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="NLog" Version="4.7.11" />
   </ItemGroup>
 
@@ -14,6 +19,11 @@
     <None Update="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="images\diskdrive.png" />
+    <Resource Include="images\folder.png" />
   </ItemGroup>
 
 </Project>
