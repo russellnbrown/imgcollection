@@ -25,7 +25,8 @@ namespace WpfCoreTester
         public ExplorerTab()
         {
             InitializeComponent();
-            browserDP.Children.Add(new DirectoryTreeUC());
+//            browserDP.Children.Add(new DirectoryTreeUC());
+            browserDP.Children.Add(new ExplorerTree());
             fileDP.Children.Add(new FileViewUC());
         }
     }
