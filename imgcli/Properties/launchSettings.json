@@ -1,0 +1,19 @@
+{
+  "profiles": {
+    "imgcli": {
+      "commandName": "Project",
+      "commandLineArgs": "-merge SetOut setHOTTEST setSKP",
+      "workingDirectory": "C:\\TestEnvironments\\backups"
+    },
+    "testset": {
+      "commandName": "Project",
+      "commandLineArgs": "-merge setimgX setimg1 setimg2 setimg3",
+      "workingDirectory": "C:\\TestEnvironments\\sets2"
+    },
+    "search": {
+      "commandName": "Project",
+      "commandLineArgs": "-search sets2/setimgX test.jpg",
+      "workingDirectory": "C:\\TestEnvironments"
+    }
+  }
+}

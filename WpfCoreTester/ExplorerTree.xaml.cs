@@ -24,7 +24,9 @@ namespace WpfCoreTester
     {
         private object dummyNode = null;
         public string SelectedImagePath { get; set; }
+
         Logger log = LogManager.GetCurrentClassLogger();
+
 
         public ExplorerTree()
         {
@@ -96,6 +98,7 @@ namespace WpfCoreTester
             }
             //show user selected path
 
+
             DirectoryInfo directoryInfo = new DirectoryInfo(SelectedImagePath);
             FileViewUC.Get.BeginUpdate();
             foreach (var file in directoryInfo.GetFiles())
@@ -112,7 +115,7 @@ namespace WpfCoreTester
                     log.Info("DTC Ignore" + file.Name);
             }
             FileViewUC.Get.EndUpdate();
-           // MessageBox.Show(SelectedImagePath);
+
         }
 
     }

@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,8 +26,9 @@ using System.Threading;
 namespace Scanner
 {
     // Set - methods & datastructures used to build a database ( aka set )
-    public class Set
+    public partial class Set
     {
+        private static Logger l = LogManager.GetCurrentClassLogger();
         private string location = "";                           // where the set is located
         private bool useThreads = true;                         // are we going to use multiple threads
                                                                 // for image processing
@@ -176,7 +178,7 @@ namespace Scanner
             }
             files[dfhash].crc = ifi.crc;
 
-            l.Info("ADDRESULT - Adding " + ifi);
+            l.Debug("ADDRESULT - Adding " + ifi);
             // and the imgentry to the images map ( ignore if duplicate )
             if (!images.ContainsKey(ie.crc))
                 images.Add(ie.crc, ie);
@@ -253,7 +255,7 @@ namespace Scanner
         // Initialize
         // basic initialization, check set location  exists and store it. Start 
         // any image processing threads
-        public bool Initialize(string scanTop, string path)
+        public bool Create(string scanTop, string path)
         {
             try 
             {            
@@ -269,11 +271,25 @@ namespace Scanner
             location = path;
             top = scanTop;
 
-            // nothing else to do if not using threads
-            if (!useThreads)
+            StartScannerThreads();
+            return true;
+        }
+
+        // Initialize
+        // basic initialization, check set location  exists and store it. Start 
+        // any image processing threads
+        public bool StartScannerThreads()
+        {
+            if ( useThreads == false )
             {
-                l.Info("Not using threads");
-                return true;
+                l.Info("Scanner threads disabled");
+                return false;
+            }
+
+            if ( processors.Count > 0 )
+            {
+                l.Info("Scanner threads already started");
+                return false;
             }
 
             // otherwise we need to create the image processing threads
@@ -283,7 +299,7 @@ namespace Scanner
             if (nThreads < 1)
                 nThreads = 1;
             l.Info("Using {0} image processing threads", nThreads);
-            for(int p = 0; p < nThreads; p++)
+            for (int p = 0; p < nThreads; p++)
                 processors.Add(new ImgProcessor(p));
             return true;
         }
@@ -310,7 +326,7 @@ namespace Scanner
 
             if ( files.ContainsKey(dfhash) )
             {
-                l.Warn("ADDFILE - Duplicate file, ignore " + ifi);
+                l.Debug("ADDFILE - Duplicate file, ignore " + ifi);
                 DupFiles++;
                 return;
             }
@@ -325,7 +341,7 @@ namespace Scanner
                     ifi.MakeHashes();
                     // mahe the thumb
                     ifi.MakeThumb();
-                    l.Warn("ADDFILE - adding " + ifi + " : " + fe);
+                    l.Debug("ADDFILE - adding " + ifi + " : " + fe);
                     LoadFileResult(ifi, 0);
                 }
                 catch(Exception e)
@@ -354,24 +370,24 @@ namespace Scanner
             // and the CRC32 for use as key to file list
             UInt32 dhash = Utils.GetHash(rpath);
 
-            l.Info("ADDDIR " + d.FullName);
+            //l.Info("ADDDIR " + d.FullName);
 
             if ( dirs.ContainsKey(dhash) )
             {
-                if (dirs[dhash].lastModded == d.LastWriteTime)
+                if ( Math.Abs(Math.Round((dirs[dhash].lastModded-d.LastWriteTime).TotalSeconds)) < 2)
                 {
-                    l.Info("ADDDIR, already there and unmodified " + d.FullName + ", hash:" + dhash);
+                    l.Debug("ADDDIR, already there and unmodified " + d.FullName + ", hash:" + dhash);
                     return 0; // existing and unmodified
                 }
                 dirs[dhash].lastModded = d.LastWriteTime;
-                l.Info("ADDDIR, already there but modified " + d.FullName + ", hash:" + dhash);
+                l.Debug("ADDDIR, already there but modified " + d.FullName + ", hash:" + dhash);
                 CurrentDir = rpath;
                 return dhash;
             }
 
             DirEntry de = new DirEntry(rpath, dhash,d.LastWriteTime);
             CurrentDir = rpath;
-            l.Info("ADDDIR, new dir " + d.FullName + ", hash:" + dhash);
+            l.Debug("ADDDIR, new dir " + d.FullName + ", hash:" + dhash);
             dirs.Add(dhash, de);
             return dhash;
         }
@@ -447,6 +463,35 @@ namespace Scanner
 
         //
         // Add
+        public bool Append(ref Set other)
+        {
+            if ( top != other.top )
+            {
+                l.Error("Other top " + other.top + " does not match mine " + top);
+                return false;
+            }
+            l.Info(String.Format("Appending set, current count is dirs:{0} files:{1} images{2}", dirs.Count, files.Count, images.Count));
+            l.Info(String.Format("Appending set, set to add count is dirs:{0} files:{1} images{2}", other.dirs.Count, other.files.Count, other.images.Count));
+            foreach (DirEntry d in other.dirs.Values )
+            {
+                if (!dirs.ContainsKey(d.dhash))
+                    dirs.Add(d.dhash, d);
+            }
+            foreach (FileEntry d in other.files.Values)
+            {
+                UInt64 dfhash = fileIx(d.dhash, d.fhash);
+                if (!files.ContainsKey(dfhash))
+                    files.Add(dfhash, d);
+            }
+            foreach (ImgEntry i in other.images.Values)
+            {
+                if (!images.ContainsKey(i.crc))
+                    images.Add(i.crc, i);
+            }
+            l.Info(String.Format("Appending set, afterwards count is dirs:{0} files:{1} images{2}", dirs.Count, files.Count, images.Count));
+            return true;
+        }
+
         public bool Add(string setName)
         {
             string filePath = Path.Combine(setName, "files.txt");
@@ -499,7 +544,7 @@ namespace Scanner
                             UInt32 fhash = UInt32.Parse(parts[1]);
                             UInt32 crc = UInt32.Parse(parts[2]);
                             FileEntry fe = new FileEntry(dhash, fhash, crc, parts[3]);
-                            l.Info("LOADTOMAP " + dhash + " " + parts[3]);
+                            l.Debug("LOADTOMAP " + dhash + " " + parts[3]);
                             UInt64 dfhash = fileIx(dhash, fhash);
                             if (!files.ContainsKey(dfhash))
                                 files.Add(dfhash, fe);
@@ -581,7 +626,8 @@ namespace Scanner
                             UInt32 fhash = UInt32.Parse(parts[1]);
                             UInt32 crc = UInt32.Parse(parts[2]);
                             FileEntry fe = new FileEntry(dhash, fhash, crc, parts[3]);
-                            l.Info("LOADTOMAP " + dhash + " " + parts[3]);
+                            l.Debug("LOADTOMAP " + dhash + " " + parts[3]);
+                            
                             UInt64 dfhash = fileIx( dhash, fhash);
                             files.Add(dfhash, fe);
                         }
@@ -644,6 +690,11 @@ namespace Scanner
             l.Info("All threads stopped");
         }
 
-
+        public void SaveAs(string v)
+        {
+            Directory.CreateDirectory(v);
+            location = v;
+            Save();
+        }
     }
 }

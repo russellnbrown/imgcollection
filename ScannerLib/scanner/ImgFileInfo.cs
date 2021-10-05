@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using NLog;
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -27,6 +28,8 @@ namespace Scanner
     // Gets relevant information for an image file. directory & image hash, file anme, thumbnail (optional ) 
     public class ImgFileInfo : IDisposable
     {
+        private static Logger l = LogManager.GetCurrentClassLogger();
+
         public string name;
         public string path;
         public UInt32 crc;
@@ -70,7 +73,10 @@ namespace Scanner
 
         public void MakeThumb()
         {
-            tmb = new byte[Settings.TNMEM];
+            if (bytes == null)
+                MakeHashes();
+            if ( tmb == null )
+                tmb = new byte[Settings.TNMEM];
             //Byte []ttmb = new byte[Settings.TNMEM];
 
             using (MemoryStream mStream = new MemoryStream(bytes))
