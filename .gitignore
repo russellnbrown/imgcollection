@@ -13,3 +13,6 @@ obj
 /cs_build_scan/bin/Debug
 /cs_viewer/cs_viewer/bin/Debug
 /jimg2/jimglib/nbproject/private/
+/v2java/imglib/.gradle/
+/v2java/imgcmd/.gradle/
+/v2java/imglib/build/

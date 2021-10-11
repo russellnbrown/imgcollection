@@ -7,12 +7,12 @@
     <StartupFile>pimage.py</StartupFile>
     <SearchPath>
     </SearchPath>
-    <WorkingDirectory>C:\TestEnvironments\img</WorkingDirectory>
+    <WorkingDirectory>C:\TestEnvironments</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>pimage</Name>
     <RootNamespace>pimage</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>-s setp.db testfiles\100\file_1000.jpg_exactcopy.jpg</CommandLineArguments>
+    <CommandLineArguments>-s sets2\setimgX test.jpg</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <PublishUrl>C:\Sources\img\test\</PublishUrl>
     <IsWindowsApplication>False</IsWindowsApplication>
