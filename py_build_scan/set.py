@@ -13,7 +13,7 @@ log:logging.Logger
 
 log = logging.getLogger("pimage")
 
-threshold=50.0
+threshold=200.0
 
 def dbformat(p:Path):
     s:str = str(p)
@@ -107,7 +107,7 @@ def load(path:Path):
     for line in dirfile:
         line = line.rstrip()
         parts = line.split(",")
-        dentry = cfg.dirent(int(parts[0]), parts[1])
+        dentry = cfg.dirent(int(parts[0]), parts[1],parts[2])
         cfg.dlist.append(dentry)
 
     fpath:Path = path / "files.txt"

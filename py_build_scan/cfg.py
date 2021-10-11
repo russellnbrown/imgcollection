@@ -19,6 +19,7 @@ from typing import Dict, List
 from pathlib import Path
 import struct
 import math
+from datetime import datetime
 from time import perf_counter
 
 tns:int = 16
@@ -28,14 +29,17 @@ tnm:int = tns*tns*3
 # dirent - class to hold information about a directory
 #
 class dirent(object):
-	dhash:int = 0       # hash of path, used as key by filent
-	dpath:str = ""      # the path ( relative to top )
-	def __init__(self, _dh:int, _dp:str):
-		self.dhash=_dh
-		self.dpath=_dp
+    dhash:int = 0       # hash of path, used as key by filent
+    dpath:str = ""      # the path ( relative to top )
+    dmod:datetime
+    def __init__(self, _dh:int, _dp:str, _dmt:str):
+        self.dhash=_dh
+        self.dpath=_dp
+        #self.dmod = datetime.strptime(_dmt,"%c")
+        self.dmod = datetime.strptime(_dmt,"%d/%m/%Y %I:%M:%S %p")
 
-	def __str__(self):
-		return "dilent(dh="+str(self.dhash)+", dp="+str(self.dpath)+")"
+    def __str__(self):
+        return "dilent(dh="+str(self.dhash)+", dp="+str(self.dpath)+", mod="+str(self.dmod)+")"
 
 #
 # fileent - class to hold information about a file
