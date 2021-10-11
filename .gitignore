@@ -13,3 +13,6 @@ obj
 /cs_build_scan/bin/Debug
 /cs_viewer/cs_viewer/bin/Debug
 /jimg2/jimglib/nbproject/private/
+/java2/java2lib/target/
+/java2/java2view/target/
+/java2/java2jfxview/target/
