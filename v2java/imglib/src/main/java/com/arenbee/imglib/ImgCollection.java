@@ -28,13 +28,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.nio.file.attribute.FileTime;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.nio.charset.MalformedInputException;
-import java.util.Scanner;
 
 //
 //  'ImgCollection' is used to hold the various items in the
@@ -102,6 +102,14 @@ public class ImgCollection
         ImgCollectionDirItem sid = new ImgCollectionDirItem();
         sid.setDir(dstr);
         sid.setHash(Gen.Hash(dstr.getBytes()));
+        try {
+            FileTime ft = Files.getLastModifiedTime(dpath);
+            sid.setLastMod(ft);
+        }
+        catch(IOException e)
+        {
+
+        }
 
         dirs.put(sid.getHash(), sid);
 
@@ -278,14 +286,14 @@ public class ImgCollection
 
             for (ImgCollectionDirItem d : dirs.values())
             {
-                String st = String.format("%d,%s", d.getHash(), d.getDir());
+                String st = String.format("%d|%s|%d", d.getHash(), d.getDir(), d.getLastMod().toMillis());
                 fdirs.write(st);
                 fdirs.newLine();
             }
 
             for (ImgCollectionFileItem f : files)
             {
-                String st = String.format("%d,%d,%s", f.getDhash(), f.getIHash(), f.getFile());
+                String st = String.format("%d|%d|%s", f.getDhash(), f.getIHash(), f.getFile());
                 ffiles.write(st);
                 ffiles.newLine();
             }
@@ -370,14 +378,16 @@ public class ImgCollection
                 lc++;
                 try
                 {
-                    int cpos1 = line.indexOf((int) ',');
+                    String parts[] = line.split("\\|");
+                    //int cpos1 = line.indexOf((int) ',');
 
-                    String sdhash = line.substring(0, cpos1);
-                    String spath = line.substring(cpos1 + 1);
+                    if ( parts.length != 3 )
+                        Logger.Fatal("Split err reading dirs, line:" + line);
 
                     ImgCollectionDirItem sid = new ImgCollectionDirItem();
-                    sid.setDir(spath);
-                    sid.setHash(Long.parseLong(sdhash));
+                    sid.setHash(Long.parseLong(parts[0]));
+                    sid.setDir(parts[1]);
+                    sid.setLastMod(FileTime.fromMillis(Long.parseLong(parts[2])));
 
                     dirs.put(sid.getHash(), sid);
                 } catch (NumberFormatException nfe)
@@ -394,28 +404,14 @@ public class ImgCollection
                 while( ffiles.hasNext() )
                 {
                     line=ffiles.nextLine();
-                    f=2;
-                    lc++;
+                    String []parts = line.split("\\|");
+                    if ( parts.length != 3 )
+                        Logger.Fatal("Could not split file line into 4" + line);
                     fpos += line.length()+1;
-                    if ( lc == 80209 )
-                    {
-                        Logger.Info("here, fpos="+ fpos);
-                    }
-                    String sfhash="";
-                    String scrc="";
-                    String sname="";           
-                    int cpos1 = line.indexOf((int) ',');
-                    int cpos2 = line.indexOf((int) ',', cpos1 + 1);
-                    try
-                    {
-                     sfhash = line.substring(0, cpos1);
-                     scrc = line.substring(cpos1 + 1, cpos2);
-                     sname = line.substring(cpos2 + 1);
-                    }
-                    catch (Exception nfe)
-                    {
-                        Logger.Fatal("NUmber ex reading files" + nfe.getMessage() + line);
-                    }
+
+                    String sfhash=parts[0];
+                    String scrc=parts[1];
+                    String sname=parts[2];
 
                     try
                     {

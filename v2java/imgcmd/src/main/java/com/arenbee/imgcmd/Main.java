@@ -23,7 +23,7 @@ public class Main {
     {
         Logger.Raw("Usage: -c <set> <dir> | -s <set> <file>");
         Logger.Raw("Where");
-        Logger.Raw("-c <set> <dir> - Creates a dataset in <set> from the files under directory <dir>");
+        Logger.Raw("-c <top> <set> <dir> - Creates a dataset in <set> from the files under directory <dir> relative to top of <top>");
         Logger.Raw("-s <set> <file> - Scans the dataset in <set> looking for images similar to <file>");
         System.exit(0);
     }
@@ -35,18 +35,21 @@ public class Main {
 
         Logger.Create("JImage", Logger.Level.Debug, Logger.Level.Info);
 
+        if ( args.length < 1)
+            usage();
 
         // -c : Create the image collection
-        if (args[0].startsWith("-c") && args.length == 3)
+        if (args[0].startsWith("-c") && args.length == 4)
         {
             if ( args[0].equals("-cn") )
                 useThreads = false;
             // We need to create a builder to create our collection
             ImgCollectionBuilder icbuilder = new ImgCollectionBuilder(useThreads);
-            Path imageSetPath = Paths.get(args[1]);
-            Path directoriesPath = Paths.get(args[2]);
+            Path topPath = Paths.get(args[1]);
+            Path imageSetPath = Paths.get(args[2]);
+            Path directoriesPath = Paths.get(args[3]);
             // create the collection. This will also save to disk
-            icbuilder.Create(imageSetPath.toAbsolutePath(), directoriesPath.toAbsolutePath());
+            icbuilder.Create(topPath.toAbsolutePath(), imageSetPath.toAbsolutePath(), directoriesPath.toAbsolutePath());
             Logger.Raw(Timer.stagereport("Create Timings"));
 
         } // -s : search for an image in tge collection

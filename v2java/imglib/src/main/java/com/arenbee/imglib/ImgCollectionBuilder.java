@@ -145,13 +145,23 @@ public class ImgCollectionBuilder extends SimpleFileVisitor<Path>
     // Two ways to use the builder, either Craete ( build from files ) or
     // Load ( load an existing set ) 
     // in either case the 'set' will be filled
-    public void Create(Path spath, Path dpath)
+    public void Create(Path top, Path spath, Path dpath)
     {
-        
+
         // Make sure the dir to add exists
         if (!Files.exists(dpath))
         {
             Logger.Fatal("Directory " + dpath + " dosn't exist");
+        }
+        // Make sure the top to add exists
+        if (!Files.exists(top))
+        {
+            Logger.Fatal("Top Directory " + top + " dosn't exist");
+        }
+        // Make sure the dir to add exists
+        if (!dpath.toAbsolutePath().startsWith(top.toAbsolutePath()))
+        {
+            Logger.Fatal("Directory " + dpath + " isnt in " + top);
         }
 
         // If the set directory dosn't exist then make it
@@ -174,7 +184,7 @@ public class ImgCollectionBuilder extends SimpleFileVisitor<Path>
         {
             // Set the top directory in the imageset 
             Timer.stagestart();
-            set.SetTop(dpath);
+            set.SetTop(top);
 
             // And build....
             Files.walkFileTree(dpath, this);

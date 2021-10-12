@@ -2,8 +2,12 @@
   <artifact type="jar" name="v2java:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/v2java_jar</output-path>
     <root id="archive" name="v2java.jar">
-      <element id="module-output" name="imgcmd" />
       <element id="module-output" name="imglib" />
+      <element id="module-output" name="imgcmd" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/imageio-core-3.7.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/common-lang-3.7.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/common-io-3.7.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/common-image-3.7.0.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

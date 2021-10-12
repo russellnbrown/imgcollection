@@ -18,16 +18,22 @@
 package com.arenbee.imglib;
 
 
+import java.nio.file.attribute.FileTime;
+import java.util.Date;
+
 // ImgCollectionDirItem. Holds information about a directory in the collection
 public class ImgCollectionDirItem 
 {
     private String dir;     // path ( relative to the top )
     private long  hash;     // crc32 hash of path
+    private FileTime lastMod;
+
+
 
     @Override
     public String toString() 
     {
-        return "SetItemDir{" + "dir=" + dir + ", hash=" + Long.toHexString(hash) +'}';
+        return "SetItemDir{" + "dir=" + dir + ", mod=" + lastMod.toString() + ",hash=" + Long.toHexString(hash) +'}';
     }
 
     public String getDir() 
@@ -50,5 +56,8 @@ public class ImgCollectionDirItem
         this.hash = hash;
     }
 
+    public FileTime getLastMod() {  return lastMod;  }
+
+    public void setLastMod(FileTime lastMod) {  this.lastMod = lastMod;  }
 
 }
