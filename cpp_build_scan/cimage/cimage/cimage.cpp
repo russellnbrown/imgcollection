@@ -48,14 +48,14 @@ void usage()
 // Check if a file exists and return a path
 //
 fs::path checkFiles(string spath)
-{
-	
+{	
 	fs::path files(spath);
-	files = fs::canonical(files);
+	
 	if (!fs::exists(files))
 	{
 		logger::fatal("File " + files.string() + " does not exist");
 	}
+	files = fs::canonical(files);
 	return files;
 }
 

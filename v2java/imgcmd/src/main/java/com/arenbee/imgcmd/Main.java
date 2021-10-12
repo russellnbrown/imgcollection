@@ -6,6 +6,8 @@
 package com.arenbee.imgcmd;
 import com.arenbee.imglib.*;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -84,6 +86,38 @@ public class Main {
                 });
             }
             Logger.Raw(Timer.stagereport("Search Timings"));
+
+        } else if (args[0].startsWith("-m") && args.length > 3)
+        {
+
+            Path saveSetPath = Paths.get(args[1]);
+            if (!Files.exists(saveSetPath))
+            {
+                try
+                {
+                    Files.createDirectories(saveSetPath);
+                } catch (IOException ex)
+                {
+                    Logger.Fatal("Set path " + saveSetPath + " dosn't exist and I couldn't create it.");
+                }
+            }
+
+            Path mainImageSetPath = Paths.get(args[2]);
+
+            // Create the collection & load from disk
+            ImgCollection st = new ImgCollection(useThreads);
+            st.Load(mainImageSetPath);
+
+            for ( int ms = 3; ms < args.length; ms++ )
+            {
+                Path nextSetPath = Paths.get(args[ms]);
+                Logger.Info("Merging " + nextSetPath);
+                ImgCollection ns = new ImgCollection(useThreads);
+                ns.Load(nextSetPath);
+                st.Merge(ns);
+            }
+
+            st.Save(saveSetPath);
 
         } else
         {

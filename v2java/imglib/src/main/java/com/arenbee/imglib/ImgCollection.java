@@ -53,21 +53,20 @@ public class ImgCollection
     private boolean useThreads = true;
 
 
-    private final ConcurrentHashMap<Long, ImgCollectionDirItem> dirs = new ConcurrentHashMap<>();
 
     public ConcurrentHashMap<Long, ImgCollectionDirItem> getDirs() {
         return dirs;
     }
-
     public ConcurrentLinkedQueue<ImgCollectionFileItem> getFiles() {
         return files;
     }
-
     public ConcurrentHashMap<Long, ImgCollectionImageItem> getImages() {
         return images;
     }
-    private final ConcurrentLinkedQueue<ImgCollectionFileItem> files = new ConcurrentLinkedQueue<>();
-    private final ConcurrentHashMap<Long, ImgCollectionImageItem> images = new ConcurrentHashMap<>();
+
+    protected final ConcurrentLinkedQueue<ImgCollectionFileItem> files = new ConcurrentLinkedQueue<>();
+    protected final ConcurrentHashMap<Long, ImgCollectionImageItem> images = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<Long, ImgCollectionDirItem> dirs = new ConcurrentHashMap<>();
 
     // top & dirs are the directory store. Directories paths are stored as strings rather than 
     // paths so we can standardize across operating systems. They are held in
@@ -544,4 +543,42 @@ public class ImgCollection
         return images.size();
     }
 
+    public void Merge(ImgCollection ns)
+    {
+
+        if ( !ns.top.equals(top) )
+        {
+            Logger.Info("Can't merge as top doesn't match " + ns.top );
+            return;
+        }
+
+        Logger.Info("Merging dirs, before:" + dirs.size());
+        Logger.Info("Merging dirs, to copy:" + ns.dirs.size());
+        for ( ImgCollectionDirItem d : ns.dirs.values()  )
+        {
+            if ( !dirs.containsKey(d.getHash()))
+                dirs.put(d.getHash(),d);
+        }
+        Logger.Info("Merging dirs, after:" + dirs.size());
+
+        Logger.Info("Merging files, before:" + files.size());
+        Logger.Info("Merging files, to copy:" + ns.files.size());
+        for ( ImgCollectionFileItem f : ns.files  )
+        {
+                files.add(f);
+        }
+        Logger.Info("Merging files, after:" + files.size());
+
+        Logger.Info("Merging images, before:" + images.size());
+        Logger.Info("Merging images, to copy:" + ns.images.size());
+        for ( ImgCollectionImageItem i : ns.images.values()  )
+        {
+            if ( !images.containsKey(i.getIHash()) )
+                images.put(i.getIHash(), i);
+        }
+        Logger.Info("Merging images, after:" + images.size());
+
+
+
+    }
 }
