@@ -118,9 +118,9 @@ void ImgCollectionBuilder::imgProcessingThread(RunThreadInfo *ri)
 // Two ways to use the builder, either Create ( build from files ) or
 // Load ( load an existing set ) 
 // in either case the 'ic' will be filled
-void ImgCollectionBuilder::Create(fs::path top, fs::path path)
+void ImgCollectionBuilder::Create(fs::path _top, fs::path path)
 {
-	//top = path;
+	top = _top;
 	stop = top.string();
 	ImgUtils::Replace(stop, "\\", "/");
 
@@ -129,10 +129,16 @@ void ImgCollectionBuilder::Create(fs::path top, fs::path path)
 	walkFiles(path);
 }
 
-int64_t ImgCollectionBuilder::pathsplit(const fs::path d, string &dirpart, string &filepart)
+int64_t ImgCollectionBuilder::pathsplit(const fs::path d, string &dirpart, string &filepart, time_t &lastMod)
 {
 	try
 	{
+		lastMod = 0;
+		struct stat result;
+		if (stat(d.string().c_str(), &result) == 0)
+			lastMod = result.st_mtime;
+
+
 		if (fs::is_regular_file(d))
 		{
 			filepart = d.filename().string();
@@ -174,10 +180,11 @@ bool ImgCollectionBuilder::walkFiles(fs::path dir)
 
 	string dirpart;
 	string filepart;
+	time_t lastmod = 0;
 
 	// add 'top' directory to the collection 
-	int64_t dirHash = pathsplit(dir, dirpart, filepart);
-	ic->dirs.push_back(new ImgCollectionDirItem(dirHash, dirpart));
+	int64_t dirHash = pathsplit(dir, dirpart, filepart, lastmod);
+	ic->dirs.push_back(new ImgCollectionDirItem(dirHash, dirpart, lastmod));
 	st.incDirs();
 
 	// loop for all its files/subdirs
@@ -188,7 +195,7 @@ bool ImgCollectionBuilder::walkFiles(fs::path dir)
 		string filepart;
 
 		// get crc32 of the directory path
-		int64_t dirHash = pathsplit(de, dirpart, filepart);
+		int64_t dirHash = pathsplit(de, dirpart, filepart, lastmod);
 		if (dirHash == 0)
 		{
 			st.incNameErrors();
@@ -205,7 +212,7 @@ bool ImgCollectionBuilder::walkFiles(fs::path dir)
 		if (filepart.empty())
 		{
 			st.incDirs();
-			ic->dirs.push_back(new ImgCollectionDirItem(dirHash, dirpart));
+			ic->dirs.push_back(new ImgCollectionDirItem(dirHash, dirpart, lastmod));
 			logger::debug("Dir is " + dirpart);
 		}
 		else
@@ -338,7 +345,7 @@ bool ImgCollectionBuilder::Save(fs::path dir)
 	string dirpart;
 	string filepart;
 
-	string tstr = top.string();
+	string tstr = stop;
 	ImgUtils::Replace(tstr, "\\", "/");
 
 	ofstream odir(dir.string()+"/dirs.txt");

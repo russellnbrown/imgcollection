@@ -24,31 +24,35 @@
 class ImgCollectionDirItem
 {
 public:
-	ImgCollectionDirItem(int64_t h, string p)
+	ImgCollectionDirItem(int64_t h, string p, time_t lastMod)
 	{
 		path = p;
 		hash = h;
+		lmod = lastMod;
 	}
-	int64_t		hash;		// csc32 of directory path ( used as indef ny FileItem )
-	string		path;		// the path ( relative to collection top )
+	int64_t				hash;		// csc32 of directory path ( used as indef ny FileItem )
+	string				path;		// the path ( relative to collection top )
+	time_t				lmod;// time directory was last modified
 
 	// toSave - create a string suitable for saving to a dir file
 	inline string toSave()
 	{
 		stringstream s;
-		s << hash << "," << path;
+		s << hash << "|" << path << "|" << lmod;
 		return s.str();
 	}
 
 	// return a DirItem by parsing a line from a dir file
 	static inline ImgCollectionDirItem *fromSave(string s)
 	{
-		string dir,hash;
+		string dir,hash,ltime;
 		std::istringstream iss(s);
-		std::getline(iss, hash, ',');
-		std::getline(iss, dir, ',');
+		std::getline(iss, hash, '|');
+		std::getline(iss, dir, '|');
+		std::getline(iss, ltime, '|');
 		int64_t dhash = strtoll(hash.c_str(), nullptr, 10);
-		ImgCollectionDirItem *d = new ImgCollectionDirItem(dhash, dir);
+		time_t tt = strtoll(ltime.c_str(), nullptr, 10);
+		ImgCollectionDirItem *d = new ImgCollectionDirItem(dhash, dir, tt);
 		return d;
 	}
 
