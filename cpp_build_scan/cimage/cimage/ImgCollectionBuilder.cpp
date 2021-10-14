@@ -43,6 +43,11 @@ ImgCollectionBuilder::ImgCollectionBuilder(CreateType ct)
 		numThreads = 0;
 }
 
+void ImgCollectionBuilder::Save()
+{
+	ic->Save(saveTo);
+}
+
 // initCreate. only called from create, creates the image encoding threads
 void ImgCollectionBuilder::initCreate()
 {
@@ -118,11 +123,12 @@ void ImgCollectionBuilder::imgProcessingThread(RunThreadInfo *ri)
 // Two ways to use the builder, either Create ( build from files ) or
 // Load ( load an existing set ) 
 // in either case the 'ic' will be filled
-void ImgCollectionBuilder::Create(fs::path _top, fs::path path)
+void ImgCollectionBuilder::Create(fs::path _top, fs::path path, fs::path _saveTo)
 {
-	top = _top;
-	stop = top.string();
-	ImgUtils::Replace(stop, "\\", "/");
+	saveTo = _saveTo;
+	ic->top = _top;
+	ic->stop = ic->top.string();
+	ImgUtils::Replace(ic->stop, "\\", "/");
 
 	initCreate();
 	// call file walker with the 'top' directory
@@ -159,7 +165,7 @@ int64_t ImgCollectionBuilder::pathsplit(const fs::path d, string &dirpart, strin
 	}
 
 	ImgUtils::Replace(dirpart, "\\", "/");
-	dirpart = dirpart.substr(top.string().length());
+	dirpart = dirpart.substr(ic->top.string().length());
 
 	if ( dirpart.empty() || dirpart[0] != '/' )
 		dirpart = "/" + dirpart;
@@ -340,43 +346,6 @@ void ImgCollectionBuilder::processItem(ImageInfo *ii)
 //
 // This saves the ImgCollection as three seperate files, dirss, files & images
 //
-bool ImgCollectionBuilder::Save(fs::path dir)
-{
-	string dirpart;
-	string filepart;
 
-	string tstr = stop;
-	ImgUtils::Replace(tstr, "\\", "/");
-
-	ofstream odir(dir.string()+"/dirs.txt");
-	odir <<  tstr << endl;
-	for (list<ImgCollectionDirItem*>::iterator it = ic->dirs.begin(); it != ic->dirs.end(); ++it)
-	{
-		ImgCollectionDirItem *d = *it;
-		odir << d->toSave() << endl;
-	}
-	odir.close();
-
-	ofstream ofile(dir.string() + "/files.txt");
-	for (list<ImgCollectionFileItem*>::iterator it = ic->files.begin(); it != ic->files.end(); ++it)
-	{
-		ImgCollectionFileItem *f = *it;
-		ofile << f->toSave() << endl;
-	}
-	ofile.close();
-
-	ofstream oimg(dir.string() + "/images.bin", ios::out | ios::binary);
-	for (map<int64_t,ImgCollectionImageItem*>::iterator it = ic->images.begin(); it != ic->images.end(); ++it)
-	{
-		int64_t icrc = it->first;
-		ImgCollectionImageItem *f = it->second;
-		oimg.write((char*)&icrc, sizeof(icrc));
-		oimg.write((char*)f->thumb, TNMEM);		
-	}
-	oimg.close();
-
-
-	return true;
-}
 
 

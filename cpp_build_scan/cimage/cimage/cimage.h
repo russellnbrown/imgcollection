@@ -24,6 +24,8 @@
 // used by pch in windows
 
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <string>
 #include <algorithm>
 #include <list>
@@ -69,4 +71,5 @@ namespace fs = std::filesystem;
 #include "ImgCollection.h"
 #include "ImgCollectionBuilder.h"
 #include "ImgCollectionSearch.h"
+#include "ImgCollectionMerge.h"
 

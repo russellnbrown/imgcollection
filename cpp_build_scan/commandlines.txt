@@ -1,0 +1,3 @@
+-c sets/cset1 i1 C:\TestEnvironments
+-s sets/cset1 test.jpg
+-m sets/cset0  sets/cset1  sets/cset2

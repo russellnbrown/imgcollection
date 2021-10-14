@@ -31,5 +31,10 @@ public:
 	list<ImgCollectionFileItem*> files;
 	map<int64_t, ImgCollectionImageItem*> images;	// hash table for ImageItem to easilly
 													// lookup & check duplicates etc
+	fs::path top;									// the top level directory. all set directories relative to this
+	string stop;									// string of above with '/' as file seperator
+
+	bool Save(fs::path dir);						// save the ImgCollection to file set
+
 
 };

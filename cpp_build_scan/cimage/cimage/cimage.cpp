@@ -27,9 +27,10 @@
 //
 void usage()
 {
-	logger::raw("usage: cimage [-c <top> <ic> <files>|-a <ic> <files>|-s <ic> <search>|-h] [-nt] [-cm <cmethod>]");
+	logger::raw("usage: cimage [-c <top> <ic> <files>|-a <ic> <files>|-s <ic> <search>|-h|-m <nc out> <ic 1>..<ic n>] [-nt] [-cm <cmethod>]");
 	logger::raw("where:");
 	logger::raw("-c        : create database (with threads)");
+	logger::raw("-m        : merge databases");
 	logger::raw("-a        : append to database (with threads)");
 	logger::raw("-s        : search database (with list threading)");
 	logger::raw("-nt       : don't use threading");
@@ -166,13 +167,33 @@ int main(int argc, char *argv[])
 
 		// Add all files to ther ImgCollection
 		Timer::start();
-		sb->Create(top,files);
+		sb->Create(top,files, set);
 		Timer::stop("Scaning");
 
 		// Save the set to db
 		Timer::start();
-		sb->Save(set);
+		sb->Save();
 		Timer::stop("Saving ");
+
+	}
+	else if (action == "-m")
+	{
+
+		
+		if (fs::exists(sset+"/dirs.txt"))
+			logger::fatal("Output set exists");
+		fs::path outputSet = checkSet(sset, true);
+		logger::info("Output set is " + outputSet.string() );
+		ImgCollectionMerge* sb = new ImgCollectionMerge(outputSet);
+
+		for (int msx = 3; msx < argc; msx++)
+		{
+			fs::path inputSet = checkSet(argv[msx], false);
+			logger::info("Input set is " + inputSet.string());
+			sb->Append(inputSet);
+		}
+
+		sb->Save();
 
 	}
 	// this is a search...

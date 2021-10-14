@@ -37,21 +37,20 @@ private:
 	list<RunThreadInfo*> threads;			// image processing threads
 	list<ImageInfo*> threadFeeder;			// queue for feeding files to image processing threads
 	mutex tflock;							// lock for above
-	fs::path top;							// the top level directory. all set directories relative to this
-	string stop;							// string of above with '/' as file seperator
 	mutex llock;							// lock for changing content of set lists
 	list<SearchResult*> results;			// in searches, the results of comparisons
 	ImageInfo* searchItem;					// in searches, the image being searched for
 	int numThreads;							// number of threads we can use for threaded operations
 	CreateType createType;					// create with or without threading
+	fs::path saveTo;
 
 public:
 	ImgCollectionBuilder(CreateType);
 
 public:
 
-	void Create(fs::path top, fs::path path);// create the ImgCollection 
-	bool Save(fs::path dir);				// save the ImgCollection to file set
+	void Create(fs::path top, fs::path path, fs::path _saveTo);// create the ImgCollection 
+	void Save();
 
 private:
 	bool walkFiles(fs::path dir);			// iterates over files in a directory tree 
