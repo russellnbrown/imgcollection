@@ -230,8 +230,9 @@ int main(int argc, char *argv[])
 			logger::fatal("Output set exists");
 
 		// Get files path & check it exists
-		fs::path inset = checkSet(sset, false);
-		fs::path outset = checkSet(sset, true);
+		fs::path inset = checkSet(refreshInSet, false);
+		fs::path outset = checkSet(refreshOutSet, true);
+		fs::path refresh = checkSet(refreshFiles, false);
 
 
 		// load the ImgCollection from disk into a ImgCollectionBuilder
@@ -241,12 +242,6 @@ int main(int argc, char *argv[])
 		sb->Load(inset);
 		sb->Refresh(refresh);
 		sb->Save();
-		Timer::stop("Loaded set " + set.string());
-
-		// search for the image
-		//Timer::start();
-		//sb->Find(search);
-		//Timer::stop("Scan complete");
 	}
 	else
 		usage();

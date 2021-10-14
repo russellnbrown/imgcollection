@@ -27,7 +27,6 @@
 ImgCollectionRefresh::ImgCollectionRefresh()
 {
 	ic = new ImgCollection();
-	numThreads = 0;
 }
 
 void ImgCollectionRefresh::Save()
@@ -35,91 +34,20 @@ void ImgCollectionRefresh::Save()
 	ic->Save(saveTo);
 }
 
-// initCreate. only called from create, creates the image encoding threads
-void ImgCollectionRefresh::initCreate()
+
+void ImgCollectionRefresh::Load(fs::path from)
 {
-	// flag used to end threads when needed
-	running = true;
-
-	// start each encoder if configured
-	for (int t = 0; t < numThreads; t++)
-	{
-		RunThreadInfo* rti = new RunThreadInfo();
-		rti->id = t;
-		rti->trd = thread(&ImgCollectionRefresh::imgProcessingThread, this, rti);
-		threads.push_back(rti);
-		st.incThreads();
-	}
-
+	ic->QLoad(from);
 }
 
-
-// The 'image processing' thread
-void ImgCollectionRefresh::imgProcessingThread(RunThreadInfo* ri)
-{
-	logger::info("Thread " + to_string(ri->id) + " running");
-	ImageInfo* current = nullptr;
-	int tp = 0;
-
-	//
-	// loop round reading items to process off the threadFeeder queue (populated by the fileWalker )
-	//
-	while (true)
-	{
-		// get next job
-		tflock.lock();
-		int ts = threadFeeder.size();
-		if (ts > 0)
-		{
-			current = threadFeeder.front();
-			threadFeeder.pop_front();
-		}
-		tflock.unlock();
-		// nothing to do, have a nap and try again
-		if (current == nullptr)
-		{
-			if (!running)
-				break;
-			MSNOOZE(10);
-			continue;
-		}
-
-		tp++;
-		logger::debug("Processing " + current->filepart + " in thread " + to_string(ri->id));
-		try
-		{
-			if (ImgUtils::GetImageInfo(current))
-				processItemResult(current);
-			else
-				st.incErrors();
-		}
-		catch (std::runtime_error& e)
-		{
-			logger::error("Error processing " + current->filepart + ", " + string(e.what()));
-		}
-		catch (std::exception& e)
-		{
-			logger::error("Error processing " + current->filepart + ", " + string(e.what()));
-		}
-		current = nullptr;
-	}
-	logger::info("Thread " + to_string(ri->id) + " stopping, it processed " + to_string(tp) + " images.");
-}
 
 
 // Two ways to use the builder, either Create ( build from files ) or
 // Load ( load an existing set ) 
 // in either case the 'ic' will be filled
-void ImgCollectionRefresh::Create(fs::path _top, fs::path path, fs::path _saveTo)
+void ImgCollectionRefresh::Create(fs::path _saveTo)
 {
 	saveTo = _saveTo;
-	ic->top = _top;
-	ic->stop = ic->top.string();
-	ImgUtils::Replace(ic->stop, "\\", "/");
-
-	initCreate();
-	// call file walker with the 'top' directory
-	walkFiles(path);
 }
 
 int64_t ImgCollectionRefresh::pathsplit(const fs::path d, string& dirpart, string& filepart, time_t& lastMod)
@@ -223,28 +151,7 @@ bool ImgCollectionRefresh::walkFiles(fs::path dir)
 		}
 	}
 
-	// wait for image processing threads to stop
-	waitOnProcessingThreads();
-
 	return true;
-}
-
-void ImgCollectionRefresh::waitOnProcessingThreads()
-{
-	logger::info("Running set to false");
-	running = false;
-
-	if (createType == CREATETHREADS)
-	{
-		MSNOOZE(10); // allow any thread to pick up final task if set. there is a better way to do this... 
-		for (list<RunThreadInfo*>::iterator rt = threads.begin(); rt != threads.end(); rt++)
-		{
-			(*rt)->trd.join();
-			logger::debug("Finished " + to_string((*rt)->id) + " has finished normally.");
-		}
-	}
-
-
 }
 
 void ImgCollectionRefresh::processItemResult(ImageInfo* ii)
@@ -254,7 +161,6 @@ void ImgCollectionRefresh::processItemResult(ImageInfo* ii)
 
 	st.addBytes(ii->size);
 	{
-		scoped_lock sl(llock);
 		try
 		{
 			ic->files.push_back(new ImgCollectionFileItem(ii->dirhash, ii->crc, ii->filepart));
@@ -287,28 +193,11 @@ void ImgCollectionRefresh::processItem(ImageInfo* ii)
 
 	try
 	{
-		// if using threads, add the ImageInfo to the thread feeder queue, 
-		// a thread will pick it off when it is ready
-		if (createType == CREATETHREADS)
-		{
-			// if too many encodes in Q just wait
-			while (threadFeeder.size() > (threads.size() * 10))
-				MSNOOZE(10);
 
-			// add to queue (protected as threads will access and remove items )
-			tflock.lock();
-			threadFeeder.push_back(ii);
-			tflock.unlock();
-		}
+		if (ImgUtils::GetImageInfo(ii))
+			processItemResult(ii);
 		else
-		{
-			//otherwise, just do what the thread would have done
-			if (ImgUtils::GetImageInfo(ii))
-				processItemResult(ii);
-			else
-				st.incErrors();
-		}
-
+			st.incErrors();
 
 	}
 	catch (runtime_error& e)
@@ -328,11 +217,9 @@ void ImgCollectionRefresh::processItem(ImageInfo* ii)
 
 }
 
-//
-// Save
-//
-// This saves the ImgCollection as three seperate files, dirss, files & images
-//
 
+void ImgCollectionRefresh::Refresh(fs::path set)
+{
 
+}
 

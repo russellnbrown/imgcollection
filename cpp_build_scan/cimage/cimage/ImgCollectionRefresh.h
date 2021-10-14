@@ -31,15 +31,8 @@ private:
 
 	ImgCollection* ic = nullptr;			// The ImgCollection
 
-	bool running;							// used to stop image processing threads
 	Stats st;								// stats on processing
-	list<RunThreadInfo*> threads;			// image processing threads
-	list<ImageInfo*> threadFeeder;			// queue for feeding files to image processing threads
-	mutex tflock;							// lock for above
-	mutex llock;							// lock for changing content of set lists
-	list<SearchResult*> results;			// in searches, the results of comparisons
 	ImageInfo* searchItem;					// in searches, the image being searched for
-	int numThreads;							// number of threads we can use for threaded operations
 	fs::path saveTo;
 
 public:
@@ -47,8 +40,10 @@ public:
 
 public:
 
-	void Create(fs::path top, fs::path path, fs::path _saveTo);// create the ImgCollection 
+	void Create(fs::path to);
+	void Load(fs::path from);
 	void Save();
+	void Refresh(fs::path scan);
 
 private:
 	bool walkFiles(fs::path dir);			// iterates over files in a directory tree 
@@ -58,9 +53,6 @@ private:
 
 	void processItem(ImageInfo* ii);		// process an image file
 	void processItemResult(ImageInfo* ii);	// process result of above
-	void waitOnProcessingThreads();			// wait for all image processing threads to stop
-	void initCreate();							// initialize & create image processing threads
-	void imgProcessingThread(RunThreadInfo* ri);			// image processing thread method
 
 
 };

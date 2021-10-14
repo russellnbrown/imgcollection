@@ -35,6 +35,8 @@ public:
 	string stop;									// string of above with '/' as file seperator
 
 	bool Save(fs::path dir);						// save the ImgCollection to file set
+	bool QLoad(fs::path dir);						// load the ImgCollection to file set
+
 
 
 };
