@@ -27,11 +27,11 @@
 //
 void usage()
 {
-	logger::raw("usage: cimage [-c <top> <ic> <files>|-a <ic> <files>|-s <ic> <search>|-h|-m <nc out> <ic 1>..<ic n>] [-nt] [-cm <cmethod>]");
+	logger::raw("usage: cimage [-c <top> <ic> <files>|-a <ic> <files>|-s <ic> <search>|-h|-m <nc out> <ic 1>..<ic n>|-r <icin> <icout> <files>] [-nt] [-cm <cmethod>]");
 	logger::raw("where:");
 	logger::raw("-c        : create database (with threads)");
 	logger::raw("-m        : merge databases");
-	logger::raw("-a        : append to database (with threads)");
+	logger::raw("-r        : refresh set");
 	logger::raw("-s        : search database (with list threading)");
 	logger::raw("-nt       : don't use threading");
 	logger::raw("<top>     : top location");
@@ -217,6 +217,36 @@ int main(int argc, char *argv[])
 		Timer::start();
 		sb->Find(search);
 		Timer::stop("Scan complete");
+	}
+	else if (action == "-r")
+	{
+		if (argc != 5)
+			usage();
+		string refreshInSet = argv[2];
+		string refreshOutSet = argv[3];
+		string refreshFiles = argv[4];
+
+		if (fs::exists(refreshOutSet + "/dirs.txt"))
+			logger::fatal("Output set exists");
+
+		// Get files path & check it exists
+		fs::path inset = checkSet(sset, false);
+		fs::path outset = checkSet(sset, true);
+
+
+		// load the ImgCollection from disk into a ImgCollectionBuilder
+		ImgCollectionRefresh* sb = new ImgCollectionRefresh();
+		Timer::start();
+		sb->Create(outset);
+		sb->Load(inset);
+		sb->Refresh(refresh);
+		sb->Save();
+		Timer::stop("Loaded set " + set.string());
+
+		// search for the image
+		//Timer::start();
+		//sb->Find(search);
+		//Timer::stop("Scan complete");
 	}
 	else
 		usage();

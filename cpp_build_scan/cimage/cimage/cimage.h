@@ -72,4 +72,5 @@ namespace fs = std::filesystem;
 #include "ImgCollectionBuilder.h"
 #include "ImgCollectionSearch.h"
 #include "ImgCollectionMerge.h"
+#include "ImgCollectionRefresh.h"
 
