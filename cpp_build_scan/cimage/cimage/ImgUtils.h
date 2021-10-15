@@ -74,7 +74,7 @@ public:
 	enum SearchType { Luma, Mono, Simple, Assembler };
 
 public:
-	static int64_t GetHash(string &path);			// get crc of a file on disk
+	static uint32_t GetHash(string &path);			// get crc of a file on disk
 	static int64_t GetHash(int8_t *bytes, int len);	// get crc hash of a files bytes
 	static bool IsImageFile(fs::path fileName);		// does file have an image extension
 	static fs::path Cwd();							// current dir

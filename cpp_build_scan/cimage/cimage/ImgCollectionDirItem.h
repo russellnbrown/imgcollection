@@ -24,13 +24,13 @@
 class ImgCollectionDirItem
 {
 public:
-	ImgCollectionDirItem(int64_t h, string p, time_t lastMod)
+	ImgCollectionDirItem(uint32_t h, string p, time_t lastMod)
 	{
 		path = p;
 		hash = h;
 		lmod = lastMod;
 	}
-	int64_t				hash;		// csc32 of directory path ( used as indef ny FileItem )
+	uint32_t				hash;		// csc32 of directory path ( used as indef ny FileItem )
 	string				path;		// the path ( relative to collection top )
 	time_t				lmod;// time directory was last modified
 
@@ -50,7 +50,7 @@ public:
 		std::getline(iss, hash, '|');
 		std::getline(iss, dir, '|');
 		std::getline(iss, ltime, '|');
-		int64_t dhash = strtoll(hash.c_str(), nullptr, 10);
+		uint32_t dhash = strtoul(hash.c_str(), nullptr, 10);
 		time_t tt = strtoll(ltime.c_str(), nullptr, 10);
 		ImgCollectionDirItem *d = new ImgCollectionDirItem(dhash, dir, tt);
 		return d;

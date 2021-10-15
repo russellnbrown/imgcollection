@@ -135,7 +135,7 @@ void ImgCollectionBuilder::Create(fs::path _top, fs::path path, fs::path _saveTo
 	walkFiles(path);
 }
 
-int64_t ImgCollectionBuilder::pathsplit(const fs::path d, string &dirpart, string &filepart, time_t &lastMod)
+uint32_t ImgCollectionBuilder::pathsplit(const fs::path d, string &dirpart, string &filepart, time_t &lastMod)
 {
 	try
 	{
@@ -189,7 +189,7 @@ bool ImgCollectionBuilder::walkFiles(fs::path dir)
 	time_t lastmod = 0;
 
 	// add 'top' directory to the collection 
-	int64_t dirHash = pathsplit(dir, dirpart, filepart, lastmod);
+	uint32_t dirHash = pathsplit(dir, dirpart, filepart, lastmod);
 	ic->dirs.push_back(new ImgCollectionDirItem(dirHash, dirpart, lastmod));
 	st.incDirs();
 
@@ -201,7 +201,7 @@ bool ImgCollectionBuilder::walkFiles(fs::path dir)
 		string filepart;
 
 		// get crc32 of the directory path
-		int64_t dirHash = pathsplit(de, dirpart, filepart, lastmod);
+		uint32_t dirHash = pathsplit(de, dirpart, filepart, lastmod);
 		if (dirHash == 0)
 		{
 			st.incNameErrors();

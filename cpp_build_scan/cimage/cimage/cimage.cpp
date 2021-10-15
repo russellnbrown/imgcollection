@@ -228,11 +228,14 @@ int main(int argc, char *argv[])
 
 		if (fs::exists(refreshOutSet + "/dirs.txt"))
 			logger::fatal("Output set exists");
+		if (!fs::exists(refreshFiles  ))
+			logger::fatal("Scan point dosnt exist");
+
 
 		// Get files path & check it exists
 		fs::path inset = checkSet(refreshInSet, false);
 		fs::path outset = checkSet(refreshOutSet, true);
-		fs::path refresh = checkSet(refreshFiles, false);
+		fs::path refresh(refreshFiles);
 
 
 		// load the ImgCollection from disk into a ImgCollectionBuilder

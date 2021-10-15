@@ -46,14 +46,18 @@ public:
 	void Refresh(fs::path scan);
 
 private:
-	bool walkFiles(fs::path dir);			// iterates over files in a directory tree 
-	int64_t pathsplit(const fs::path d, string& dir, string& file, time_t& lastMod);
+	bool walkDirecrories(fs::path dir);			// iterates over files in a directory tree 
+	uint32_t pathsplit(const fs::path d, string& dir, string& file, time_t& lastMod);
 	// split a file path into its dir & file (if any) componenets
+
+	map<uint32_t, ImgCollectionDirItem*> dirs;
+	map<uint64_t, ImgCollectionFileItem*> files;
 
 
 	void processItem(ImageInfo* ii);		// process an image file
 	void processItemResult(ImageInfo* ii);	// process result of above
 
-
+	bool isSubdir(fs::path full, fs::path sub);
+	uint64_t dfHash(uint32_t dhash, string filename);
 };
 
