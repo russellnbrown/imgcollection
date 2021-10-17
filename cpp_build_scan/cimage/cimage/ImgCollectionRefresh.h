@@ -47,7 +47,6 @@ public:
 
 private:
 	bool walkDirecrories(fs::path dir);			// iterates over files in a directory tree 
-	uint32_t pathsplit(const fs::path d, string& dir, string& file, time_t& lastMod);
 	// split a file path into its dir & file (if any) componenets
 
 	map<uint32_t, ImgCollectionDirItem*> dirs;

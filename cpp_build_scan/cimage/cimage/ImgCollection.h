@@ -36,6 +36,8 @@ public:
 
 	bool Save(fs::path dir);						// save the ImgCollection to file set
 	bool QLoad(fs::path dir);						// load the ImgCollection to file set
+	uint32_t pathsplit(const fs::path d, string& dirpart, string& filepart, time_t& lastMod);
+
 
 
 

@@ -104,12 +104,21 @@ int main(int argc, char *argv[])
 	// Start logging. To screen and logfile
 	logger::to("cimage.log", logger::Debug, logger::Info);
 
-	// Check we have enough arguments to start
-	if ( argc < 4 )
-		usage();
 
 	// this is what we are going to do 
 	string action = argv[1];
+
+	if (action == "-t")
+	{
+		ImgCollectionTester* t = new ImgCollectionTester();
+		t->Test(argc, argv);
+		return 0;
+	}
+
+	// Check we have enough arguments to start
+	if (argc < 4)
+		usage();
+
 	string sset = argv[2];
 	string sfiles = argv[3];
 

@@ -6,8 +6,8 @@ LDFLAGS=-L/home/usere/Sources/FreeImage/Dist -lfreeimage -lfreeimageplus -lm
 %.o: %.cpp
 	$(CC) -c -o $@ $< $(CFLAGS)
  
-cimage: cimage.o ImgCollectionBuilder.o ImgUtils.o logger.o Timer.o ImgCollectionSearch.o
-	$(CC) -o cimage cimage.o ImgCollectionBuilder.o ImgUtils.o logger.o ImgCollectionSearch.o Timer.o $(LDFLAGS) -lpthread
+cimage: cimage.o ImgCollectionBuilder.o ImgUtils.o logger.o Timer.o ImgCollectionSearch.o ImgCollection.o ImgCollectionMerge.o
+	$(CC) -o cimage cimage.o ImgCollectionBuilder.o ImgUtils.o logger.o ImgCollectionSearch.o Timer.o ImgCollection.o ImgCollectionMerge.o $(LDFLAGS) -lpthread
 
 clean:
 	rm *.o cimage

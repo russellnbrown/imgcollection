@@ -21,8 +21,6 @@
 
 vector<string> extensions{ ".bmp", ".jpg", ".jpeg", ".png", ".gif" };
 
-
-
 uint32_t ImgUtils::GetHash(string &s)
 {
 	uint32_t xcrc = crc(s.begin(), s.end());

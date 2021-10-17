@@ -185,6 +185,7 @@
     <ClInclude Include="ImgCollectionMerge.h" />
     <ClInclude Include="ImgCollectionRefresh.h" />
     <ClInclude Include="ImgCollectionSearch.h" />
+    <ClInclude Include="ImgCollectionTester.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="RunThreadInfo.h" />
     <ClInclude Include="ImgCollectionBuilder.h" />
@@ -219,6 +220,9 @@
     <ClCompile Include="ImgCollectionSearch.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cimage.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cimage.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="ImgCollectionTester.cpp">
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cimage.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="logger.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cimage.h</PrecompiledHeaderFile>

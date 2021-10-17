@@ -44,6 +44,46 @@ bool ImgCollection::Save(fs::path dir)
 
 
 
+uint32_t ImgCollection::pathsplit(const fs::path d, string& dirpart, string& filepart, time_t& lastMod)
+{
+	try
+	{
+		lastMod = 0;
+		struct stat result;
+		if (stat(d.string().c_str(), &result) == 0)
+			lastMod = result.st_mtime;
+
+
+		if (fs::is_regular_file(d))
+		{
+			filepart = d.filename().string();
+			dirpart = d.parent_path().string();
+		}
+		else if (fs::is_directory(d))
+		{
+			filepart = "";
+			dirpart = d.string();
+		}
+		else
+			return 0;
+	}
+	catch (std::exception e)
+	{
+		logger::warn("Ignore ");
+		return 0;
+	}
+
+	ImgUtils::Replace(dirpart, "\\", "/");
+	dirpart = dirpart.substr(top.string().length());
+
+	if (dirpart.empty() || dirpart[0] != '/')
+		dirpart = "/" + dirpart;
+
+	return ImgUtils::GetHash(dirpart);
+}
+
+
+
 // Load. loads the imgcollection from disk. each of the collections is read from its own
 // file. 
 // ** these may have been created my one of the other imagecollection implementations so
