@@ -1,4 +1,4 @@
--c sets/cset1 i1 C:\TestEnvironments
+-c sets/set0 i1 C:\TestEnvironments
 -s sets/cset1 test.jpg
 -m sets/cset0  sets/cset1  sets/cset2
--r sets/set0 sets/setR i3
+-r sets/set0 sets/setR i1/i3 i1/i2

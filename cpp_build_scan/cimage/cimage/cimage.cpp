@@ -229,30 +229,42 @@ int main(int argc, char *argv[])
 	}
 	else if (action == "-r")
 	{
-		if (argc != 5)
+		if (argc < 5)
 			usage();
+
 		string refreshInSet = argv[2];
 		string refreshOutSet = argv[3];
-		string refreshFiles = argv[4];
 
 		if (fs::exists(refreshOutSet + "/dirs.txt"))
 			logger::fatal("Output set exists");
-		if (!fs::exists(refreshFiles  ))
-			logger::fatal("Scan point dosnt exist");
+
 
 
 		// Get files path & check it exists
 		fs::path inset = checkSet(refreshInSet, false);
 		fs::path outset = checkSet(refreshOutSet, true);
-		fs::path refresh(refreshFiles);
-
-
-		// load the ImgCollection from disk into a ImgCollectionBuilder
 		ImgCollectionRefresh* sb = new ImgCollectionRefresh();
 		Timer::start();
-		sb->Create(outset);
 		sb->Load(inset);
-		sb->Refresh(refresh);
+		sb->Create(outset);
+
+		for (int sx = 4; sx < argc; sx++)
+		{
+			string refreshFiles = argv[sx];
+			if (!fs::exists(refreshFiles))
+			{
+				logger::error("Scan point dosnt exist" + refreshFiles);
+				continue;
+			}
+			logger::info("Process point " + refreshFiles);
+
+			fs::path refresh(refreshFiles);
+
+
+			// load the ImgCollection from disk into a ImgCollectionBuilder
+			sb->Refresh(refresh);
+		}
+		logger::info("Finished. Saving to  " + refreshOutSet);
 		sb->Save();
 	}
 	else
