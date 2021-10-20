@@ -24,7 +24,7 @@ tasks.withType(JavaCompile) {
 
 application {
   mainModule = 'com.arenbee.jsxview'
-  mainClass = 'com.arenbee.jsxview.HelloApplication'
+  mainClass = 'com.arenbee.jsxview.JFXViewApp'
 }
 
 javafx {

@@ -16,7 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ResourceBundle;
 
-public class HelloController implements Initializable {
+public class JFXViewController implements Initializable {
     @FXML
     private Label welcomeText;
 
