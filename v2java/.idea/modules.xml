@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/imgcmd/imgcmd.iml" filepath="$PROJECT_DIR$/imgcmd/imgcmd.iml" />
       <module fileurl="file://$PROJECT_DIR$/imglib/imglib.iml" filepath="$PROJECT_DIR$/imglib/imglib.iml" />
       <module fileurl="file://$PROJECT_DIR$/jsview/jsview.iml" filepath="$PROJECT_DIR$/jsview/jsview.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jsxview/jsxview.iml" filepath="$PROJECT_DIR$/jsxview/jsxview.iml" />
       <module fileurl="file://$PROJECT_DIR$/jtreedemos/jtreedemos.iml" filepath="$PROJECT_DIR$/jtreedemos/jtreedemos.iml" />
     </modules>
   </component>
