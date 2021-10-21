@@ -9,39 +9,38 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.Button?>
 
-<VBox alignment="CENTER" prefHeight="667.0" prefWidth="798.0" spacing="20.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.arenbee.jsxview.JFXViewController">
-  <padding>
-    <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-  </padding>
+<VBox alignment="CENTER" prefHeight="667.0" prefWidth="798.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.arenbee.jsxview.JFXViewController">
    <children>
-      <SplitPane dividerPositions="0.29797979797979796" prefHeight="666.0" prefWidth="758.0">
-        <items>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
-               <children>
-                  <TabPane layoutX="11.0" layoutY="14.0" prefHeight="560.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE">
-                    <tabs>
-                      <Tab text="Explorer">
-                        <content>
-                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="363.0" prefWidth="200.0">
-                                 <children>
-                                    <TreeView fx:id="dirTree" layoutY="128.0" prefHeight="531.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                 </children>
-                              </AnchorPane>
-                        </content>
-                      </Tab>
-                      <Tab text="Search">
-                        <content>
-                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-                        </content>
-                      </Tab>
-                    </tabs>
-                  </TabPane>
-               </children>
-            </AnchorPane>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="356.0" prefWidth="528.0" />
-        </items>
-      </SplitPane>
-   
-     <Label fx:id="welcomeText" />
+      <AnchorPane VBox.vgrow="ALWAYS">
+         <children>
+            <SplitPane dividerPositions="0.29797979797979796" prefHeight="666.0" prefWidth="758.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+              <items>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                     <children>
+                        <TabPane layoutX="11.0" layoutY="14.0" prefHeight="560.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                          <tabs>
+                            <Tab text="Explorer">
+                              <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="363.0" prefWidth="200.0">
+                                       <children>
+                                          <TreeView fx:id="dirTree" layoutY="128.0" prefHeight="531.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                       </children>
+                                    </AnchorPane>
+                              </content>
+                            </Tab>
+                            <Tab text="Search">
+                              <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                              </content>
+                            </Tab>
+                          </tabs>
+                        </TabPane>
+                     </children>
+                  </AnchorPane>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="356.0" prefWidth="528.0" />
+              </items>
+            </SplitPane>
+         </children>
+      </AnchorPane>
    </children>
 </VBox>
