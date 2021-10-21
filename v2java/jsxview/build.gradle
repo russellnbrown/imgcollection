@@ -38,8 +38,12 @@ dependencies {
     exclude(group: 'org.openjfx')
   }
   implementation('org.kordamp.bootstrapfx:bootstrapfx-core:0.4.0')
+    implementation 'com.eljavatar:SwingUtils:1.3.2'
+    implementation 'com.twelvemonkeys:twelvemonkeys-imageio:2.3'
+  implementation 'com.twelvemonkeys.imageio:twelvemonkeys-imageio-core:2.3'
+    implementation 'com.twelvemonkeys:twelvemonkeys-core:2.3'
 
-  testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
 }
 

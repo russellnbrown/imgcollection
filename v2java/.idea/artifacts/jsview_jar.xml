@@ -3,7 +3,6 @@
     <output-path>$PROJECT_DIR$/out/artifacts/jsview_jar</output-path>
     <root id="archive" name="jsview.jar">
       <element id="module-output" name="jsview" />
-      <element id="library" level="project" name="twelvemonkeys.imageio.core" />
       <element id="module-output" name="imglib" />
     </root>
   </artifact>

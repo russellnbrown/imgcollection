@@ -16,7 +16,7 @@
  */
 package com.arenbee.imglib;
 
-import com.twelvemonkeys.image.ResampleOp;
+import com.twelvemonkeys.image;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;

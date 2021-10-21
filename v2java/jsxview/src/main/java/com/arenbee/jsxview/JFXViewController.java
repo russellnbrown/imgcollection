@@ -20,6 +20,8 @@ public class JFXViewController implements Initializable {
     @FXML
     private Label welcomeText;
 
+    @FXML private ListView instancesList;
+
     @FXML private TreeView dirTree;
 
     @FXML
@@ -51,6 +53,8 @@ public class JFXViewController implements Initializable {
                 }
             }
         });
+
+
     }
 
     public void initializeLater(Scene scene, Stage stage) {
