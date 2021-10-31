@@ -1,6 +1,9 @@
 <template>
   <h1>{{ title }}</h1>
-  <Modal :header="header" :title="title" theme="sale" /> 
+  <div v-if:="showModal">
+     <Modal :header="header" :title="title" theme="sale" @closeEvent="toggleModal" /> 
+  </div>
+  <button @click.alt="toggleModal">open modal(alt)</button>
 </template>
 
 <script>
@@ -14,11 +17,16 @@ export default {
     return {
       title: 'App 1',
       header: 'This Is The Header',
-      title: 'This Is the Title'
+      title: 'This Is the Title',
+      showModal: false
     }
   },
 
 methods: {
+  toggleModal(){
+    this.showModal = ! this.showModal
+  },
+
   handleClick(){
     console.log(this.$refs.name)
     this.$refs.name.classList.add('active')

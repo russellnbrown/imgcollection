@@ -1,51 +1,54 @@
 <template>
-    <div class="backdrop">
-        <div class="modal" :class="{ sale: theme === 'sale' }" >
-            <h1>{{header}}</h1>
-            <p>{{title}}</p>
-     </div>
+  <div class="backdrop" @click.self="closeModal">
+    <div class="modal" :class="{ sale: theme === 'sale' }">
+      <h1>{{ header }}</h1>
+      <p>{{ title }}</p>
     </div>
+  </div>
 </template>
 
 <script>
-    export default {
-        props: ['header', 'title', 'theme']            
-        }
+export default {
+  props: ["header", "title", "theme"],
+  methods:{
+      closeModal(){
+          this.$emit('closeEvent')
+      }
+  }
+
+};
 </script>
 
 <style >
-
-.modal{
-    width: 400px;
-    padding: 20px;
-    margin: 100px auto;
-    background: white;
-    border-radius: 10px;
-    align-self: center;
+.modal {
+  width: 400px;
+  padding: 20px;
+  margin: 100px auto;
+  background: white;
+  border-radius: 10px;
+  align-self: center;
 }
 
-.backdrop{
-    top:0;
-    position: fixed;
-    background: rgba(0, 0, 0, 0.5);
-    width: 100%;
-    height: 100%;
+.backdrop {
+  top: 0;
+  position: fixed;
+  background: rgba(0, 0, 0, 0.5);
+  width: 100%;
+  height: 100%;
 }
 
 .modal h1 {
-    background: green;
-    border: none;
-    padding: 0;
+  background: green;
+  border: none;
+  padding: 0;
 }
 
 .modal.sale {
-    background: chartreuse;
-    color: wheat;
-
+  background: crimson;
+  color: wheat;
 }
 
 .modal.sale h1 {
-    color: lemonchiffon;
-
+  color: lemonchiffon;
 }
 </style>
