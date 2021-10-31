@@ -5,6 +5,9 @@
       <module name="jfxview2" target="14" />
       <module name="jfxview2.main" target="14" />
       <module name="jfxview2.test" target="14" />
+      <module name="jsxview" target="14" />
+      <module name="jsxview.main" target="14" />
+      <module name="jsxview.test" target="14" />
     </bytecodeTargetLevel>
   </component>
 </project>
