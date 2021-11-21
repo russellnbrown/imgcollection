@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch4jConfig>
+  <dontWrapJar>false</dontWrapJar>
+  <headerType>gui</headerType>
+  <jar>C:\Sources\trunk\intellij\roz\out\artifacts\jfxview_jar\jfxview.jar</jar>
+  <outfile>C:\Sources\trunk\intellij\roz\out\artifacts\jfxview_jar\jfxview.exe</outfile>
+  <errTitle>JfxView</errTitle>
+  <cmdLine>--top=c:/TestEnvironments/ww --scanset=c:/TestEnvironments/intellij/chan.scan</cmdLine>
+  <chdir>.</chdir>
+  <priority>normal</priority>
+  <downloadUrl>http://java.com/download</downloadUrl>
+  <supportUrl></supportUrl>
+  <stayAlive>false</stayAlive>
+  <restartOnCrash>true</restartOnCrash>
+  <manifest></manifest>
+  <icon>C:\Sources\trunk\intellij\roz\jfxview\src\roz\jfxview\appt.ico</icon>
+  <jre>
+    <path></path>
+    <bundledJre64Bit>false</bundledJre64Bit>
+    <bundledJreAsFallback>false</bundledJreAsFallback>
+    <minVersion>1.8.0_50</minVersion>
+    <maxVersion></maxVersion>
+    <jdkPreference>preferJre</jdkPreference>
+    <runtimeBits>64/32</runtimeBits>
+    <initialHeapSize>4000</initialHeapSize>
+    <maxHeapSize>4000</maxHeapSize>
+  </jre>
+</launch4jConfig>

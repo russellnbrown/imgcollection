@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.TilePane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox fx:id="topvbox" prefHeight="750.0" prefWidth="1102.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="arenbee.jfxview.jfxviewdocumentcontroller">
+  <children>
+    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
+         <children>
+            <SplitPane dividerPositions="0.3385579937304075" layoutX="190.0" layoutY="72.0" prefHeight="160.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+              <items>
+                <AnchorPane maxWidth="300.0" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                     <children>
+                        <TabPane layoutX="47.0" layoutY="87.0" prefHeight="373.0" prefWidth="316.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                          <tabs>
+                            <Tab text="Files">
+                              <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                       <children>
+                                          <TreeView fx:id="dirTree" prefHeight="171.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                       </children>
+                                    </AnchorPane>
+                              </content>
+                            </Tab>
+                            <Tab fx:id="scanTAB" text="Scan">
+                              <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="344.0" prefWidth="281.0">
+                                       <children>
+                                          <VBox layoutX="42.0" layoutY="39.0" prefHeight="344.0" prefWidth="220.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                             <children>
+                                                <HBox alignment="CENTER" prefHeight="100.0" VBox.vgrow="NEVER">
+                                                   <children>
+                                                      <AnchorPane fx:id="imageAP" onDragDropped="#onImageDropped" onDragEntered="#onImageDragEntered" onDragExited="#onImageDragExited" onDragOver="#onImageDragOver" style="-fx-background-color: lightyellow;" HBox.hgrow="NEVER">
+                                                         <children>
+                                                            <ImageView fx:id="simageIV" fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true" />
+                                                         </children>
+                                                      </AnchorPane>
+                                                   </children>
+                                                </HBox>
+                                                <Separator prefWidth="200.0" />
+                                                <TextField fx:id="searchTF" VBox.vgrow="NEVER" />
+                                                <HBox alignment="CENTER" maxHeight="-Infinity" prefHeight="32.0" prefWidth="220.0" spacing="5.0" VBox.vgrow="NEVER">
+                                                   <children>
+                                                      <CheckBox fx:id="dirCB" mnemonicParsing="false" text="Dirs" />
+                                                      <CheckBox fx:id="filesCB" mnemonicParsing="false" text="Files" />
+                                                      <Button fx:id="tsearchBN" mnemonicParsing="false" onAction="#onSearchTextBtnPushed" text="Search" />
+                                                   </children>
+                                                </HBox>
+                                                <Separator prefWidth="200.0" />
+                                                <HBox>
+                                                   <children>
+                                                      <Button fx:id="byRatingBTN" mnemonicParsing="false" onAction="#onByRating" text="By Rating" />
+                                                   </children>
+                                                </HBox>
+                                                <Separator prefWidth="200.0" />
+                                                <TableView fx:id="tsearchLV" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                                             </children>
+                                          </VBox>
+                                       </children></AnchorPane>
+                              </content>
+                            </Tab>
+                              <Tab fx:id="settingsTab" text="Settings">
+                                <content>
+                                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                       <children>
+                                          <ChoiceBox fx:id="scanTypeCB" layoutX="14.0" layoutY="25.0" prefHeight="25.0" prefWidth="185.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="25.0" />
+                                          <TextField fx:id="scanSetTF" layoutX="14.0" layoutY="85.0" prefHeight="25.0" prefWidth="183.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="16.0" AnchorPane.topAnchor="85.0" />
+                                          <Button fx:id="changeSSPB" layoutX="213.0" layoutY="119.0" mnemonicParsing="false" onAction="#onChangeScanSet" text="Change" AnchorPane.rightAnchor="16.0" AnchorPane.topAnchor="119.0" />
+                                          <Label layoutX="14.0" layoutY="66.0" text="Scan Set" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="66.0" />
+                                          <Label layoutX="14.0" layoutY="155.0" text="Top Directory" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="155.0" />
+                                          <TextField fx:id="topDirTF" layoutX="14.0" layoutY="175.0" prefHeight="25.0" prefWidth="191.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="175.0" />
+                                          <Button layoutX="220.0" layoutY="210.0" mnemonicParsing="false" onAction="#onChangeTopDir" text="Change" AnchorPane.rightAnchor="9.0" AnchorPane.topAnchor="210.0" />
+                                          <Label layoutX="14.0" layoutY="6.0" text="Search Method" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="6.0" />
+                                          <ChoiceBox id="dirSortCB" fx:id="dirSortCB" layoutX="14.0" layoutY="262.0" prefHeight="25.0" prefWidth="278.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="262.0" />
+                                          <Label layoutX="15.0" layoutY="237.0" text="Sort By" />
+                                       </children>
+                                    </AnchorPane>
+                                </content>
+                              </Tab>
+                          </tabs>
+                        </TabPane>
+                     </children>
+                  </AnchorPane>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="373.0" prefWidth="484.0">
+                     <children>
+                        <SplitPane dividerPositions="0.29797979797979796" layoutX="86.0" layoutY="93.0" prefHeight="160.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                          <items>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="371.0" prefWidth="128.0">
+                                 <children>
+                                    <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <children>
+                                          <HBox alignment="CENTER" VBox.vgrow="NEVER">
+                                             <children>
+                                                <Button fx:id="backBtn" maxWidth="28.0" minWidth="28.0" mnemonicParsing="false" onAction="#onBackBtn" text="&lt;&lt;" HBox.hgrow="NEVER">
+                                                   <font>
+                                                      <Font size="10.0" />
+                                                   </font></Button>
+                                                <Region prefHeight="20.0" prefWidth="2.0" HBox.hgrow="ALWAYS" />
+                                                <Label fx:id="listLabel" text="..." HBox.hgrow="ALWAYS" />
+                                                <Region prefHeight="20.0" prefWidth="2.0" HBox.hgrow="ALWAYS" />
+                                                <Button fx:id="fwdBtn" maxWidth="28.0" minWidth="28.0" mnemonicParsing="false" onAction="#onFwdBtn" text="&gt;&gt;" HBox.hgrow="NEVER">
+                                                   <font>
+                                                      <Font size="10.0" />
+                                                   </font></Button>
+                                             </children>
+                                          </HBox>
+                                          <ScrollPane fx:id="iconScroll" prefHeight="353.0" prefWidth="119.0" VBox.vgrow="ALWAYS">
+                                             <content>
+                                                <TilePane fx:id="iconPane" />
+                                             </content>
+                                          </ScrollPane>
+                                          <ListView fx:id="instancesList" prefHeight="5.0" VBox.vgrow="SOMETIMES" />
+                                       </children>
+                                    </VBox>
+                                 </children></AnchorPane>
+                            <AnchorPane fx:id="imageAnchor" minHeight="0.0" minWidth="0.0">
+                                 <children>
+                                    <BorderPane prefHeight="247.0" prefWidth="231.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <top>
+                                          <Label fx:id="imageLabel" contentDisplay="CENTER" textAlignment="CENTER" BorderPane.alignment="CENTER" />
+                                       </top>
+                                       <center>
+                                          <ImageView fx:id="imageView" pickOnBounds="true" preserveRatio="true" BorderPane.alignment="CENTER" />
+                                       </center>
+                                       <bottom>
+                                          <Label fx:id="imageDim" text="Bottom" BorderPane.alignment="CENTER" />
+                                       </bottom>
+                                    </BorderPane>
+                                 </children></AnchorPane>
+                          </items>
+                        </SplitPane>
+                     </children>
+                  </AnchorPane>
+              </items>
+            </SplitPane>
+         </children>
+    </AnchorPane>
+      <HBox alignment="CENTER_LEFT" prefHeight="25.0" spacing="5.0" VBox.vgrow="NEVER">
+         <children>
+            <Label fx:id="statusMem" text="Label" />
+            <Label fx:id="statusSearch" text="Label" />
+         </children>
+      </HBox>
+  </children>
+</VBox>

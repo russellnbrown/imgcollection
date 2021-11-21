@@ -2,6 +2,9 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
+      <module name="jfxview" target="14" />
+      <module name="jfxview.main" target="14" />
+      <module name="jfxview.test" target="14" />
       <module name="jfxview2" target="14" />
       <module name="jfxview2.main" target="14" />
       <module name="jfxview2.test" target="14" />
