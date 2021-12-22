@@ -4,11 +4,19 @@
  * and open the template in the editor.
  */
 package jsync;
-
-
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+
+
+/**
+ *
+ * @author russell.brown
+ */
+ 
+public class Jsync {
+
+
 
 
  
