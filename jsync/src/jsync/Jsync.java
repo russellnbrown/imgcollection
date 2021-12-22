@@ -8,24 +8,14 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 
-
-/**
- *
- * @author russell.brown test
- */
- 
-public class Jsync {
-
-
-
-
- 
 public class Jsync implements FileVisitor<Path> {
 
     
     private long dcount = 0;
     private long fcount = 0;
     private long ecount = 0;
+    private String topSrc = null;
+    private String topDest = null;
     
     /**
      * @param args the command line arguments
@@ -43,6 +33,14 @@ public class Jsync implements FileVisitor<Path> {
     
     private Jsync(Path src, Path dest, String op) 
     {
+        topSrc = src.toString();
+        topDest = dest.toString();
+        
+        if(!Files.exists(src) )
+            NLog.f("Source ", topSrc, " dosn't exist");
+        if(!Files.exists(dest) )
+            NLog.f("Dest ", topDest, " dosn't exist");
+        
         NLog.i("Syncing " + src.toString() + " to " + dest.toString() + " using " + op);
         try
         {
@@ -60,6 +58,8 @@ public class Jsync implements FileVisitor<Path> {
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException 
     {
+        
+        
         //NLog.i("Pre ", dir.toAbsolutePath());
         dcount++;
         return FileVisitResult.CONTINUE;
