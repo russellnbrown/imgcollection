@@ -11,7 +11,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 /**
  *
- * @author russell.brown
+ * @author russell.brown test
  */
  
 public class Jsync {
