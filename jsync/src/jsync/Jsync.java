@@ -14,8 +14,15 @@ public class Jsync {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        // TODO code application logic here
+    public static void main(String[] args) 
+    {
+        if ( args.length != 3 )
+        {
+            System.out.println("usage: <src> <dst> <test|sync>");
+            System.exit(-1);
+        }
+        
+        
     }
     
 }
