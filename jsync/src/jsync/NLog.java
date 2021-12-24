@@ -10,7 +10,7 @@ public class NLog {
     public enum Log { DEBUG, INFO, WARN, ERROR, FATAL };
 
     public static void d(String tag, Object... args) {
-        log(Log.DEBUG, null, tag, args);
+       // log(Log.DEBUG, null, tag, args);
     }
 
     public static void i(String tag, Object... args) {
