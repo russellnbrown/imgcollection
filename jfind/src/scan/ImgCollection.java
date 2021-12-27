@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import jutils.Timer;
+
 import java.nio.charset.MalformedInputException;
 import java.util.Scanner;
 import jutils.Gen;
@@ -185,7 +185,7 @@ public class ImgCollection
         
         //try
         //{
-            Timer.stagestart();
+      
             // Create list to hold search results. U
             //List<SearchResult> pq = new LinkedList<>();
             PriorityQueue<SearchResult> pq = new PriorityQueue<>(new SearchResultComparator());
@@ -249,7 +249,7 @@ public class ImgCollection
                 res.add(i);
                 if ( res.size() == maxSize )
                     break;
-            }   Timer.stagestop("Find");
+            }    
             return res;
         /*} 
         catch (IOException ex)
@@ -349,7 +349,7 @@ public class ImgCollection
         
         try
         {
-            Timer.stagestart();
+            
             
             Path pdir = s.resolve("dirs.txt");
             Path pfile = s.resolve("files.txt");
@@ -485,7 +485,7 @@ public class ImgCollection
             ioe.printStackTrace();
             Logger.Severe(String.format("Caught IOE : %s in save lc=%d, f=%d", ioe.toString(), lc, f));
         }
-        Timer.stagestop("Load");
+     
     }
     
     String getNextLine(BufferedReader f)

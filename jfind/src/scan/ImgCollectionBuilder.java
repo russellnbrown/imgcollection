@@ -16,21 +16,9 @@
  */
 package scan;
 
-import jutils.Image;
-import jutils.Logger;
-import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import static java.nio.file.FileVisitResult.CONTINUE;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import jutils.Stats;
-import jutils.Timer;
+
 
 // ImgCollectionBuilder. This is a helper class to build an Image Collection.
 // it is derived from SimpleFileVisitor as one of its functions will be

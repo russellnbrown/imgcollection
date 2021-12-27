@@ -22,7 +22,16 @@ package scan;
 public class ImgCollectionDirItem 
 {
     private String dir;     // path ( relative to the top )
-    private long  hash;     // crc32 hash of path
+     private long  hash;     // crc32 hash of path
+    private long  lmod;     // crc32 hash of path
+
+    public long getLmod() {
+        return lmod;
+    }
+
+    public void setLmod(long lmod) {
+        this.lmod = lmod;
+    }
 
     @Override
     public String toString() 
