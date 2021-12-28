@@ -8,12 +8,18 @@ class TextSearchTable extends AbstractTableModel {
 
     public class RowItem {
         public String path;
+        public String file;
         public RowItem(String s) {
             path = s;
+            file="";
+        }
+        public RowItem(String s, String f) {
+            path = s;
+            file = f;
         }
     }
 
-    private String[] columnNames = {"Path"};
+    private String[] columnNames = {"Path","File"};
     private List<RowItem> data = new ArrayList<RowItem>();
 
     public int getColumnCount() {
@@ -32,6 +38,8 @@ class TextSearchTable extends AbstractTableModel {
         switch (col) {
             case 0:
                 return data.get(row).path;
+            case 1:
+                return data.get(row).file;
             //   case 1: return data.get(row).open;
         }
         return "";
@@ -59,6 +67,10 @@ class TextSearchTable extends AbstractTableModel {
 
     public void Add(String s) {
         data.add(new RowItem(s));
+
+    }
+   public void Add(String s, String f) {
+        data.add(new RowItem(s,f));
 
     }
 

@@ -4,14 +4,21 @@
  */
 package jfind;
 
+import java.awt.Desktop;
+import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.List;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import jutils.Logger;
+import org.apache.commons.lang3.tuple.Pair;
 import scan.ScanSet;
 
 /**
@@ -19,7 +26,7 @@ import scan.ScanSet;
  * @author russell.brown
  */
 public class jfindFrame extends javax.swing.JFrame {
-
+    
     ScanSet set = new ScanSet("C:\\TestEnvironments\\sync\\testset");
     // ScanSet set = new ScanSet("Z://jfind//setr");
 
@@ -31,25 +38,54 @@ public class jfindFrame extends javax.swing.JFrame {
     public jfindFrame() {
         initComponents();
         tm = new TextSearchTable();
-
+        
         ts.setModel(tm);
 
-        ts.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+        /* ts.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent event) {
                 if (event.getValueIsAdjusting() == false) {
                     System.out.println(ts.getValueAt(ts.getSelectedRow(), 0).toString());
                 }
             }
 
-        });
-
-        /* ts.addMouseListener(new MouseAdapter(){
-         public void mouseClicked(MouseEvent e){
-          if (e.getClickCount() == 2){
-             System.out.println(ts.getValueAt(ts.getSelectedRow(), 0).toString());
-             }
-          }
-         } ); */
+        });*/
+        
+        ts.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    String selected = set.top + "/" + ts.getValueAt(ts.getSelectedRow(), 0).toString();
+                    String file =  ts.getValueAt(ts.getSelectedRow(), 1).toString();
+                    if (e.getClickCount() == 2) {
+                        System.out.println("TWO " + selected + ":" + file );
+                    
+                        if ( file.length() == 0)
+                {
+                    if (Desktop.isDesktopSupported()) {
+                            Desktop.getDesktop().open(new File(selected));
+                        }
+                }
+                        else
+                {
+                    
+                
+                        System.out.println("TWO " + selected + ":" + file );
+                        File f = new File(selected + "/" + file);
+                        BufferedImage img = ImageIO.read(f);
+                        Image newimg = img.getScaledInstance(120, 120,  java.awt.Image.SCALE_SMOOTH); 
+                        ImageIcon icon = new ImageIcon(newimg);
+                        imgLBL.setIcon(icon);
+                        
+                    }
+                    }
+                    if (e.getClickCount() == 1) {
+                        System.out.println("ONE " + ts.getValueAt(ts.getSelectedRow(), 0).toString());
+                    }
+                } catch (Exception exx) {
+                    Logger.Severe("Error opening " + exx.getMessage());
+                }
+                
+            }
+        });        
     }
 
     /**
@@ -72,6 +108,8 @@ public class jfindFrame extends javax.swing.JFrame {
         srchTextBTN = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         ts = new javax.swing.JTable();
+        imgPNL = new javax.swing.JPanel();
+        imgLBL = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -93,7 +131,7 @@ public class jfindFrame extends javax.swing.JFrame {
             imgSrarchPNLLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(imgSrarchPNLLayout.createSequentialGroup()
                 .addGroup(imgSrarchPNLLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, imgSrarchPNLLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(jButton1)))
@@ -103,8 +141,8 @@ public class jfindFrame extends javax.swing.JFrame {
             imgSrarchPNLLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, imgSrarchPNLLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton1)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -176,12 +214,32 @@ public class jfindFrame extends javax.swing.JFrame {
                     .addComponent(textSearchTB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(textSearchTGL)
                     .addComponent(srchTextBTN))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(35, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         textSearchTB.getAccessibleContext().setAccessibleName("");
+
+        imgPNL.setBackground(new java.awt.Color(204, 204, 255));
+
+        imgLBL.setText("jLabel2");
+
+        javax.swing.GroupLayout imgPNLLayout = new javax.swing.GroupLayout(imgPNL);
+        imgPNL.setLayout(imgPNLLayout);
+        imgPNLLayout.setHorizontalGroup(
+            imgPNLLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(imgPNLLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(imgLBL, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        imgPNLLayout.setVerticalGroup(
+            imgPNLLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(imgPNLLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(imgLBL, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
+                .addContainerGap())
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -189,14 +247,16 @@ public class jfindFrame extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(imgSrarchPNL, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(textSearchPNL, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(imgPNL, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(imgSrarchPNL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(textSearchPNL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(imgPNL, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(textSearchPNL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -212,20 +272,38 @@ public class jfindFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_textSearchTGLActionPerformed
 
     private void srchTextBTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_srchTextBTNActionPerformed
-        List<String> res = set.matchingDirs(textSearchTB.getText(), 200);
+        
         tm.Clear();
-        for (String s : res) {
-            tm.Add(s);
-            Logger.Info("Adding " + s);
+        
+        if ( textSearchTGL.isSelected() )
+        {
+            List<Pair<String,String>> res = set.matchingFiles(textSearchTB.getText(), 200);
+            
+            for (Pair<String,String> p : res) {
+                tm.Add(p.getLeft(), p.getRight() );
+                Logger.Info("Adding " + p.getLeft() + " " + p.getRight() );
+            }
         }
+        else
+        {
+            List<String> res = set.matchingDirs(textSearchTB.getText(), 200);
+            
+            for (String s : res) {
+                tm.Add(s);
+                Logger.Info("Adding " + s);
+            }
+            
+        }
+        
         tm.Finished();
+        
     }//GEN-LAST:event_srchTextBTNActionPerformed
 
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-
+        
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new jfindFrame().setVisible(true);
@@ -234,6 +312,8 @@ public class jfindFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel imgLBL;
+    private javax.swing.JPanel imgPNL;
     private javax.swing.JPanel imgSrarchPNL;
     private javax.swing.JList<String> imgSrchLIST;
     private javax.swing.JButton jButton1;
