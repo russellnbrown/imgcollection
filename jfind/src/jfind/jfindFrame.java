@@ -27,7 +27,8 @@ import scan.ScanSet;
  */
 public class jfindFrame extends javax.swing.JFrame {
     
-    ScanSet set = new ScanSet("C:\\TestEnvironments\\sync\\testset");
+    ScanSet set = new ScanSet("/media/veracrypt1/stuff/scans/set6OUT");
+//    ScanSet set = new ScanSet("C:\\TestEnvironments\\sync\\testset");
     // ScanSet set = new ScanSet("Z://jfind//setr");
 
     TextSearchTable tm;
