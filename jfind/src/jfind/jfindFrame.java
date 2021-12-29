@@ -26,7 +26,8 @@ import scan.ScanSet;
  * @author russell.brown
  */
 public class jfindFrame extends javax.swing.JFrame {
-    
+
+//    ScanSet set = new ScanSet("/media/veracrypt1/stuff/scans/set6OUT");
     ScanSet set = new ScanSet("C:\\TestEnvironments\\sync\\testset");
     // ScanSet set = new ScanSet("Z://jfind//setr");
 
@@ -38,44 +39,38 @@ public class jfindFrame extends javax.swing.JFrame {
     public jfindFrame() {
         initComponents();
         tm = new TextSearchTable();
-        
+
         ts.setModel(tm);
 
-        /* ts.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+        ts.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent event) {
                 if (event.getValueIsAdjusting() == false) {
-                    System.out.println(ts.getValueAt(ts.getSelectedRow(), 0).toString());
+                    String selected = set.top + "/" + ts.getValueAt(ts.getSelectedRow(), 0).toString();
+                    String file = ts.getValueAt(ts.getSelectedRow(), 1).toString();
+
+                    loadFile(selected + "/" + file);
                 }
             }
 
-        });*/
-        
+        });
+
         ts.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 try {
                     String selected = set.top + "/" + ts.getValueAt(ts.getSelectedRow(), 0).toString();
-                    String file =  ts.getValueAt(ts.getSelectedRow(), 1).toString();
+                    String file = ts.getValueAt(ts.getSelectedRow(), 1).toString();
                     if (e.getClickCount() == 2) {
-                        System.out.println("TWO " + selected + ":" + file );
-                    
-                        if ( file.length() == 0)
-                {
-                    if (Desktop.isDesktopSupported()) {
-                            Desktop.getDesktop().open(new File(selected));
+                        System.out.println("TWO " + selected + ":" + file);
+
+                        if (file.length() == 0) {
+                            if (Desktop.isDesktopSupported()) {
+                                Desktop.getDesktop().open(new File(selected));
+                            }
+                        } else {
+
+               
+
                         }
-                }
-                        else
-                {
-                    
-                
-                        System.out.println("TWO " + selected + ":" + file );
-                        File f = new File(selected + "/" + file);
-                        BufferedImage img = ImageIO.read(f);
-                        Image newimg = img.getScaledInstance(120, 120,  java.awt.Image.SCALE_SMOOTH); 
-                        ImageIcon icon = new ImageIcon(newimg);
-                        imgLBL.setIcon(icon);
-                        
-                    }
                     }
                     if (e.getClickCount() == 1) {
                         System.out.println("ONE " + ts.getValueAt(ts.getSelectedRow(), 0).toString());
@@ -83,9 +78,22 @@ public class jfindFrame extends javax.swing.JFrame {
                 } catch (Exception exx) {
                     Logger.Severe("Error opening " + exx.getMessage());
                 }
-                
+
             }
-        });        
+        });
+    }
+
+    private void loadFile(String p) {
+        try {
+            File f = new File(p);
+            BufferedImage img = ImageIO.read(f);
+            Image newimg = img.getScaledInstance(120, 120, java.awt.Image.SCALE_SMOOTH);
+            ImageIcon icon = new ImageIcon(newimg);
+            imgLBL.setIcon(icon);
+        } catch (Exception exx) {
+            Logger.Severe("Error opening " + exx.getMessage());
+        }
+
     }
 
     /**
@@ -272,38 +280,35 @@ public class jfindFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_textSearchTGLActionPerformed
 
     private void srchTextBTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_srchTextBTNActionPerformed
-        
+
         tm.Clear();
-        
-        if ( textSearchTGL.isSelected() )
-        {
-            List<Pair<String,String>> res = set.matchingFiles(textSearchTB.getText(), 200);
-            
-            for (Pair<String,String> p : res) {
-                tm.Add(p.getLeft(), p.getRight() );
-                Logger.Info("Adding " + p.getLeft() + " " + p.getRight() );
+
+        if (textSearchTGL.isSelected()) {
+            List<Pair<String, String>> res = set.matchingFiles(textSearchTB.getText(), 200);
+
+            for (Pair<String, String> p : res) {
+                tm.Add(p.getLeft(), p.getRight());
+                Logger.Info("Adding " + p.getLeft() + " " + p.getRight());
             }
-        }
-        else
-        {
+        } else {
             List<String> res = set.matchingDirs(textSearchTB.getText(), 200);
-            
+
             for (String s : res) {
                 tm.Add(s);
                 Logger.Info("Adding " + s);
             }
-            
+
         }
-        
+
         tm.Finished();
-        
+
     }//GEN-LAST:event_srchTextBTNActionPerformed
 
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        
+
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new jfindFrame().setVisible(true);
