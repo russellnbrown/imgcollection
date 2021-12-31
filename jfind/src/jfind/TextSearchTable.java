@@ -35,6 +35,11 @@ class TextSearchTable extends AbstractTableModel {
     }
 
     public Object getValueAt(int row, int col) {
+        if ( row > data.size()-1 )
+            return "";
+        if ( col > 1 )
+            return "";
+        
         switch (col) {
             case 0:
                 return data.get(row).path;

@@ -5,14 +5,20 @@
 package jfind;
 
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -27,18 +33,16 @@ import scan.ScanSet;
  */
 public class jfindFrame extends javax.swing.JFrame {
 
-    
-    ScanSet set = new ScanSet("/media/veracrypt1/stuff/scans/set6OUT");
-//    ScanSet set = new ScanSet("C:\\TestEnvironments\\sync\\testset");
-
-    // ScanSet set = new ScanSet("Z://jfind//setr");
+    ScanSet set = null;
 
     TextSearchTable tm;
 
     /**
      * Creates new form jfindFrame
      */
-    public jfindFrame() {
+    public jfindFrame(String top) {
+        set = new ScanSet(top);
+
         initComponents();
         tm = new TextSearchTable();
 
@@ -49,8 +53,11 @@ public class jfindFrame extends javax.swing.JFrame {
                 if (event.getValueIsAdjusting() == false) {
                     String selected = set.top + "/" + ts.getValueAt(ts.getSelectedRow(), 0).toString();
                     String file = ts.getValueAt(ts.getSelectedRow(), 1).toString();
-
-                    loadFile(selected + "/" + file);
+                    if (file != null && file.length() > 0) {
+                        loadFile(selected + "/" + file);
+                    } else {
+                        Logger.Info("No file specified");
+                    }
                 }
             }
 
@@ -70,7 +77,7 @@ public class jfindFrame extends javax.swing.JFrame {
                             }
                         } else {
 
-               
+                            showFile(selected + "/" + file);
 
                         }
                     }
@@ -83,6 +90,34 @@ public class jfindFrame extends javax.swing.JFrame {
 
             }
         });
+    }
+
+    private void showFile(String p) {
+        try {
+            JFrame f = new JFrame(); //creates jframe f
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); //this is your screen size
+            File ff = new File(p);
+            BufferedImage img = ImageIO.read(ff);
+            int nw = img.getWidth(), nh=img.getHeight();
+            boolean resize = false;
+            while(nw > (screenSize.width-50) && nh > (screenSize.height-50) )
+            {
+                nw -= 10;
+                nh -= 10;
+                resize = true;
+            }   
+            Image newimg = img.getScaledInstance(nw, nh, java.awt.Image.SCALE_SMOOTH);
+            ImageIcon icon = new ImageIcon(newimg);
+            JLabel lbl = new JLabel(icon); //puts the image into a jlabel
+            f.getContentPane().add(lbl); //puts label inside the jframe
+            f.setSize(icon.getIconWidth(), icon.getIconHeight()); //gets h and w of image and sets jframe to the size
+            int x = (screenSize.width - f.getSize().width) / 2; //These two lines are the dimensions
+            int y = (screenSize.height - f.getSize().height) / 2;//of the center of the screen
+            f.setLocation(x, y); //sets the location of the jframe
+            f.setVisible(true); //makes the jframe visible    
+        } catch (IOException ex) {
+            java.util.logging.Logger.getLogger(jfindFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void loadFile(String p) {
@@ -311,9 +346,18 @@ public class jfindFrame extends javax.swing.JFrame {
      */
     public static void main(String args[]) {
 
+        if (args.length != 1) {
+            Logger.Fatal("No set specified");
+        }
+
+        File f = new File(args[0]);
+        if (!f.exists()) {
+            Logger.Fatal(f.getAbsolutePath() + " dosnt exist");
+        }
+
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new jfindFrame().setVisible(true);
+                new jfindFrame(f.getAbsolutePath()).setVisible(true);
             }
         });
     }
