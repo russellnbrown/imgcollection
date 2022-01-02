@@ -4,6 +4,7 @@
  */
 package arenbee;
 
+import arenbee.api.GenericSearchResult;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -29,33 +30,39 @@ public class ScanSet {
     public final ConcurrentHashMap<Long, ImgCollectionImageItem> images = new ConcurrentHashMap<>();
     public String top;
 
-    public List<DirSearchResult> matchingDirs(String srch, int limit) {
-        List<DirSearchResult> l = new LinkedList<DirSearchResult>();
+    public GenericSearchResult matchingDirs(String srch, int limit) {
+       GenericSearchResult l = new GenericSearchResult(top);
 
-        for (ImgCollectionDirItem i : dirs.values()) {
-            if (org.apache.commons.lang3.StringUtils.containsIgnoreCase(i.getDir(), srch)) {
-                l.add(new DirSearchResult(i.getDir()));
+        for (ImgCollectionDirItem i : dirs.values()) 
+        {
+            String dir = i.getDir();
+            System.out.println("Compare " + dir + " with " + srch);
+            if (org.apache.commons.lang3.StringUtils.containsIgnoreCase(dir, srch)) 
+            {
+                l.items.add(new arenbee.api.GenericSearchResultItem(i.getDir()));
             }
-            if (l.size() == limit) {
+
+            if (l.items.size() == limit) 
+            {
                 break;
             }
         }
         return l;
     }
 
-    public List<Pair<String, String>> matchingFiles(String srch, int limit) {
-        List<Pair<String, String>> res = new LinkedList<Pair<String, String>>();
+    public GenericSearchResult  matchingFiles(String srch, int limit) {
+        GenericSearchResult  res = new GenericSearchResult (top);
 
         for (ImgCollectionFileItem i : files) {
             if (org.apache.commons.lang3.StringUtils.containsIgnoreCase(i.getFile(), srch)) {
                 try {
                     String dname = dirs.get(i.getDhash()).getDir();
-                    res.add(Pair.of(dname, i.getFile()));
+                    res.items.add(new arenbee.api.GenericSearchResultItem(dname,i.getFile()));
                 } catch (Exception ex) {
 
                 }
             }
-            if (res.size() == limit) {
+            if (res.items.size() == limit) {
                 break;
             }
         }
@@ -176,6 +183,12 @@ public class ScanSet {
             System.out.println(String.format("Caught IOE : %s in save lc=%d, f=%d", ioe.toString(), lc, f));
         }
         System.out.println(String.format("Set has %d dirs, %d files and %d images.", dirs.size(), files.size(), images.size()));
+    }
+
+    GenericSearchResult matchingImages(String what, int i) {
+        GenericSearchResult r = new GenericSearchResult(top);
+        r.message = "Error";
+        return r;
     }
 
 }

@@ -4,6 +4,8 @@
  */
 package jfind;
 
+import arenbee.api.GenericSearchResult;
+import com.google.gson.Gson;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Image;
@@ -13,19 +15,21 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+
 import java.util.logging.Level;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import jutils.Logger;
-import org.apache.commons.lang3.tuple.Pair;
-import scan.ScanSet;
+
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  *
@@ -33,15 +37,16 @@ import scan.ScanSet;
  */
 public class jfindFrame extends javax.swing.JFrame {
 
-    ScanSet set = null;
 
     TextSearchTable tm;
+   
 
     /**
      * Creates new form jfindFrame
      */
-    public jfindFrame(String top) {
-        set = new ScanSet(top);
+    public jfindFrame() 
+    {   
+       
 
         initComponents();
         tm = new TextSearchTable();
@@ -51,7 +56,7 @@ public class jfindFrame extends javax.swing.JFrame {
         ts.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent event) {
                 if (event.getValueIsAdjusting() == false) {
-                    String selected = set.top + "/" + ts.getValueAt(ts.getSelectedRow(), 0).toString();
+                    String selected = top + "/" + ts.getValueAt(ts.getSelectedRow(), 0).toString();
                     String file = ts.getValueAt(ts.getSelectedRow(), 1).toString();
                     if (file != null && file.length() > 0) {
                         loadFile(selected + "/" + file);
@@ -66,7 +71,7 @@ public class jfindFrame extends javax.swing.JFrame {
         ts.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 try {
-                    String selected = set.top + "/" + ts.getValueAt(ts.getSelectedRow(), 0).toString();
+                    String selected = top + "/" + ts.getValueAt(ts.getSelectedRow(), 0).toString();
                     String file = ts.getValueAt(ts.getSelectedRow(), 1).toString();
                     if (e.getClickCount() == 2) {
                         System.out.println("TWO " + selected + ":" + file);
@@ -316,25 +321,51 @@ public class jfindFrame extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_textSearchTGLActionPerformed
 
+    GenericSearchResult apiSearch(String type, String search)
+    {
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder().url("http://localhost:6020/"+type+"/"+search).build();
+
+            try 
+            {
+                Response response = client.newCall(request).execute();
+                if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+                String reply = response.body().string();
+                System.out.println(reply);
+                GenericSearchResult dr = new Gson().fromJson(reply, GenericSearchResult.class );
+                top = dr.top;
+                System.out.println(dr.toString());
+                return dr;
+            }
+            catch(Exception e)
+            {
+                System.out.println("Err:"+e.getLocalizedMessage());            
+            }
+            return null;
+    }
+            
+
+    private String top = "";
+    
     private void srchTextBTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_srchTextBTNActionPerformed
 
         tm.Clear();
 
-        if (textSearchTGL.isSelected()) {
-            List<Pair<String, String>> res = set.matchingFiles(textSearchTB.getText(), 200);
-
-            for (Pair<String, String> p : res) {
-                tm.Add(p.getLeft(), p.getRight());
-                Logger.Info("Adding " + p.getLeft() + " " + p.getRight());
+        if (textSearchTGL.isSelected()) 
+        {
+            GenericSearchResult ds = apiSearch("txtsrch",textSearchTB.getText());
+            for (int i = 0; i < ds.items.size(); i++) 
+            {
+                tm.Add(ds.items.get(i).path, ds.items.get(i).file);
             }
-        } else {
-            List<String> res = set.matchingDirs(textSearchTB.getText(), 200);
-
-            for (String s : res) {
-                tm.Add(s);
-                Logger.Info("Adding " + s);
+        } 
+        else 
+        {
+            GenericSearchResult ds = apiSearch("dirsrch",textSearchTB.getText());
+            for (int i = 0; i < ds.items.size(); i++) 
+            {
+                tm.Add(ds.items.get(i).path);
             }
-
         }
 
         tm.Finished();
@@ -346,21 +377,41 @@ public class jfindFrame extends javax.swing.JFrame {
      */
     public static void main(String args[]) {
 
-        if (args.length != 1) {
-            Logger.Fatal("No set specified");
-        }
 
-        File f = new File(args[0]);
-        if (!f.exists()) {
-            Logger.Fatal(f.getAbsolutePath() + " dosnt exist");
-        }
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new jfindFrame(f.getAbsolutePath()).setVisible(true);
+                new jfindFrame().setVisible(true);
             }
         });
     }
+    
+    private void testConnect()
+    {
+        OkHttpClient client = new OkHttpClient();
+
+   
+        Request request = new Request.Builder().url("http://localhost:6020/test/i").build();
+
+        try 
+        {
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+
+            String reply = response.body().string();
+            System.out.println(reply);
+            GenericSearchResult dr = new Gson().fromJson(reply, GenericSearchResult.class );
+            System.out.println(dr.toString());
+
+            
+        }
+        catch(Exception e)
+        {
+            System.out.println("Err:"+e.getLocalizedMessage());            
+        }
+    }
+        
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel imgLBL;

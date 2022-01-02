@@ -1,6 +1,7 @@
 package arenbee;
 
 import com.google.gson.*;
+import java.nio.file.*;
 import java.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import spark.*;
@@ -9,7 +10,7 @@ import static spark.Spark.*;
 public class JServer
 {
 
-    public List<DirSearchResult> dirSearchResult = null;
+   
     private static final HashMap<String, String> corsHeaders = new HashMap<String, String>();
 
     static
@@ -38,27 +39,15 @@ public class JServer
 
     public ScanSet set;
     
-    public JServer()
+    public JServer(Path p)
     {        
 
-        set  = new ScanSet("C:\\TestEnvironments\\sync\\testset");
+        set  = new ScanSet(p.toString());
         
         port(6020);
         apply();
         
         
-
-        try
-        {
-
-            dirSearchResult = getDirSearchResult();
-
-
-
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-        }
 
         Gson gson = new GsonBuilder().create();//.setDateFormat("yyyy-MM-dd'T'HH:mm:ss.sssZ").create();
 
@@ -68,44 +57,70 @@ public class JServer
         System.out.println("Waiting for requests...");
 
         get("/status", (req, res) -> "Hello");
+        
         get("/dirsrch/:srch", (request, response) -> 
         {
             response.type("application/json");
             String what = request.params(":srch");
-            List<DirSearchResult> res = set.matchingDirs(what, 200);
-            System.out.println("DSEARCH for " + what);
-            return new Gson().toJson(res);
+            arenbee.api.GenericSearchResult res = set.matchingDirs(what, 200);
+            System.out.println("DSEARCH for " + what + " returning " + res.items.size() + " items");
+            return gson.toJson(res);
         });
+        
         get("/txtsrch/:srch", (request, response) -> 
         {
             response.type("application/json");
             String what = request.params(":srch");
-            List<Pair<String,String>> res = set.matchingFiles(what, 200);
+            arenbee.api.GenericSearchResult res = set.matchingFiles(what, 200);
+            System.out.println("TSEARCH for " + what + " returning " + res.items.size() + " items");
+            return gson.toJson(res);
+        });
+        
+        get("/imgsrch/:srch", (request, response) -> 
+        {
+            response.type("application/json");
+            String what = request.params(":srch");
+            
+            arenbee.api.GenericSearchResult res = set.matchingImages(what, 200);
+            System.out.println("ISEARCH for " + what);
+            return gson.toJson(res);
+        });
+        
+        get("/test/:srch", (request, response) -> 
+        {
+            response.type("application/json");
+            String what = request.params(":srch");
+            
+            arenbee.api.GenericSearchResult res = new arenbee.api.GenericSearchResult();
+            res.items = new ArrayList<>();
+            res.message = "Worked";
+            res.items.add(new arenbee.api.GenericSearchResultItem("abc"));
+            res.items.add(new arenbee.api.GenericSearchResultItem("def"));
             System.out.println("TSEARCH for " + what);
-            return new Gson().toJson(res);
+            return gson.toJson(res);
         });
 
     }
 
-    public List<DirSearchResult> getDirSearchResult(String s)
-    {
-        List<DirSearchResult> res = new LinkedList<>();
-        res.add(new DirSearchResult("abc"));
-        res.add(new DirSearchResult("def"));
-        return res;
-    }
-                   
-    public List<DirSearchResult> getDirSearchResult()
-    {
-        List<DirSearchResult> res = new LinkedList<>();
-        res.add(new DirSearchResult("abc"));
-        res.add(new DirSearchResult("def"));
-        return res;
-    }
+
 
     public static void main(String[] args)
     {
-        new JServer();
+        if ( args.length != 1 )            
+        {
+            System.out.println("No set specified ");
+            return;
+        }
+        Path p = Paths.get(args[0]);
+
+        
+        if ( !Files.exists(p) )
+        {
+            System.out.println("Set specified dosn't exist");
+            return;
+        }
+        
+        new JServer(p);
     }
 
 }
