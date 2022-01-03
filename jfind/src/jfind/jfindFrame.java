@@ -5,6 +5,7 @@
 package jfind;
 
 import arenbee.api.GenericSearchResult;
+import arenbee.api.ImageSearchRequest;
 import com.google.gson.Gson;
 import java.awt.Desktop;
 import java.awt.Dimension;
@@ -25,10 +26,12 @@ import javax.swing.JLabel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import jutils.Logger;
+import okhttp3.MediaType;
 
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
@@ -47,6 +50,8 @@ public class jfindFrame extends javax.swing.JFrame {
     public jfindFrame() 
     {   
        
+testConnect();
+System.exit(0);
 
         initComponents();
         tm = new TextSearchTable();
@@ -388,28 +393,42 @@ public class jfindFrame extends javax.swing.JFrame {
     
     private void testConnect()
     {
-        OkHttpClient client = new OkHttpClient();
 
-   
-        Request request = new Request.Builder().url("http://localhost:6020/test/i").build();
-
-        try 
+        try
         {
-            Response response = client.newCall(request).execute();
-            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-
-            String reply = response.body().string();
-            System.out.println(reply);
-            GenericSearchResult dr = new Gson().fromJson(reply, GenericSearchResult.class );
-            System.out.println(dr.toString());
-
+            ImageSearchRequest isr = new ImageSearchRequest();
+            isr.path = "C://abc/123 456";
+            String jsonBody = new Gson().toJson(isr);
             
-        }
-        catch(Exception e)
-        {
-            System.out.println("Err:"+e.getLocalizedMessage());            
-        }
+            MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+            RequestBody body = RequestBody.create(JSON, jsonBody);
+            
+            OkHttpClient client = new OkHttpClient();
+            
+            Request request = new Request.Builder()
+                .url("http://localhost:6020/imgsrch")
+                .body(body) //PUT
+                //.addHeader("Authorization", header)
+                .build();
+            
+
+          
+                Response response = client.newCall(request).execute();
+                if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+                String reply = response.body().string();
+                System.out.println(reply);
+                GenericSearchResult dr = new Gson().fromJson(reply, GenericSearchResult.class );
+                top = dr.top;
+                System.out.println(dr.toString());
+                return;
+            }
+            catch(Exception e)
+            {
+                System.out.println("Err:"+e.getLocalizedMessage());            
+            }
+            
     }
+    
         
     
 
