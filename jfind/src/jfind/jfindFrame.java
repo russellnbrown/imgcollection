@@ -5,6 +5,7 @@
 package jfind;
 
 import arenbee.api.GenericSearchResult;
+import arenbee.api.Helpers;
 import arenbee.api.ImageSearchRequest;
 import com.google.gson.Gson;
 import java.awt.Desktop;
@@ -16,6 +17,7 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 
 import java.util.logging.Level;
 import javax.imageio.ImageIO;
@@ -391,13 +393,21 @@ System.exit(0);
         });
     }
     
+ 
+ 
     private void testConnect()
     {
+     
+            String ifind  = "C:\\\\TestEnvironments\\\\sync\\\\src\\\\i2\\\\test.jpg";
 
-        try
-        {
+           GenericSearchResult ds = apiSearch("imgsrch",Helpers.strToHex(ifind));
+            for (int i = 0; i < ds.items.size(); i++) 
+            {
+                tm.Add(ds.items.get(i).path, ds.items.get(i).file);
+            }
+            /*
             ImageSearchRequest isr = new ImageSearchRequest();
-            isr.path = "C://abc/123 456";
+            isr.path = "C:\\TestEnvironments\\sync\\src\\i2\\test.jpg";
             String jsonBody = new Gson().toJson(isr);
             
             MediaType JSON = MediaType.parse("application/json; charset=utf-8");
@@ -407,7 +417,7 @@ System.exit(0);
             
             Request request = new Request.Builder()
                 .url("http://localhost:6020/imgsrch")
-                .body(body) //PUT
+            //    .body(body) //PUT
                 //.addHeader("Authorization", header)
                 .build();
             
@@ -426,7 +436,7 @@ System.exit(0);
             {
                 System.out.println("Err:"+e.getLocalizedMessage());            
             }
-            
+            */
     }
     
         

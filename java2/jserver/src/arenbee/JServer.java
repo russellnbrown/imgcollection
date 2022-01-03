@@ -1,5 +1,6 @@
 package arenbee;
 
+import arenbee.api.Helpers;
 import com.google.gson.*;
 import java.nio.file.*;
 import java.util.*;
@@ -79,7 +80,8 @@ public class JServer
         get("/imgsrch/:srch", (request, response) -> 
         {
             response.type("application/json");
-            String what = request.params(":srch");
+            String jwhat = request.params(":srch");
+            String what = Helpers.hexToStr(jwhat);
             
             arenbee.api.GenericSearchResult res = set.matchingImages(what, 200);
             System.out.println("ISEARCH for " + what);
