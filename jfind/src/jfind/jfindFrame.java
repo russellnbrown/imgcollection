@@ -4,9 +4,9 @@
  */
 package jfind;
 
-import arenbee.api.GenericSearchResult;
-import arenbee.api.Helpers;
-import arenbee.api.ImageSearchRequest;
+
+import arenbee.api.*;
+import arenbee.other.*;
 import com.google.gson.Gson;
 import java.awt.Desktop;
 import java.awt.Dimension;

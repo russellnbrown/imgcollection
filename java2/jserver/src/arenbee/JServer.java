@@ -1,6 +1,7 @@
 package arenbee;
 
-import arenbee.api.Helpers;
+import arenbee.api.*;
+import arenbee.other.*;
 import com.google.gson.*;
 import java.nio.file.*;
 import java.util.*;
