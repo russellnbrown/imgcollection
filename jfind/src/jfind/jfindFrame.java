@@ -27,7 +27,7 @@ import javax.swing.JLabel;
 
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import jutils.Logger;
+import arenbee.other.Logger;
 import okhttp3.MediaType;
 
 

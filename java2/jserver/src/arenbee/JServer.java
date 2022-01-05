@@ -2,9 +2,11 @@ package arenbee;
 
 import arenbee.api.*;
 import arenbee.other.*;
+import arenbee.other.Logger.Level;
 import com.google.gson.*;
 import java.nio.file.*;
 import java.util.*;
+
 import org.apache.commons.lang3.tuple.Pair;
 import spark.*;
 import static spark.Spark.*;
@@ -43,7 +45,7 @@ public class JServer
     
     public JServer(Path p)
     {        
-
+        Logger.Create("jserver", Level.Debug, Level.Info); 
         set  = new ScanSet(p.toString());
         
         port(6020);
