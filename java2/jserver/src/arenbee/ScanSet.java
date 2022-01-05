@@ -5,12 +5,14 @@
 package arenbee;
 
 import arenbee.api.GenericSearchResult;
+import arenbee.api.GenericSearchResultItem;
 import arenbee.other.Image;
 import static arenbee.other.Image.*;
 import arenbee.other.Logger;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import static java.lang.Long.min;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -201,24 +203,53 @@ public class ScanSet {
             return r;
         }
         SSCRC finfo = GetFilesImageComponents(ffile);
-        
+
+        List<SortedImage> simages = new LinkedList<>();
         for(ImgCollectionImageItem v : images.values() )
         {
             double c = v.getCVal(finfo);
-            String ename = findFile(v.getIHash());
-            Logger.Info("cval %d for %s", c,ename);
+            simages.add(new SortedImage(c,v.getIHash()));
+        }
+     
+        
+        Collections.sort(simages, new Comparator<SortedImage>()
+            {
+            @Override
+            public int compare(SortedImage s1, SortedImage s2) 
+            {
+            if (s1.closeness < s2.closeness)
+            return -1;
+            else if (s1.closeness > s2.closeness )
+            return 1;
+            return 0;
+            }
+            });
+        
+        
+        for(i =0; i<min(simages.size(), 10L); i++)
+        {
+            ImgCollectionFileItem f = findFile(simages.get(i).ihash);
+            String dir = dirs.get(f.getDhash()).getDir();
+            GenericSearchResultItem ri = new GenericSearchResultItem(dir,f.getFile(),simages.get(i).closeness);
+             r.items.add(ri);             
+            Logger.Info("Item %s", ri);
         }
         
         return r;
     }
-    String findFile(long ihash)
+    
+    ImgCollectionFileItem findFile(long ihash)
     {
+        String dir;
+        
         for(ImgCollectionFileItem fi : files)
         {
             if ( fi.getIHash() == ihash )
-                return fi.getFile();
+            {
+                return fi;
+            }
         }
-        return "Unk";
+        return null;
     }
 
 }

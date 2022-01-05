@@ -28,6 +28,12 @@ import javax.swing.JLabel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import arenbee.other.Logger;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.MouseListener;
+import javax.swing.JComponent;
+import javax.swing.TransferHandler;
 import okhttp3.MediaType;
 
 
@@ -43,6 +49,8 @@ import okhttp3.Response;
 public class jfindFrame extends javax.swing.JFrame {
 
 
+    public static jfindFrame instance = null;
+    
     TextSearchTable tm;
    
 
@@ -52,10 +60,15 @@ public class jfindFrame extends javax.swing.JFrame {
     public jfindFrame() 
     {   
        
-testConnect();
-System.exit(0);
+        instance = this;
 
         initComponents();
+        
+       final String propertyName = "image";
+        imgLBL.setTransferHandler(createTransferHandler());
+        
+    
+    
         tm = new TextSearchTable();
 
         ts.setModel(tm);
@@ -103,7 +116,26 @@ System.exit(0);
             }
         });
     }
+    
+    private static TransferHandler createTransferHandler(){
+    return new TransferHandler(  ){
+      @Override
+      public boolean importData( JComponent comp, Transferable aTransferable ) {
+        try {
+          Object transferData = aTransferable.getTransferData( DataFlavor.imageFlavor );
+          jfindFrame.instance.imgLBL.setIcon( new ImageIcon( ( Image ) transferData ) );
+        } catch ( UnsupportedFlavorException e ) {
+        } catch ( IOException e ) {
+        }
+        return true;
+      }
 
+      @Override
+      public boolean canImport( JComponent comp, DataFlavor[] transferFlavors ) {
+        return true;
+      }
+    };
+  }
     private void showFile(String p) {
         try {
             JFrame f = new JFrame(); //creates jframe f
@@ -152,12 +184,9 @@ System.exit(0);
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+    private void initComponents()
+    {
 
-        imgSrarchPNL = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        imgSrchLIST = new javax.swing.JList<>();
         textSearchPNL = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         textSearchTB = new javax.swing.JTextField();
@@ -170,40 +199,6 @@ System.exit(0);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        imgSrarchPNL.setBackground(new java.awt.Color(255, 204, 204));
-
-        jButton1.setText("jButton1");
-
-        imgSrchLIST.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
-        imgSrchLIST.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        jScrollPane1.setViewportView(imgSrchLIST);
-
-        javax.swing.GroupLayout imgSrarchPNLLayout = new javax.swing.GroupLayout(imgSrarchPNL);
-        imgSrarchPNL.setLayout(imgSrarchPNLLayout);
-        imgSrarchPNLLayout.setHorizontalGroup(
-            imgSrarchPNLLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(imgSrarchPNLLayout.createSequentialGroup()
-                .addGroup(imgSrarchPNLLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, imgSrarchPNLLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jButton1)))
-                .addContainerGap())
-        );
-        imgSrarchPNLLayout.setVerticalGroup(
-            imgSrarchPNLLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, imgSrarchPNLLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
         textSearchPNL.setBackground(new java.awt.Color(153, 255, 51));
 
         jLabel1.setText("Search For:");
@@ -212,32 +207,40 @@ System.exit(0);
         textSearchTB.setToolTipText("Enter search term here");
 
         textSearchTGL.setText("Dir ( or File )");
-        textSearchTGL.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+        textSearchTGL.addItemListener(new java.awt.event.ItemListener()
+        {
+            public void itemStateChanged(java.awt.event.ItemEvent evt)
+            {
                 textSearchTGLItemStateChanged(evt);
             }
         });
-        textSearchTGL.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        textSearchTGL.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 textSearchTGLActionPerformed(evt);
             }
         });
 
         srchTextBTN.setText("Srch");
-        srchTextBTN.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        srchTextBTN.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 srchTextBTNActionPerformed(evt);
             }
         });
 
         ts.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+            new Object [][]
+            {
                 {null, null, null, null},
                 {null, null, null, null},
                 {null, null, null, null},
                 {null, null, null, null}
             },
-            new String [] {
+            new String []
+            {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
@@ -259,7 +262,7 @@ System.exit(0);
                         .addComponent(textSearchTGL)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(srchTextBTN)
-                        .addGap(0, 15, Short.MAX_VALUE)))
+                        .addGap(0, 41, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         textSearchPNLLayout.setVerticalGroup(
@@ -271,8 +274,8 @@ System.exit(0);
                     .addComponent(textSearchTB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(textSearchTGL)
                     .addComponent(srchTextBTN))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE))
         );
 
         textSearchTB.getAccessibleContext().setAccessibleName("");
@@ -287,14 +290,14 @@ System.exit(0);
             imgPNLLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(imgPNLLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(imgLBL, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(imgLBL, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         imgPNLLayout.setVerticalGroup(
             imgPNLLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(imgPNLLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(imgLBL, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
+                .addComponent(imgLBL, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -302,18 +305,15 @@ System.exit(0);
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(imgSrarchPNL, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(textSearchPNL, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(imgPNL, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(imgSrarchPNL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(imgPNL, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(imgPNL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(textSearchPNL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(textSearchPNL, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -445,11 +445,7 @@ System.exit(0);
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel imgLBL;
     private javax.swing.JPanel imgPNL;
-    private javax.swing.JPanel imgSrarchPNL;
-    private javax.swing.JList<String> imgSrchLIST;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JButton srchTextBTN;
     private javax.swing.JPanel textSearchPNL;

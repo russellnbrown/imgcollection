@@ -12,18 +12,34 @@ public class GenericSearchResultItem
 {
     public String path;
     public String file;
-    public int closeness;
+    public double closeness;
     public GenericSearchResultItem(String s)
     {
         path = s;
         file="";
-        closeness = 0;
+        closeness = 0.0;
     }
     
     public GenericSearchResultItem(String s, String f)
     {
         path = s;
         file = f;
-        closeness = 0;
+        closeness = 0.0;
     }
+    
+        public GenericSearchResultItem(String s, String f, double c)
+    {
+        path = s;
+        file = f;
+        closeness = c;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "GenericSearchResultItem{" + "path=" + path + ", file=" + file + ", closeness=" + closeness + '}';
+    }
+        
+        
+        
 }
