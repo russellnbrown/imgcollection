@@ -16,7 +16,7 @@
  */
 package scan;
 
-import jutils.Logger;
+import arenbee.other.Logger;
 import static java.lang.Math.abs;
 
 // ImgCollectionImageItem. Holds information about an image in the collection

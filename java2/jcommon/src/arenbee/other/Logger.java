@@ -15,12 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package jutils;
+package arenbee.other;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
-
 
 // Logger. a really simple logger to write to both screen and a log file. both 
 // outputs can be set to a threshold

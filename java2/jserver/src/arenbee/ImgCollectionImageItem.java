@@ -17,6 +17,7 @@
 package arenbee;
 
 
+import arenbee.other.Image;
 import static java.lang.Math.abs;
 
 // ImgCollectionImageItem. Holds information about an image in the collection
@@ -58,10 +59,10 @@ public class ImgCollectionImageItem
     }
 
     // getCVal.  Compares this image to another and returns a 'closeness' 
-    public double getCVal(ImgCollectionImageItem ji)//, StringBuilder ss)
+    public double getCVal(Image.SSCRC ji)//, StringBuilder ss)
     {
         // if hashes are the same, the image is identical
-        if (ji.ihash == ihash)
+        if (ji.crc == ihash)
         {
             // exact match
             return 0;

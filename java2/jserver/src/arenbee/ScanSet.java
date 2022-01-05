@@ -5,6 +5,10 @@
 package arenbee;
 
 import arenbee.api.GenericSearchResult;
+import arenbee.other.Image;
+import static arenbee.other.Image.*;
+import arenbee.other.Logger;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -186,9 +190,35 @@ public class ScanSet {
     }
 
     GenericSearchResult matchingImages(String what, int i) {
+
         GenericSearchResult r = new GenericSearchResult(top);
-        r.message = "Error";
+        
+        Path ffile = Paths.get(what);
+        
+        if ( !Files.exists(ffile) )
+        {
+            r.message = "Error";
+            return r;
+        }
+        SSCRC finfo = GetFilesImageComponents(ffile);
+        
+        for(ImgCollectionImageItem v : images.values() )
+        {
+            double c = v.getCVal(finfo);
+            String ename = findFile(v.getIHash());
+            Logger.Info("cval %d for %s", c,ename);
+        }
+        
         return r;
+    }
+    String findFile(long ihash)
+    {
+        for(ImgCollectionFileItem fi : files)
+        {
+            if ( fi.getIHash() == ihash )
+                return fi.getFile();
+        }
+        return "Unk";
     }
 
 }

@@ -1,8 +1,10 @@
 
 package arenbee.other;
-/*
+
 
 //import com.twelvemonkeys.image;
+        
+        /*
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -16,7 +18,7 @@ import java.nio.file.Path;
 import javax.imageio.ImageIO;
 
 // Image. Helpers for dealing with images
-public class Image
+public class ImageHelpers
 {
 
     // SSCRC. Used to return all we ever need from an image

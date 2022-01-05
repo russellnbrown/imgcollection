@@ -16,7 +16,7 @@
  */
 package scan;
 
-import jutils.Logger;
+import arenbee.other.Logger;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import java.nio.charset.MalformedInputException;
 import java.util.Scanner;
-import jutils.Gen;
+import arenbee.other.Gen;
 
 //
 //  'ImgCollection' is used to hold the various items in the
