@@ -61,6 +61,7 @@ public class jfindFrame extends javax.swing.JFrame
     public jfindFrame()
     {
 
+        Logger.Create("jfind", Logger.Level.Info, Logger.Level.Info);
         instance = this;
 
         initComponents();
@@ -72,11 +73,14 @@ public class jfindFrame extends javax.swing.JFrame
                 try
                 {
                     evt.acceptDrop(DnDConstants.ACTION_COPY);
+                    Logger.Info("File dropped");
                     List<File> droppedFiles = (List<File>) evt.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
                     for (File file : droppedFiles)
                     {
+                        Logger.Info("Dropped file is " + file.getAbsolutePath());
                         loadFile(file.getAbsolutePath());
                         findImage(file.getAbsolutePath());
+                        Logger.Info("Results are back");
                         break;
                     }
                 } catch (Exception ex)

@@ -84,8 +84,7 @@ public class JServer
         {
             response.type("application/json");
             String jwhat = request.params(":srch");
-            String what = Helpers.hexToStr(jwhat);
-            
+            String what = Helpers.hexToStr(jwhat);     
             arenbee.api.GenericSearchResult res = set.matchingImages(what, 200);
             System.out.println("ISEARCH for " + what);
             return gson.toJson(res);
