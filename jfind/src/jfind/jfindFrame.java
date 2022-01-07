@@ -4,7 +4,6 @@
  */
 package jfind;
 
-
 import arenbee.api.*;
 import arenbee.other.*;
 import com.google.gson.Gson;
@@ -31,11 +30,14 @@ import arenbee.other.Logger;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.MouseListener;
+import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.TransferHandler;
 import okhttp3.MediaType;
-
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -46,41 +48,61 @@ import okhttp3.Response;
  *
  * @author russell.brown
  */
-public class jfindFrame extends javax.swing.JFrame {
-
+public class jfindFrame extends javax.swing.JFrame
+{
 
     public static jfindFrame instance = null;
-    
+
     TextSearchTable tm;
-   
 
     /**
      * Creates new form jfindFrame
      */
-    public jfindFrame() 
-    {   
-       
+    public jfindFrame()
+    {
+
         instance = this;
 
         initComponents();
-        
-       final String propertyName = "image";
-        imgLBL.setTransferHandler(createTransferHandler());
-        
-    
-    
+
+        imgPNL.setDropTarget(new DropTarget()
+        {
+            public synchronized void drop(DropTargetDropEvent evt)
+            {
+                try
+                {
+                    evt.acceptDrop(DnDConstants.ACTION_COPY);
+                    List<File> droppedFiles = (List<File>) evt.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+                    for (File file : droppedFiles)
+                    {
+                        loadFile(file.getAbsolutePath());
+                        findImage(file.getAbsolutePath());
+                        break;
+                    }
+                } catch (Exception ex)
+                {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
         tm = new TextSearchTable();
 
         ts.setModel(tm);
 
-        ts.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent event) {
-                if (event.getValueIsAdjusting() == false) {
+        ts.getSelectionModel().addListSelectionListener(new ListSelectionListener()
+        {
+            public void valueChanged(ListSelectionEvent event)
+            {
+                if (event.getValueIsAdjusting() == false)
+                {
                     String selected = top + "/" + ts.getValueAt(ts.getSelectedRow(), 0).toString();
                     String file = ts.getValueAt(ts.getSelectedRow(), 1).toString();
-                    if (file != null && file.length() > 0) {
+                    if (file != null && file.length() > 0)
+                    {
                         loadFile(selected + "/" + file);
-                    } else {
+                    } else
+                    {
                         Logger.Info("No file specified");
                     }
                 }
@@ -88,68 +110,60 @@ public class jfindFrame extends javax.swing.JFrame {
 
         });
 
-        ts.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                try {
+        ts.addMouseListener(new MouseAdapter()
+        {
+            public void mouseClicked(MouseEvent e)
+            {
+                try
+                {
                     String selected = top + "/" + ts.getValueAt(ts.getSelectedRow(), 0).toString();
                     String file = ts.getValueAt(ts.getSelectedRow(), 1).toString();
-                    if (e.getClickCount() == 2) {
-                        System.out.println("TWO " + selected + ":" + file);
+                    if (e.getClickCount() == 2)
+                    {
+                        //System.out.println("TWO " + selected + ":" + file);
 
-                        if (file.length() == 0) {
-                            if (Desktop.isDesktopSupported()) {
+                        if (file.length() == 0)
+                        {
+                            if (Desktop.isDesktopSupported())
+                            {
                                 Desktop.getDesktop().open(new File(selected));
                             }
-                        } else {
+                        } else
+                        {
 
                             showFile(selected + "/" + file);
 
                         }
                     }
-                    if (e.getClickCount() == 1) {
-                        System.out.println("ONE " + ts.getValueAt(ts.getSelectedRow(), 0).toString());
+                    if (e.getClickCount() == 1)
+                    {
+                        //System.out.println("ONE " + ts.getValueAt(ts.getSelectedRow(), 0).toString());
                     }
-                } catch (Exception exx) {
+                } catch (Exception exx)
+                {
                     Logger.Severe("Error opening " + exx.getMessage());
                 }
 
             }
         });
     }
-    
-    private static TransferHandler createTransferHandler(){
-    return new TransferHandler(  ){
-      @Override
-      public boolean importData( JComponent comp, Transferable aTransferable ) {
-        try {
-          Object transferData = aTransferable.getTransferData( DataFlavor.imageFlavor );
-          jfindFrame.instance.imgLBL.setIcon( new ImageIcon( ( Image ) transferData ) );
-        } catch ( UnsupportedFlavorException e ) {
-        } catch ( IOException e ) {
-        }
-        return true;
-      }
 
-      @Override
-      public boolean canImport( JComponent comp, DataFlavor[] transferFlavors ) {
-        return true;
-      }
-    };
-  }
-    private void showFile(String p) {
-        try {
+    private void showFile(String p)
+    {
+        try
+        {
             JFrame f = new JFrame(); //creates jframe f
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); //this is your screen size
             File ff = new File(p);
             BufferedImage img = ImageIO.read(ff);
-            int nw = img.getWidth(), nh=img.getHeight();
+            int nw = img.getWidth(), nh = img.getHeight();
             boolean resize = false;
-            while(nw > (screenSize.width-50) && nh > (screenSize.height-50) )
+            while (nw > (screenSize.width - 50) && nh > (screenSize.height - 50))
             {
                 nw -= 10;
                 nh -= 10;
                 resize = true;
-            }   
+            }
             Image newimg = img.getScaledInstance(nw, nh, java.awt.Image.SCALE_SMOOTH);
             ImageIcon icon = new ImageIcon(newimg);
             JLabel lbl = new JLabel(icon); //puts the image into a jlabel
@@ -159,22 +173,42 @@ public class jfindFrame extends javax.swing.JFrame {
             int y = (screenSize.height - f.getSize().height) / 2;//of the center of the screen
             f.setLocation(x, y); //sets the location of the jframe
             f.setVisible(true); //makes the jframe visible    
-        } catch (IOException ex) {
+        } catch (IOException ex)
+        {
             java.util.logging.Logger.getLogger(jfindFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    private void loadFile(String p) {
-        try {
+    private void loadFile(String p)
+    {
+        try
+        {
             File f = new File(p);
             BufferedImage img = ImageIO.read(f);
             Image newimg = img.getScaledInstance(120, 120, java.awt.Image.SCALE_SMOOTH);
             ImageIcon icon = new ImageIcon(newimg);
+            Logger.Info("Loading image pane with " + p);
             imgLBL.setIcon(icon);
-        } catch (Exception exx) {
+            imgLBL.setText(p);
+        } catch (Exception exx)
+        {
             Logger.Severe("Error opening " + exx.getMessage());
         }
 
+    }
+
+    private void findImage(String ifind)
+    {
+        Logger.Info("Send request to find image " + ifind);
+        GenericSearchResult ds = apiSearch("imgsrch", Helpers.strToHex(ifind));
+        Logger.Info("Got result back, loading " + ds.items.size() + " results");
+        tm.Clear();
+        for (int i = 0; i < ds.items.size(); i++)
+        {
+            tm.Add(ds.items.get(i).path, ds.items.get(i).file);
+        }
+        tm.Finished();
+        Logger.Info("Image search finished.");
     }
 
     /**
@@ -290,7 +324,7 @@ public class jfindFrame extends javax.swing.JFrame {
             imgPNLLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(imgPNLLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(imgLBL, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(imgLBL, javax.swing.GroupLayout.PREFERRED_SIZE, 285, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         imgPNLLayout.setVerticalGroup(
@@ -330,46 +364,44 @@ public class jfindFrame extends javax.swing.JFrame {
 
     GenericSearchResult apiSearch(String type, String search)
     {
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder().url("http://localhost:6020/"+type+"/"+search).build();
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url("http://localhost:6020/" + type + "/" + search).build();
 
-            try 
-            {
-                Response response = client.newCall(request).execute();
-                if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-                String reply = response.body().string();
-                System.out.println(reply);
-                GenericSearchResult dr = new Gson().fromJson(reply, GenericSearchResult.class );
-                top = dr.top;
-                System.out.println(dr.toString());
-                return dr;
-            }
-            catch(Exception e)
-            {
-                System.out.println("Err:"+e.getLocalizedMessage());            
-            }
-            return null;
+        try
+        {
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful())
+                throw new IOException("Unexpected code " + response);
+            String reply = response.body().string();
+            System.out.println(reply);
+            GenericSearchResult dr = new Gson().fromJson(reply, GenericSearchResult.class);
+            top = dr.top;
+            System.out.println(dr.toString());
+            return dr;
+        } catch (Exception e)
+        {
+            System.out.println("Err:" + e.getLocalizedMessage());
+        }
+        return null;
     }
-            
 
     private String top = "";
-    
+
     private void srchTextBTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_srchTextBTNActionPerformed
 
         tm.Clear();
 
-        if (textSearchTGL.isSelected()) 
+        if (textSearchTGL.isSelected())
         {
-            GenericSearchResult ds = apiSearch("txtsrch",textSearchTB.getText());
-            for (int i = 0; i < ds.items.size(); i++) 
+            GenericSearchResult ds = apiSearch("txtsrch", textSearchTB.getText());
+            for (int i = 0; i < ds.items.size(); i++)
             {
                 tm.Add(ds.items.get(i).path, ds.items.get(i).file);
             }
-        } 
-        else 
+        } else
         {
-            GenericSearchResult ds = apiSearch("dirsrch",textSearchTB.getText());
-            for (int i = 0; i < ds.items.size(); i++) 
+            GenericSearchResult ds = apiSearch("dirsrch", textSearchTB.getText());
+            for (int i = 0; i < ds.items.size(); i++)
             {
                 tm.Add(ds.items.get(i).path);
             }
@@ -382,30 +414,29 @@ public class jfindFrame extends javax.swing.JFrame {
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
+    public static void main(String args[])
+    {
 
-
-
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
+        java.awt.EventQueue.invokeLater(new Runnable()
+        {
+            public void run()
+            {
                 new jfindFrame().setVisible(true);
             }
         });
     }
-    
- 
- 
+
     private void testConnect()
     {
-     
-            String ifind  = "C:\\\\TestEnvironments\\\\sync\\\\src\\\\i2\\\\test.jpg";
 
-           GenericSearchResult ds = apiSearch("imgsrch",Helpers.strToHex(ifind));
-            for (int i = 0; i < ds.items.size(); i++) 
-            {
-                tm.Add(ds.items.get(i).path, ds.items.get(i).file);
-            }
-            /*
+        String ifind = "C:\\\\TestEnvironments\\\\sync\\\\src\\\\i2\\\\test.jpg";
+
+        GenericSearchResult ds = apiSearch("imgsrch", Helpers.strToHex(ifind));
+        for (int i = 0; i < ds.items.size(); i++)
+        {
+            tm.Add(ds.items.get(i).path, ds.items.get(i).file);
+        }
+        /*
             ImageSearchRequest isr = new ImageSearchRequest();
             isr.path = "C:\\TestEnvironments\\sync\\src\\i2\\test.jpg";
             String jsonBody = new Gson().toJson(isr);
@@ -436,11 +467,9 @@ public class jfindFrame extends javax.swing.JFrame {
             {
                 System.out.println("Err:"+e.getLocalizedMessage());            
             }
-            */
+         */
     }
-    
-        
-    
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel imgLBL;
