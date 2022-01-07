@@ -29,26 +29,28 @@ import org.apache.commons.lang3.tuple.Pair;
  *
  * @author russ
  */
-public class ScanSet {
+public class ScanSet
+{
 
     public final ConcurrentHashMap<Long, ImgCollectionDirItem> dirs = new ConcurrentHashMap<>();
     public final ConcurrentLinkedQueue<ImgCollectionFileItem> files = new ConcurrentLinkedQueue<>();
     public final ConcurrentHashMap<Long, ImgCollectionImageItem> images = new ConcurrentHashMap<>();
     public String top;
 
-    public GenericSearchResult matchingDirs(String srch, int limit) {
-       GenericSearchResult l = new GenericSearchResult(top);
+    public GenericSearchResult matchingDirs(String srch, int limit)
+    {
+        GenericSearchResult l = new GenericSearchResult(top);
 
-        for (ImgCollectionDirItem i : dirs.values()) 
+        for (ImgCollectionDirItem i : dirs.values())
         {
             String dir = i.getDir();
             System.out.println("Compare " + dir + " with " + srch);
-            if (org.apache.commons.lang3.StringUtils.containsIgnoreCase(dir, srch)) 
+            if (org.apache.commons.lang3.StringUtils.containsIgnoreCase(dir, srch))
             {
                 l.items.add(new arenbee.api.GenericSearchResultItem(i.getDir()));
             }
 
-            if (l.items.size() == limit) 
+            if (l.items.size() == limit)
             {
                 break;
             }
@@ -56,19 +58,25 @@ public class ScanSet {
         return l;
     }
 
-    public GenericSearchResult  matchingFiles(String srch, int limit) {
-        GenericSearchResult  res = new GenericSearchResult (top);
+    public GenericSearchResult matchingFiles(String srch, int limit)
+    {
+        GenericSearchResult res = new GenericSearchResult(top);
 
-        for (ImgCollectionFileItem i : files) {
-            if (org.apache.commons.lang3.StringUtils.containsIgnoreCase(i.getFile(), srch)) {
-                try {
+        for (ImgCollectionFileItem i : files)
+        {
+            if (org.apache.commons.lang3.StringUtils.containsIgnoreCase(i.getFile(), srch))
+            {
+                try
+                {
                     String dname = dirs.get(i.getDhash()).getDir();
-                    res.items.add(new arenbee.api.GenericSearchResultItem(dname,i.getFile()));
-                } catch (Exception ex) {
+                    res.items.add(new arenbee.api.GenericSearchResultItem(dname, i.getFile()));
+                } catch (Exception ex)
+                {
 
                 }
             }
-            if (res.items.size() == limit) {
+            if (res.items.size() == limit)
+            {
                 break;
             }
         }
@@ -76,19 +84,20 @@ public class ScanSet {
         return res;
     }
 
-    public ScanSet(String rootPath) {
+    public ScanSet(String rootPath)
+    {
         Path s = Paths.get(rootPath);
 
-        if (!Files.exists(s)) {
+        if (!Files.exists(s))
+        {
             System.out.println("No Set Found");
         }
-
-        System.out.println("Opening "+ rootPath);
 
         int lc = 0;
         int f = 0;
 
-        try {
+        try
+        {
             Path pdir = s.resolve("dirs.txt");
             Path pfile = s.resolve("files.txt");
             Path puniq = s.resolve("images.bin");
@@ -107,11 +116,13 @@ public class ScanSet {
             line = fdirs.nextLine();
             top = line;
 
-            while (fdirs.hasNext()) {
+            while (fdirs.hasNext())
+            {
                 line = fdirs.nextLine();
                 f = 1;
                 lc++;
-                try {
+                try
+                {
                     String[] parts = line.split("\\|");
 
                     ImgCollectionDirItem sid = new ImgCollectionDirItem();
@@ -120,7 +131,8 @@ public class ScanSet {
                     sid.setLmod(Long.parseLong(parts[2]));
 
                     dirs.put(sid.getHash(), sid);
-                } catch (NumberFormatException nfe) {
+                } catch (NumberFormatException nfe)
+                {
                     System.out.println("Number ex reading dirs" + nfe.getMessage() + line);
                 }
             }
@@ -128,14 +140,17 @@ public class ScanSet {
             f = 2;
             lc = 0;
             long fpos = 0;
-            try {
-                while (ffiles.hasNext()) {
+            try
+            {
+                while (ffiles.hasNext())
+                {
                     line = ffiles.nextLine();
                     f = 2;
                     lc++;
                     String[] fparts = line.split(",");
 
-                    try {
+                    try
+                    {
                         long dhash = Long.parseLong(fparts[0]);
                         long crc = Long.parseLong(fparts[1]);
                         ImgCollectionFileItem sif = new ImgCollectionFileItem();
@@ -143,9 +158,11 @@ public class ScanSet {
                         sif.setDhash(dhash);
                         sif.setFile(fparts[2]);
                         files.add(sif);
-                    } catch (NumberFormatException nfe) {
+                    } catch (NumberFormatException nfe)
+                    {
                         System.out.println("NUmber ex reading files" + nfe.getMessage() + line);
-                    } catch (Exception nfe) {
+                    } catch (Exception nfe)
+                    {
                         System.out.println("NUmber ex reading files" + nfe.getMessage() + line);
                     }
 
@@ -162,8 +179,10 @@ public class ScanSet {
             ByteBuffer ibuf = ByteBuffer.allocateDirect(8 + 3 * 16 * 16);
             ibuf.order(ByteOrder.LITTLE_ENDIAN);
 
-            try {
-                while (fin.available() > 0) {
+            try
+            {
+                while (fin.available() > 0)
+                {
                     lc++;
                     ibuf.rewind();
                     funiq.read(ibuf);
@@ -176,7 +195,8 @@ public class ScanSet {
                     sii.setThumb(buf);
                     images.put(crc, sii);
                 }
-            } catch (IOException e) {
+            } catch (IOException e)
+            {
 
             }
             fdirs.close();
@@ -184,67 +204,94 @@ public class ScanSet {
             funiq.close();
             fin.close();
 
-        } catch (IOException ioe) {
+        } catch (IOException ioe)
+        {
             ioe.printStackTrace();
             System.out.println(String.format("Caught IOE : %s in save lc=%d, f=%d", ioe.toString(), lc, f));
         }
         System.out.println(String.format("Set has %d dirs, %d files and %d images.", dirs.size(), files.size(), images.size()));
     }
 
-    GenericSearchResult matchingImages(String what, int i) {
+    GenericSearchResult matchingImages(String what, int i)
+    {
+
+        Logger.Info("SRCH item is " + what);
 
         GenericSearchResult r = new GenericSearchResult(top);
-        
+
         Path ffile = Paths.get(what);
-        
-        if ( !Files.exists(ffile) )
+
+        if (!Files.exists(ffile))
         {
             r.message = "Error";
+            Logger.Warn("SRCH item dosnt exist " + what);
             return r;
         }
         SSCRC finfo = GetFilesImageComponents(ffile);
 
+        Logger.Warn("SRCH start compares " + what);
+
         List<SortedImage> simages = new LinkedList<>();
-        for(ImgCollectionImageItem v : images.values() )
+        int NumThreads = 4;
+        int perThread = images.size() / NumThreads;
+        
+        Logger.Info("NumThreads %d Images %d PerThread %d", NumThreads, images.size(), perThread);
+
+        if (NumThreads == 1 || perThread < 5)
         {
-            double c = v.getCVal(finfo);
-            simages.add(new SortedImage(c,v.getIHash()));
-        }
-     
-        
-        Collections.sort(simages, new Comparator<SortedImage>()
+            for (ImgCollectionImageItem v : images.values())
             {
-            @Override
-            public int compare(SortedImage s1, SortedImage s2) 
-            {
-            if (s1.closeness < s2.closeness)
-            return -1;
-            else if (s1.closeness > s2.closeness )
-            return 1;
-            return 0;
+                double c = v.getCVal(finfo);
+                simages.add(new SortedImage(c, v.getIHash()));
             }
-            });
-        
-        
-        for(i =0; i<min(simages.size(), 10L); i++)
+        } else
+        {
+           
+            for (int t = 0; t < NumThreads; t++)
+            {
+                for (ImgCollectionImageItem v : images.values())
+                {
+                    double c = v.getCVal(finfo);
+                    simages.add(new SortedImage(c, v.getIHash()));
+                }
+            }
+        }
+
+        Logger.Warn("SRCH start sort " + what);
+        Collections.sort(simages, new Comparator<SortedImage>()
+        {
+            @Override
+            public int compare(SortedImage s1, SortedImage s2)
+            {
+                if (s1.closeness < s2.closeness)
+                    return -1;
+                else if (s1.closeness > s2.closeness)
+                    return 1;
+                return 0;
+            }
+        });
+
+        Logger.Warn("SRCH start compares, count is " + simages.size());
+        for (i = 0; i < min(simages.size(), 10L); i++)
         {
             ImgCollectionFileItem f = findFile(simages.get(i).ihash);
             String dir = dirs.get(f.getDhash()).getDir();
-            GenericSearchResultItem ri = new GenericSearchResultItem(dir,f.getFile(),simages.get(i).closeness);
-             r.items.add(ri);             
-            Logger.Info("Item %s", ri);
+            GenericSearchResultItem ri = new GenericSearchResultItem(dir, f.getFile(), simages.get(i).closeness);
+            r.items.add(ri);
+            //Logger.Info("Item %s", ri);
         }
-        
+        Logger.Info("End search, 1 thread, item is " + what);
+
         return r;
     }
-    
+
     ImgCollectionFileItem findFile(long ihash)
     {
         String dir;
-        
-        for(ImgCollectionFileItem fi : files)
+
+        for (ImgCollectionFileItem fi : files)
         {
-            if ( fi.getIHash() == ihash )
+            if (fi.getIHash() == ihash)
             {
                 return fi;
             }
