@@ -232,7 +232,7 @@ public class ScanSet
         Logger.Warn("SRCH start compares " + what);
 
         List<SortedImage> simages = new LinkedList<>();
-        int NumThreads = 4;
+        int NumThreads = 1;
         int perThread = images.size() / NumThreads;
         
         Logger.Info("NumThreads %d Images %d PerThread %d", NumThreads, images.size(), perThread);
