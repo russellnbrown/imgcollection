@@ -195,6 +195,14 @@ bool ImgCollectionBuilder::walkFiles(fs::path dir)
 				ii->filepart = filepart;
 				processItem(ii);
 			}
+			else if (ImgUtils::IsVideoFile(de.path()))
+			{
+				ImageInfo* ii = new ImageInfo();
+				ii->de = de;
+				ii->dirhash = dirHash;
+				ii->filepart = filepart;
+				ic->files.push_back(new ImgCollectionFileItem(ii->dirhash, ii->crc, ii->filepart));
+			}
 		}
 	}
 

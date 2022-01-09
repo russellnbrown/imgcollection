@@ -20,6 +20,7 @@
 #include "crc32.h"
 
 vector<string> extensions{ ".bmp", ".jpg", ".jpeg", ".png", ".gif" };
+vector<string> vextensions{ ".avi", ".mpg", ".mp4", ".mkv", ".flv", ".m4v"};
 
 uint32_t ImgUtils::GetHash(string &s)
 {
@@ -34,6 +35,13 @@ int64_t ImgUtils::GetHash(int8_t *bytes, int len)
 	return xcrc;
 }
 
+bool ImgUtils::IsVideoFile(fs::path fileStr)
+{
+	string extension = fileStr.extension().string();
+	transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+
+	return find(vextensions.begin(), vextensions.end(), extension) != vextensions.end();
+}
 
 bool ImgUtils::IsImageFile(fs::path fileStr)
 {

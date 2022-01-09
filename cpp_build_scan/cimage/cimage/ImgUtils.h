@@ -77,6 +77,7 @@ public:
 	static uint32_t GetHash(string &path);			// get crc of a file on disk
 	static int64_t GetHash(int8_t *bytes, int len);	// get crc hash of a files bytes
 	static bool IsImageFile(fs::path fileName);		// does file have an image extension
+	static bool IsVideoFile(fs::path fileName);		// does file have a video extension
 	static fs::path Cwd();							// current dir
 	static void Replace(string& source, string const& find, string const& replace);
 													// replace strings in a string with a string
