@@ -27,7 +27,7 @@
 //
 void usage()
 {
-	logger::raw("usage: cimage [-c <top> <ic> <files>|-a <ic> <files>|-s <ic> <search>|-h|-m <nc out> <ic 1>..<ic n>|-r <icin> <icout> <files>] [-nt] [-cm <cmethod>]");
+	logger::raw("usage: cimage [-c <top> <ic> <files>|-a <ic> <files>|-s <ic> <search>|-h|-m <nc out> <ic 1>..<ic n>||-rb <icin> <icout>|-r <icin> <icout> <files>] [-nt] [-cm <cmethod>]");
 	logger::raw("where:");
 	logger::raw("-c        : create database (with threads)");
 	logger::raw("-m        : merge databases");
@@ -230,6 +230,46 @@ int main(int argc, char *argv[])
 	else if (action == "-r")
 	{
 		if (argc < 5)
+			usage();
+
+		string refreshInSet = argv[2];
+		string refreshOutSet = argv[3];
+
+		if (fs::exists(refreshOutSet + "/dirs.txt"))
+			logger::fatal("Output set exists");
+
+
+
+		// Get files path & check it exists
+		fs::path inset = checkSet(refreshInSet, false);
+		fs::path outset = checkSet(refreshOutSet, true);
+		ImgCollectionRefresh* sb = new ImgCollectionRefresh();
+		Timer::start();
+		sb->Load(inset);
+		sb->Create(outset);
+
+		for (int sx = 4; sx < argc; sx++)
+		{
+			string refreshFiles = argv[sx];
+			if (!fs::exists(refreshFiles))
+			{
+				logger::error("Scan point dosnt exist" + refreshFiles);
+				continue;
+			}
+			logger::info("Process point " + refreshFiles);
+
+			fs::path refresh(refreshFiles);
+
+
+			// load the ImgCollection from disk into a ImgCollectionBuilder
+			sb->Refresh(refresh);
+		}
+		logger::info("Finished. Saving to  " + refreshOutSet);
+		sb->Save();
+	}
+	else if (action == "-rb")
+	{
+		if (argc < 3)
 			usage();
 
 		string refreshInSet = argv[2];
