@@ -32,7 +32,6 @@ private:
 	ImgCollection* ic = nullptr;			// The ImgCollection
 
 	Stats st;								// stats on processing
-	ImageInfo* searchItem;					// in searches, the image being searched for
 	fs::path saveTo;
 
 public:
@@ -43,20 +42,20 @@ public:
 	void Create(fs::path to);
 	void Load(fs::path from);
 	void Save();
-	void Refresh(fs::path scan);
+	void Rebuild();
 
 private:
 	bool walkDirecrories(fs::path dir);			// iterates over files in a directory tree 
 	// split a file path into its dir & file (if any) componenets
 
 	map<uint32_t, ImgCollectionDirItem*> dirs;
-	map<uint64_t, ImgCollectionFileItem*> files;
+	map<string, ImgCollectionFileItem*> files;
 
 
 	void processItem(ImageInfo* ii);		// process an image file
 	void processItemResult(ImageInfo* ii);	// process result of above
 
 	bool isSubdir(fs::path full, fs::path sub);
-	uint64_t dfHash(uint32_t dhash, string filename);
+	string dfHash(uint32_t dhash, string filename);
 };
 

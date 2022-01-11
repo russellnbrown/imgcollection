@@ -74,13 +74,16 @@ bool ImgCollectionReBuild::walkDirecrories(fs::path dir)
 		st.incNameErrors();
 		return false;
 	}
+
+	ic->dirs.push_back(new ImgCollectionDirItem(dirHash, dirpart, lastmod));
+	st.incDirs();
+
 	ImgCollectionDirItem* di = dirs[dirHash];
+	processFiles = true;
 	if (di == nullptr)
 	{
 		logger::info("this is a NEW FOLDER , add to list" + dir.string());
-		processFiles = true;
-		ic->dirs.push_back(new ImgCollectionDirItem(dirHash, dirpart, lastmod));
-		st.incDirs();
+		
 	}
 	else
 	{
@@ -88,10 +91,10 @@ bool ImgCollectionReBuild::walkDirecrories(fs::path dir)
 		{
 			di->lmod = lastmod;
 			logger::info("this is an existing MODIFIED folder" + dir.string());
-			processFiles = true;
+			
 		}
 		else
-			logger::debug("directory is unchanged");
+			logger::debug("directory is unchanged" + dir.string());
 	}
 
 	// go thru all files/dirs
@@ -110,25 +113,29 @@ bool ImgCollectionReBuild::walkDirecrories(fs::path dir)
 				if (ImgUtils::IsImageFile(de.path()))
 				{
 					uint32_t fdirHash = ic->pathsplit(de, dirpart, filepart, lastmod);
-
+					
 
 					if (fdirHash == 0)
 					{
 						st.incNameErrors();
 						continue;
 					}
-					uint64_t cfh = dfHash(fdirHash, filepart);
-					if (files[cfh] == nullptr)
+
+					string dfhash = dfHash(fdirHash, filepart);
+					ImgCollectionFileItem* fi = files[dfhash];
+					logger::info("File " + de.path().string() + " in " + dir.string() + " hash is " + dfhash + " entry is " + (fi == NULL ? "NULL" : "Found"));
+
+					if (fi == nullptr)
 					{
 						ImageInfo* ii = new ImageInfo();
 						ii->de = de;
 						ii->dirhash = dirHash;
 						ii->filepart = filepart;
-						logger::info("Process file " + de.path().string() + " in " + dir.string() + " as file is NEW");
+						logger::debug("Process file " + de.path().string() + " in " + dir.string() + " as file is NEW");
 						processItem(ii);
 					}
 					else
-						logger::debug("Ignore file in modified dir " + de.path().string() + " in " + dir.string() + " as the file isnt new");
+						ic->files.push_back(fi);
 				}
 			}
 			else
@@ -139,6 +146,7 @@ bool ImgCollectionReBuild::walkDirecrories(fs::path dir)
 
 	return true;
 }
+
 
 void ImgCollectionReBuild::processItemResult(ImageInfo* ii)
 {
@@ -212,17 +220,18 @@ bool ImgCollectionReBuild::isSubdir(fs::path full, fs::path sub)
 
 }
 
-uint64_t ImgCollectionReBuild::dfHash(uint32_t dhash, string filename)
+string ImgCollectionReBuild::dfHash(uint32_t dhash, string filename)
 {
 	uint32_t fhash = ImgUtils::GetHash(filename);
-	uint64_t dfhash = ((uint64_t)dhash << 32) | fhash;
-	return dfhash;
+	
+	char s[1024];
+	snprintf(s, 1024, "%u_%s", dhash, filename.c_str());// fhash);
+	return s;
 }
 
-void ImgCollectionReBuild::Refresh(fs::path set)
+void ImgCollectionReBuild::Rebuild()
 {
-	if (!isSubdir(set, ic->top))
-		logger::fatal("scan path not under top");
+
 
 	for (auto const& ditem : ic->dirs)
 	{
@@ -232,11 +241,14 @@ void ImgCollectionReBuild::Refresh(fs::path set)
 
 	for (auto const& fitem : ic->files)
 	{
-		uint64_t dfhash = dfHash(fitem->dhash, fitem->name);
+		string dfhash = dfHash(fitem->dhash, fitem->name);
 		files[dfhash] = fitem;
 	}
 
-	walkDirecrories(fs::absolute(set));
+	ic->dirs.clear();
+	ic->files.clear();
+
+	walkDirecrories(fs::absolute(ic->stop));
 
 
 }
