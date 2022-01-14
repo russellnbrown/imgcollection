@@ -52,6 +52,8 @@ void ImgCollectionReBuild::Create(fs::path _saveTo)
 	saveTo = _saveTo;
 }
 
+
+
 //
 // walkFiles
 //
@@ -68,12 +70,76 @@ bool ImgCollectionReBuild::walkDirecrories(fs::path dir)
 	time_t lastmod = 0;
 	bool processFiles = false;
 
+	logger::info("DIR " + dir.string() );
+
 	uint32_t dirHash = ic->pathsplit(dir, dirpart, filepart, lastmod);
 	if (dirHash == 0)
 	{
+		logger::info(" - name error");
 		st.incNameErrors();
 		return false;
 	}
+
+	numDirs++;
+	logger::info("In dir " + dirpart);
+
+	ImgCollectionDirItem* di = dirs[dirHash];
+	bool isNew = false;
+	bool isModded = false;
+	if (di != nullptr)
+	{
+		logger::info(" - known");
+
+		numKnownDirs++;
+		if (lastmod > di->lmod)
+		{
+			isModded = true;
+			di->lmod = lastmod;
+			logger::info(" - modified");
+			numModDirs++;
+		}
+		
+		ic->dirs.push_back(di);
+	}
+	else
+	{
+		numNewDirs++;
+		logger::info(" - new");
+		isNew = true;
+		ic->dirs.push_back(new ImgCollectionDirItem(dirHash, dirpart, lastmod));
+	}
+
+
+	for (fs::directory_entry de : fs::directory_iterator(dir))
+	{
+		if (fs::is_directory(de))
+		{
+			walkDirecrories(de.path());
+		}
+		else
+		{
+			numFiles++;
+			if (isNew || isModded)
+			{
+				logger::info("Process files in " + de.path().string() + " as its dir is modified or new");
+
+				if (ImgUtils::IsImageFile(de.path()))
+				{
+					numImageFiles++;
+				}
+				else if (ImgUtils::IsVideoFile(de.path()))
+				{
+					numVideoFiles++;
+				}
+			}
+			else
+				numIgnoredFiles++;
+		}
+	}
+	return true;
+
+	/*
+
 
 	ic->dirs.push_back(new ImgCollectionDirItem(dirHash, dirpart, lastmod));
 	st.incDirs();
@@ -145,6 +211,7 @@ bool ImgCollectionReBuild::walkDirecrories(fs::path dir)
 
 
 	return true;
+	*/
 }
 
 
@@ -245,11 +312,13 @@ void ImgCollectionReBuild::Rebuild()
 		files[dfhash] = fitem;
 	}
 
+	logger::debug("Existing set has: dirs:" + to_string(dirs.size()) + ",  files:" + to_string(files.size()) + ", images:" + to_string(ic->images.size()));
+
 	ic->dirs.clear();
 	ic->files.clear();
 
 	walkDirecrories(fs::absolute(ic->stop));
-
+	logger::info("Final result dirs:" + to_string(numDirs) + "(" + to_string(numKnownDirs) + ")known (" + to_string(numModDirs) + ")mod (" + to_string(numNewDirs) + ")new, Files:" + to_string(numFiles) + " (" + to_string(numImageFiles) + ")images  (" + to_string(numVideoFiles) + ")video (" + to_string(numIgnoredFiles) + ")ignored.");
 
 }
 

@@ -44,6 +44,18 @@ public:
 	void Save();
 	void Rebuild();
 
+
+	int numDirs = 0;
+	int numFiles = 0;
+	int numImageFiles = 0;
+	int numVideoFiles = 0;
+	int numKnownDirs = 0;
+	int mf = 0;
+	int numModDirs = 0;
+	int numNewDirs = 0;
+	int numIgnoredFiles = 0;
+
+
 	// ctest
 
 private:

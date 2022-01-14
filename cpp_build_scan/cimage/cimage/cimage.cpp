@@ -276,8 +276,8 @@ int main(int argc, char *argv[])
 		string refreshOutSet = argv[3];
 		//string sscan = argv[4];
 
-		if (fs::exists(refreshOutSet + "/dirs.txt"))
-			logger::fatal("Output set exists");
+		//if (fs::exists(refreshOutSet + "/dirs.txt"))
+		//	logger::fatal("Output set exists");
 
 
 
