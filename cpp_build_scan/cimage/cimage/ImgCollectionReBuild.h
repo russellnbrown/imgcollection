@@ -49,7 +49,10 @@ public:
 	int numFiles = 0;
 	int numImageFiles = 0;
 	int numVideoFiles = 0;
+	int numOtherFiles = 0;
 	int numKnownDirs = 0;
+	int numKnownFiles = 0;
+	int numNewFiles = 0;
 	int mf = 0;
 	int numModDirs = 0;
 	int numNewDirs = 0;
@@ -71,5 +74,11 @@ private:
 
 	bool isSubdir(fs::path full, fs::path sub);
 	string dfHash(uint32_t dhash, string filename);
+
+	uint32_t processWalkedDir(fs::path dir);
+	bool processWalkedFile(fs::path file);
+	void dump();
+
+
 };
 

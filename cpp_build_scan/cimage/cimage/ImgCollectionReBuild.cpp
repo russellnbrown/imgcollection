@@ -53,6 +53,113 @@ void ImgCollectionReBuild::Create(fs::path _saveTo)
 }
 
 
+uint32_t ImgCollectionReBuild::processWalkedDir(fs::path dir)
+{
+	string dirpart;
+	string filepart;
+	time_t lastmod = 0;
+	bool processFiles = false;
+
+	logger::info("DIR " + dir.string());
+
+	uint32_t dirHash = ic->pathsplit(dir, dirpart, filepart, lastmod);
+	if (dirHash == 0)
+	{
+		logger::info(" - name error");
+		st.incNameErrors();
+		return dirHash;
+	}
+
+	logger::info(" - " + dirpart);
+
+	ImgCollectionDirItem* di = dirs[dirHash];
+	bool isNew = false;
+	bool isModded = false;
+	if (di != nullptr)
+	{
+		logger::info(" - known");
+		numKnownDirs++;
+		if (lastmod > di->lmod)
+		{
+			isModded = true;
+			di->lmod = lastmod;
+			logger::info(" - modified");
+			numModDirs++;
+		}
+		ic->dirs.push_back(di);
+	}
+	else
+	{
+		numNewDirs++;
+		logger::info(" - new");
+		isNew = true;
+		ic->dirs.push_back(new ImgCollectionDirItem(dirHash, dirpart, lastmod));
+	}
+
+	return dirHash;
+}
+
+bool ImgCollectionReBuild::processWalkedFile(fs::path fil)
+{
+	string dirpart;
+	string filepart;
+	time_t lastmod = 0;
+
+	logger::info("FIL " + fil.string());
+	uint32_t dirHash = ic->pathsplit(fil, dirpart, filepart, lastmod);
+
+	if (dirHash == 0)
+	{
+		logger::info(" - name error");
+		st.incNameErrors();
+		return false;
+	}
+
+	string dfhash = dfHash(dirHash, filepart);
+	
+	ImgCollectionFileItem *fi = files[dfhash];
+	if (fi != nullptr)
+		numKnownFiles++;
+	else
+		numNewFiles++;
+
+
+	if (fi != nullptr)
+	{
+		logger::info(" - " + filepart + " known");
+		ic->files.push_back(fi);
+		return true;
+	}
+	logger::info(" - " + filepart + " new" );
+
+	if (ImgUtils::IsImageFile(fil) )
+	{
+		numImageFiles++;
+		ImageInfo* ii = new ImageInfo();
+		ii->de = fil;
+		ii->dirhash = dirHash;
+		ii->filepart = filepart;
+		processItem(ii);
+		return true;
+	}
+	else if (ImgUtils::IsVideoFile(fil))
+	{
+		numVideoFiles++;
+	}
+	else 
+	{
+		numOtherFiles++;
+	}
+	ImageInfo* ii = new ImageInfo();
+	ii->de = fil;
+	ii->dirhash = dirHash;
+	ii->filepart = filepart;
+	ic->files.push_back(new ImgCollectionFileItem(ii->dirhash, ii->crc, ii->filepart));
+
+	//ic->files.push_back(nullptr);
+	return true;
+}
+
 
 //
 // walkFiles
@@ -64,51 +171,8 @@ void ImgCollectionReBuild::Create(fs::path _saveTo)
 //
 bool ImgCollectionReBuild::walkDirecrories(fs::path dir)
 {
-
-	string dirpart;
-	string filepart;
-	time_t lastmod = 0;
-	bool processFiles = false;
-
-	logger::info("DIR " + dir.string() );
-
-	uint32_t dirHash = ic->pathsplit(dir, dirpart, filepart, lastmod);
-	if (dirHash == 0)
-	{
-		logger::info(" - name error");
-		st.incNameErrors();
-		return false;
-	}
-
 	numDirs++;
-	logger::info("In dir " + dirpart);
-
-	ImgCollectionDirItem* di = dirs[dirHash];
-	bool isNew = false;
-	bool isModded = false;
-	if (di != nullptr)
-	{
-		logger::info(" - known");
-
-		numKnownDirs++;
-		if (lastmod > di->lmod)
-		{
-			isModded = true;
-			di->lmod = lastmod;
-			logger::info(" - modified");
-			numModDirs++;
-		}
-		
-		ic->dirs.push_back(di);
-	}
-	else
-	{
-		numNewDirs++;
-		logger::info(" - new");
-		isNew = true;
-		ic->dirs.push_back(new ImgCollectionDirItem(dirHash, dirpart, lastmod));
-	}
-
+	uint32_t dhash = processWalkedDir(dir);
 
 	for (fs::directory_entry de : fs::directory_iterator(dir))
 	{
@@ -119,99 +183,11 @@ bool ImgCollectionReBuild::walkDirecrories(fs::path dir)
 		else
 		{
 			numFiles++;
-			if (isNew || isModded)
-			{
-				logger::info("Process files in " + de.path().string() + " as its dir is modified or new");
-
-				if (ImgUtils::IsImageFile(de.path()))
-				{
-					numImageFiles++;
-				}
-				else if (ImgUtils::IsVideoFile(de.path()))
-				{
-					numVideoFiles++;
-				}
-			}
-			else
-				numIgnoredFiles++;
+			processWalkedFile(de);
 		}
 	}
 	return true;
 
-	/*
-
-
-	ic->dirs.push_back(new ImgCollectionDirItem(dirHash, dirpart, lastmod));
-	st.incDirs();
-
-	ImgCollectionDirItem* di = dirs[dirHash];
-	processFiles = true;
-	if (di == nullptr)
-	{
-		logger::info("this is a NEW FOLDER , add to list" + dir.string());
-		
-	}
-	else
-	{
-		if (lastmod > di->lmod)
-		{
-			di->lmod = lastmod;
-			logger::info("this is an existing MODIFIED folder" + dir.string());
-			
-		}
-		else
-			logger::debug("directory is unchanged" + dir.string());
-	}
-
-	// go thru all files/dirs
-	for (fs::directory_entry de : fs::directory_iterator(dir))
-	{
-		if (fs::is_directory(de))
-		{
-			walkDirecrories(de.path());
-		}
-		else
-		{
-			if (processFiles)
-			{
-				logger::debug("Process file " + de.path().string() + " in " + dir.string() + " as its dir is modified or new");
-
-				if (ImgUtils::IsImageFile(de.path()))
-				{
-					uint32_t fdirHash = ic->pathsplit(de, dirpart, filepart, lastmod);
-					
-
-					if (fdirHash == 0)
-					{
-						st.incNameErrors();
-						continue;
-					}
-
-					string dfhash = dfHash(fdirHash, filepart);
-					ImgCollectionFileItem* fi = files[dfhash];
-					logger::info("File " + de.path().string() + " in " + dir.string() + " hash is " + dfhash + " entry is " + (fi == NULL ? "NULL" : "Found"));
-
-					if (fi == nullptr)
-					{
-						ImageInfo* ii = new ImageInfo();
-						ii->de = de;
-						ii->dirhash = dirHash;
-						ii->filepart = filepart;
-						logger::debug("Process file " + de.path().string() + " in " + dir.string() + " as file is NEW");
-						processItem(ii);
-					}
-					else
-						ic->files.push_back(fi);
-				}
-			}
-			else
-				logger::debug("Ignore file " + de.path().string() + " in " + dir.string() + " as its dir is not modified");
-		}
-	}
-
-
-	return true;
-	*/
 }
 
 
@@ -296,6 +272,15 @@ string ImgCollectionReBuild::dfHash(uint32_t dhash, string filename)
 	return s;
 }
 
+void ImgCollectionReBuild::dump()
+{
+	char txt[MAX_PATH];
+	snprintf(txt, MAX_PATH, "Dirs: %d (%d known) (%d new) (%d mod) Files: %d (%d known) (%d new) (%d newimg) (%d newvid) (%d newother)",
+		numDirs, numKnownDirs, numNewDirs, numModDirs,
+		numFiles, numKnownFiles, numNewFiles, numImageFiles, numVideoFiles, numOtherFiles);
+	logger::info(txt);
+}
+
 void ImgCollectionReBuild::Rebuild()
 {
 
@@ -318,7 +303,8 @@ void ImgCollectionReBuild::Rebuild()
 	ic->files.clear();
 
 	walkDirecrories(fs::absolute(ic->stop));
-	logger::info("Final result dirs:" + to_string(numDirs) + "(" + to_string(numKnownDirs) + ")known (" + to_string(numModDirs) + ")mod (" + to_string(numNewDirs) + ")new, Files:" + to_string(numFiles) + " (" + to_string(numImageFiles) + ")images  (" + to_string(numVideoFiles) + ")video (" + to_string(numIgnoredFiles) + ")ignored.");
+
+	dump();
 
 }
 
